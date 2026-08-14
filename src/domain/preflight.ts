@@ -1,3 +1,5 @@
+import { TIENDA, TIENDA_TEMPLATE, type Tienda } from "@/config/tienda";
+
 import { WEBHOOK_ENVELOPE_CONFIRMED } from "./pagopar/protocol";
 import { PAGOPAR_MOCK_MODE } from "./pagopar/mode";
 
@@ -59,8 +61,12 @@ const BANCO_VARS = [
   "BANCO_TIPO_CUENTA",
 ] as const;
 
-export function preflight(env: PreflightEnv = process.env): PreflightReport {
+export function preflight(
+  env: PreflightEnv = process.env,
+  tienda: Tienda = TIENDA
+): PreflightReport {
   const checks: PreflightCheck[] = [
+    checkMarca(tienda),
     checkWebhookEnvelope(),
     checkPagoparMode(env),
     checkBancoVars(env),
@@ -77,6 +83,52 @@ export function preflight(env: PreflightEnv = process.env): PreflightReport {
   const warnings = checks.filter((check) => check.severity === "advierte").length;
 
   return { checks, ok: blocking === 0, blocking, warnings };
+}
+
+/**
+ * La tienda todavía se llama como el template.
+ *
+ * Es el único control de acá que no mira ni el entorno ni la plata: mira la
+ * marca. Está porque publicar el dominio de un cliente con el header, el pie,
+ * el `<title>` y el Open Graph con el nombre del template es un error que no avisa —
+ * compila, pasa los tests, cobra bien— y que lo descubre el cliente.
+ *
+ * Bloquea en cualquier entorno, no sólo en producción: si alguien está
+ * corriendo el preflight es porque está por deployar.
+ *
+ * Compara los cuatro campos que se ven, no sólo el nombre: cambiar `nombre` y
+ * dejar la meta description del template es la mitad del mismo error, y la
+ * mitad que se ve en Google.
+ */
+function checkMarca(tienda: Tienda): PreflightCheck {
+  const sinCambiar = (
+    [
+      ["nombre", "el header, el pie y el siteName de Open Graph"],
+      ["titulo", "el <title> de la home"],
+      ["descripcion", "la meta description que sale en Google"],
+      ["tagline", "la línea del pie"],
+    ] as const
+  ).filter(([campo]) => tienda[campo].trim() === TIENDA_TEMPLATE[campo].trim());
+
+  if (sinCambiar.length === 0) {
+    return {
+      id: "marca",
+      severity: "ok",
+      title: "Marca de la tienda",
+      detail: `"${tienda.nombre}" — distinta del template`,
+    };
+  }
+
+  return {
+    id: "marca",
+    severity: "bloquea",
+    title: "Marca de la tienda",
+    detail:
+      `src/config/tienda.ts sigue con ${sinCambiar.length} valor(es) del template ` +
+      `sin cambiar: ${sinCambiar.map(([campo]) => campo).join(", ")}. ` +
+      `Eso es ${sinCambiar.map(([, donde]) => donde).join(", ")} mostrando ` +
+      `"${TIENDA_TEMPLATE.nombre}" en el dominio del comercio`,
+  };
 }
 
 /**

@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 
+import { TIENDA, TIENDA_TEMPLATE } from "../../src/config/tienda";
 import { preflight, type PreflightEnv, type PreflightSeverity } from "../../src/domain/preflight";
 
 /**
@@ -61,6 +62,29 @@ describe("preflight", () => {
     // confirme contra el sandbox, esta expectativa pasa a ser `[]`.
     expect(bloquean).toEqual(["pagopar_webhook_envelope"]);
     expect(report.ok).toBe(false);
+  });
+
+  describe("marca", () => {
+    it("bloquea si la tienda sigue con el nombre del template", () => {
+      const report = preflight(envSano(), TIENDA_TEMPLATE);
+      const marca = report.checks.find((check) => check.id === "marca")!;
+
+      expect(marca.severity).toBe("bloquea");
+      expect(marca.detail).toContain("nombre");
+      // Que el detalle no chiste con el valor real: se lee en el log del deploy.
+      expect(marca.detail).toContain(TIENDA_TEMPLATE.nombre);
+    });
+
+    it("bloquea aunque sólo quede sin cambiar la meta description", () => {
+      const aMedias = { ...TIENDA, descripcion: TIENDA_TEMPLATE.descripcion };
+      expect(preflight(envSano(), aMedias).checks.find((c) => c.id === "marca")!.severity).toBe(
+        "bloquea"
+      );
+    });
+
+    it("esta tienda ya tiene marca propia", () => {
+      expect(severityOf(envSano(), "marca")).toBe("ok");
+    });
   });
 
   it("cada variable que falta bloquea por separado", () => {

@@ -28,12 +28,39 @@ export type Tienda = {
   ogLocale: string;
 };
 
-export const TIENDA: Tienda = {
+/**
+ * Los valores con los que viene el template `ecom` recién clonado.
+ *
+ * No es decoración: `pnpm preflight` compara `TIENDA` contra esto y **bloquea**
+ * el deploy si la tienda todavía se llama como el template. Publicar el dominio
+ * de un cliente branded "TiendaPY" es el error exacto que este control existe
+ * para hacer imposible — ver `src/domain/preflight.ts`.
+ *
+ * Al arrancar una tienda nueva no se toca esta constante: se cambia `TIENDA`.
+ */
+export const TIENDA_TEMPLATE: Tienda = {
   nombre: "TiendaPY",
   titulo: "TiendaPY — Comprá online en Paraguay",
   descripcion:
     "Tienda online paraguaya. Precios en guaraníes, IVA incluido, envíos a todo el país y atención por WhatsApp.",
   tagline: "Precios en guaraníes, IVA incluido. Enviamos a todo el país.",
+  lang: "es-PY",
+  ogLocale: "es_PY",
+};
+
+/**
+ * Cuidado al elegir el `nombre`: `tests/unit/marca-centralizada.test.ts` busca
+ * esa palabra en todo `src/` y `scripts/` para probar que no quedó escrita a
+ * mano en ningún otro lado. Un nombre que además es vocabulario del rubro
+ * ("Encaje", "Seda", "Malva") hace fallar ese test contra las descripciones de
+ * producto, que legítimamente usan la palabra. Elegí un nombre propio.
+ */
+export const TIENDA: Tienda = {
+  nombre: "Amaranta",
+  titulo: "Amaranta — Lencería online en Paraguay",
+  descripcion:
+    "Lencería para todos los días y para los que no lo son. Precios en guaraníes con IVA incluido, envío discreto a todo el país y cambios sin vueltas.",
+  tagline: "Lencería con envío discreto a todo el país. Guaraníes, IVA incluido.",
   lang: "es-PY",
   ogLocale: "es_PY",
 };
