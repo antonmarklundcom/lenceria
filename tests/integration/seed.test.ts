@@ -8,7 +8,7 @@ import { categories, products, shippingZones, variants } from '@/db/schema';
 import { assertGs } from '@/lib/money';
 
 import { TEST_DATABASE_URL, closeTestDb, getTestDb, hasTestDb, resetTables } from '../helpers/db';
-import { SEED_PRODUCTS } from '../../scripts/seed-data';
+import { SEED_CATEGORIES, SEED_PRODUCTS } from '../../scripts/seed-data';
 
 const run = promisify(execFile);
 
@@ -28,11 +28,10 @@ describe.skipIf(!hasTestDb)('scripts/seed.ts', () => {
   }, 120_000);
   afterAll(closeTestDb);
 
-  it('siembra 4 categorías, 24 productos y sus variantes', async () => {
+  it('siembra todas las categorías, productos y variantes del seed', async () => {
     const db = getTestDb();
-    expect(await db.select().from(categories)).toHaveLength(4);
+    expect(await db.select().from(categories)).toHaveLength(SEED_CATEGORIES.length);
     expect(await db.select().from(products)).toHaveLength(SEED_PRODUCTS.length);
-    expect(SEED_PRODUCTS.length).toBe(24);
 
     const variantRows = await db.select().from(variants);
     expect(variantRows.length).toBeGreaterThanOrEqual(SEED_PRODUCTS.length);
@@ -77,14 +76,15 @@ describe.skipIf(!hasTestDb)('scripts/seed.ts', () => {
 
   it('el catálogo se lee como lo haría el Server Component', async () => {
     const catalog = await getCatalog({ limit: 100 });
-    expect(catalog).toHaveLength(24);
+    expect(catalog).toHaveLength(SEED_PRODUCTS.length);
 
     const first = catalog[0]!;
     expect(first.variants.length).toBeGreaterThan(0);
     expect(first.categoryName).toBeTruthy();
     expect(first.variants[0]!.available).toBeGreaterThan(0);
 
-    const electronica = await getCatalog({ categorySlug: 'electronica' });
-    expect(electronica).toHaveLength(6);
+    const primera = SEED_CATEGORIES[0]!.slug;
+    const esperados = SEED_PRODUCTS.filter((product) => product.categorySlug === primera);
+    expect(await getCatalog({ categorySlug: primera })).toHaveLength(esperados.length);
   });
 });
