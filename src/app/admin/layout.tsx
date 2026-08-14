@@ -14,5 +14,9 @@ export const metadata: Metadata = {
 };
 
 export default function AdminRootLayout({ children }: { children: React.ReactNode }) {
-  return <>{children}</>;
+  // `contents` en vez de un div de verdad: la clase existe sólo para que
+  // globals.css pase los títulos del panel de la serif de la vidriera a la
+  // sans, y un div real acá cortaría la cadena de altura que usa el
+  // `min-h-full` del layout de abajo.
+  return <div className="admin-chrome contents">{children}</div>;
 }

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import type React from "react";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Cormorant_Garamond, Geist, Geist_Mono } from "next/font/google";
 
 import { TIENDA } from "@/config/tienda";
 import { CartSheet } from "@/components/cart-sheet";
@@ -18,6 +18,24 @@ const geistSans = Geist({
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
+});
+
+/**
+ * Serif de titulares. Es la mitad del cambio de piel: los tokens de color de
+ * `globals.css` son la otra.
+ *
+ * Sólo dos pesos: 400 para los titulares grandes y 500 para los chicos. Una
+ * serif en 600/700 se lee a presupuesto, no a marca, así que directamente no
+ * se cargan — lo que no está no se puede usar por accidente.
+ *
+ * Para vestir otra tienda se cambia la familia acá y `--font-display` en
+ * `globals.css` la levanta sola.
+ */
+const displaySerif = Cormorant_Garamond({
+  variable: "--font-display-serif",
+  subsets: ["latin"],
+  weight: ["400", "500"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -39,7 +57,7 @@ export default function RootLayout({
   return (
     <html
       lang={TIENDA.lang}
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} ${displaySerif.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col">
         <SiteHeader />

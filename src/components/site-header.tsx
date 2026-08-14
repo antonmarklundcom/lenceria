@@ -17,7 +17,7 @@ export async function SiteHeader() {
   return (
     <header className="border-border bg-background/95 sticky top-0 z-30 border-b backdrop-blur">
       <div className="mx-auto flex w-full max-w-6xl items-center gap-3 px-4 py-3">
-        <Link href="/" className="text-lg font-semibold tracking-tight">
+        <Link href="/" className="font-display text-2xl leading-none tracking-tight">
           {TIENDA.nombre}
         </Link>
 
@@ -36,7 +36,7 @@ export async function SiteHeader() {
             <Link
               key={category.id}
               href={`/categoria/${category.slug}`}
-              className="text-muted-foreground hover:text-foreground shrink-0 transition-colors"
+              className="text-muted-foreground hover:text-foreground shrink-0 tracking-wide uppercase transition-colors"
             >
               {category.name}
             </Link>
