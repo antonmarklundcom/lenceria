@@ -130,9 +130,28 @@ export default async function ProductPage({ params }: { params: Params }) {
           <p className="text-muted-foreground text-sm">{product.brand ?? product.categoryName}</p>
           <h1 className="mt-1 text-2xl font-semibold tracking-tight sm:text-3xl">{product.name}</h1>
 
-          <div className="mt-6">
+          {/* Arriba del botón, no abajo: la duda del talle aparece cuando se
+              mira el selector, y una compradora que no la resuelve no compra. */}
+          <p className="text-muted-foreground mt-4 text-sm">
+            ¿No sabés tu talle?{" "}
+            <Link href="/guia-de-talles" className="text-primary underline underline-offset-4">
+              Mirá la guía de talles
+            </Link>
+          </p>
+
+          <div className="mt-4">
             <AddToCart product={product} />
           </div>
+
+          <p className="text-muted-foreground mt-4 text-sm">
+            <Link href="/envio-discreto" className="hover:text-foreground underline underline-offset-4">
+              Envío discreto
+            </Link>
+            <span aria-hidden> · </span>
+            <Link href="/cambios" className="hover:text-foreground underline underline-offset-4">
+              Cambio de talle en 7 días
+            </Link>
+          </p>
 
           {waHref ? (
             <a

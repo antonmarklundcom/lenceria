@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
@@ -205,6 +206,18 @@ export function CheckoutForm({
       </div>
       <p className="text-muted-foreground -mt-3 text-xs">
         El envío se calcula según tu ciudad y se confirma en la próxima pantalla.
+      </p>
+
+      {/* La duda de "¿qué va a ver quien reciba el paquete?" aparece justo acá,
+          con el dedo sobre el botón de confirmar. Decirlo antes del click es lo
+          que convierte en este rubro. */}
+      <p className="border-border text-muted-foreground rounded-lg border border-dashed p-3 text-xs leading-relaxed">
+        <strong className="text-foreground">Tu pedido viaja en empaque discreto:</strong> bolsa
+        opaca sin logo, sin detalle del contenido por fuera y con el remito adentro, en sobre
+        cerrado.{" "}
+        <Link href="/envio-discreto" className="underline underline-offset-4">
+          Cómo lo enviamos
+        </Link>
       </p>
 
       <Button type="submit" size="lg" disabled={isPending}>
