@@ -74,35 +74,42 @@ export default async function HomePage() {
     <main>
       {/* --- 1. Hero -------------------------------------------------------- */}
       <section className="border-border/60 border-b">
-        <div className="mx-auto grid w-full max-w-6xl min-h-[62vh] grid-cols-1 items-center gap-10 px-4 pt-6 pb-14 sm:min-h-[64vh] lg:min-h-[74vh] lg:grid-cols-12 lg:gap-14 lg:py-20">
+        <div className="mx-auto grid w-full max-w-6xl min-h-[62vh] grid-cols-1 items-center gap-8 px-4 pt-4 pb-10 sm:min-h-[64vh] lg:min-h-[74vh] lg:grid-cols-12 lg:gap-14 lg:py-20">
           {/* SLOT hero — foto de campaña, 4:5 vertical. Hoy, ilustración. */}
           <div className="relative lg:col-span-5 lg:order-2">
-            <div className="bg-accent relative h-[34vh] w-full overflow-hidden rounded-lg sm:h-[38vh] lg:aspect-[4/5] lg:h-auto">
+            {/* Encuadre ancho en el teléfono y vertical en desktop, para que
+                el hero entre en 60–70vh sin empujar el botón abajo del pliegue.
+                Nunca más ancho que 16/9: con `cover`, un recorte más agresivo
+                se come el "Foto próximamente" de la ilustración. */}
+            <div className="bg-accent relative aspect-16/9 w-full overflow-hidden rounded-lg lg:aspect-4/5">
               <Image
                 src="/placeholders/conjuntos.svg"
                 alt="Conjunto de lencería (foto de campaña próximamente)"
                 fill
                 priority
                 sizes="(max-width: 1024px) 100vw, 460px"
-                className="object-contain p-8"
+                className="object-cover"
               />
             </div>
-            <p className="border-border bg-background text-muted-foreground absolute -bottom-3 left-4 rounded-md border px-3 py-1.5 text-xs">
+            {/* Cruza el borde de abajo de la foto. Sólo en desktop: en el
+                encuadre apaisado del teléfono le taparía el "Foto
+                próximamente" a la ilustración, y ahí abajo lo dice igual la
+                cinta de confianza. */}
+            <p className="border-border bg-background text-muted-foreground hidden rounded-md border px-3 py-1.5 text-xs lg:absolute lg:-bottom-3 lg:left-4 lg:block">
               Todos los pedidos salen en empaque discreto
             </p>
           </div>
 
           <div className="lg:col-span-7 lg:order-1">
             <p className="eyebrow">Lencería online en Paraguay</p>
-            <h1 className="mt-3 text-[2.5rem] sm:text-6xl lg:text-7xl">
+            <h1 className="mt-3 text-[2.25rem] sm:text-6xl lg:text-7xl">
               Para todos los días y para los que no lo son.
             </h1>
             <p className="text-muted-foreground mt-5 max-w-[52ch] text-base leading-relaxed sm:text-lg">
               Precios en guaraníes con IVA incluido, envío discreto a todo el país y
-              cambio de talle sin vueltas. Si dudás entre dos talles, escribinos antes
-              de comprar.
+              cambio de talle sin vueltas.
             </p>
-            <Button asChild size="lg" className="mt-8">
+            <Button asChild size="lg" className="mt-7">
               <Link href={heroHref}>Ver la colección</Link>
             </Button>
           </div>
@@ -141,9 +148,11 @@ export default async function HomePage() {
                   sizes="(max-width: 1024px) 50vw, 33vw"
                   className="object-cover transition-transform duration-300 ease-out group-hover:scale-[1.04] motion-reduce:transition-none motion-reduce:group-hover:scale-100"
                 />
-                {/* El nombre va encima de la foto: sin este velo no se lee. */}
-                <div className="from-foreground/80 via-foreground/25 absolute inset-0 bg-gradient-to-t to-transparent" />
-                <h3 className="text-background absolute inset-x-0 bottom-0 p-3 text-xl sm:p-5 sm:text-2xl">
+                {/* El nombre va encima de la foto: sin este velo no se lee.
+                    Y va arriba, no abajo, porque abajo está el "Foto
+                    próximamente" de la ilustración — dos textos peleándose. */}
+                <div className="from-foreground/65 absolute inset-0 bg-linear-to-b to-transparent to-50%" />
+                <h3 className="text-background absolute inset-x-0 top-0 p-3 text-xl sm:p-5 sm:text-2xl">
                   {category.name}
                 </h3>
               </Link>
@@ -153,7 +162,7 @@ export default async function HomePage() {
       ) : null}
 
       {/* --- 3. Confianza --------------------------------------------------- */}
-      <section aria-label="Cómo comprás" className="bg-secondary border-border/60 border-y">
+      <section aria-label="Cómo comprás" className="bg-foreground text-background">
         <ul className="mx-auto grid w-full max-w-6xl grid-cols-2 gap-x-6 gap-y-8 px-4 py-10 sm:py-12 lg:grid-cols-4 lg:gap-x-10">
           {CONFIANZA.map((item) => (
             <li key={item.titulo}>
@@ -166,7 +175,7 @@ export default async function HomePage() {
                   item.titulo
                 )}
               </p>
-              <p className="text-muted-foreground mt-1.5 max-w-[32ch] text-sm leading-relaxed">
+              <p className="text-background/75 mt-1.5 max-w-[32ch] text-sm leading-relaxed">
                 {item.detalle}
               </p>
             </li>
@@ -223,9 +232,9 @@ export default async function HomePage() {
               <Image
                 src="/placeholders/generico.svg"
                 alt="El paquete cerrado, tal como te llega (foto próximamente)"
-                width={240}
-                height={240}
-                className="h-full w-auto max-w-full object-contain"
+                width={176}
+                height={176}
+                className="w-32 max-w-full rounded-md sm:w-44"
               />
             </div>
           </div>
