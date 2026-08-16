@@ -9,6 +9,8 @@ import {
   variants,
 } from "@/db/schema";
 
+import type { AdminProductSort } from "@/lib/admin-product-sort";
+
 import type { Executor } from "./executor";
 import { heldQtyMap } from "./stock";
 
@@ -27,19 +29,6 @@ export class AdminInputError extends Error {
 }
 
 export const PRODUCTS_PER_PAGE = 20;
-
-/**
- * Orden del listado del panel.
- *
- * `stock` va ascendente a propósito: el dueño no entra a productos a mirar lo
- * que le sobra, entra a ver qué se está por acabar.
- */
-export const ADMIN_PRODUCT_SORTS = ["recientes", "stock", "precio-asc", "precio-desc"] as const;
-export type AdminProductSort = (typeof ADMIN_PRODUCT_SORTS)[number];
-
-export function isAdminProductSort(value: string | undefined): value is AdminProductSort {
-  return value !== undefined && (ADMIN_PRODUCT_SORTS as readonly string[]).includes(value);
-}
 
 export type AdminProductRow = {
   id: number;

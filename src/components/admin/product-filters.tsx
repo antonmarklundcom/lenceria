@@ -2,14 +2,11 @@
 
 import { useRouter } from "next/navigation";
 
-import { ADMIN_PRODUCT_SORTS, type AdminProductSort } from "@/domain/admin-products";
-
-const SORT_LABEL: Record<AdminProductSort, string> = {
-  recientes: "Editados hace poco",
-  stock: "Stock: menor primero",
-  "precio-asc": "Precio: menor a mayor",
-  "precio-desc": "Precio: mayor a menor",
-};
+import {
+  ADMIN_PRODUCT_SORTS,
+  ADMIN_PRODUCT_SORT_LABEL,
+  type AdminProductSort,
+} from "@/lib/admin-product-sort";
 
 const TODAS = "";
 
@@ -85,7 +82,7 @@ export function ProductFilters({
       >
         {ADMIN_PRODUCT_SORTS.map((value) => (
           <option key={value} value={value}>
-            {SORT_LABEL[value]}
+            {ADMIN_PRODUCT_SORT_LABEL[value]}
           </option>
         ))}
       </select>

@@ -3,7 +3,8 @@ import Link from "next/link";
 
 import { ProductFilters } from "@/components/admin/product-filters";
 import { ProductImage } from "@/components/product-image";
-import { isAdminProductSort, listAdminProducts, listCategories } from "@/domain/admin-products";
+import { listAdminProducts, listCategories } from "@/domain/admin-products";
+import { isAdminProductSort } from "@/lib/admin-product-sort";
 import { formatGs } from "@/lib/money";
 
 export const metadata: Metadata = { title: "Productos" };
