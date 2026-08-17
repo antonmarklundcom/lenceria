@@ -36,6 +36,8 @@ export function CheckoutForm({
   const [paymentMethod, setPaymentMethod] = useState<"transferencia" | "contra_entrega" | "tarjeta">(
     "transferencia"
   );
+  const [marketingOptIn, setMarketingOptIn] = useState(false);
+  const [isGift, setIsGift] = useState(false);
   const [city, setCity] = useState("");
   const [quote, setQuote] = useState<(CartQuote & { itemsKey: string }) | null>(null);
   const [isQuoting, setIsQuoting] = useState(false);
@@ -123,6 +125,9 @@ export function CheckoutForm({
             shipAddress: String(data.get("shipAddress") ?? ""),
             shipReference: String(data.get("shipReference") ?? ""),
             paymentMethod,
+            marketingOptIn,
+            isGift,
+            giftNote: String(data.get("giftNote") ?? ""),
           });
 
           if (!result.ok) {
@@ -263,6 +268,60 @@ export function CheckoutForm({
           </label>
         ))}
       </fieldset>
+
+      <div className="grid gap-2">
+        <label className="border-border flex cursor-pointer items-start gap-3 rounded-lg border p-3 text-sm">
+          <input
+            type="checkbox"
+            name="isGift"
+            checked={isGift}
+            onChange={(event) => setIsGift(event.target.checked)}
+            className="mt-1"
+          />
+          <span>
+            <span className="font-medium">Es un regalo</span>
+            <span className="text-muted-foreground block text-xs">
+              Lo preparamos para regalar y le sumamos una tarjeta con tu mensaje. El empaque sigue
+              siendo discreto: quien lo recibe abre el regalo, no el pedido.
+            </span>
+          </span>
+        </label>
+
+        {isGift ? (
+          <div className="grid gap-1.5">
+            <Label htmlFor="giftNote">Mensaje para la tarjeta (opcional)</Label>
+            <textarea
+              id="giftNote"
+              name="giftNote"
+              rows={2}
+              maxLength={300}
+              placeholder="¡Feliz cumple! Con todo mi cariño."
+              className="border-input bg-background rounded-md border px-3 py-2 text-sm"
+            />
+          </div>
+        ) : null}
+      </div>
+
+      {/* Sin tildar de entrada y con el texto completo al lado: un permiso
+          pre-aceptado no es un permiso. Lo que se guarda es la respuesta, no
+          la ausencia de respuesta (ver `orders.marketing_opt_in`). */}
+      <label className="border-border flex cursor-pointer items-start gap-3 rounded-lg border p-3 text-sm">
+        <input
+          type="checkbox"
+          name="marketingOptIn"
+          checked={marketingOptIn}
+          onChange={(event) => setMarketingOptIn(event.target.checked)}
+          className="mt-1"
+        />
+        <span>
+          <span className="font-medium">Quiero recibir novedades y promociones</span>
+          <span className="text-muted-foreground block text-xs">
+            Te escribimos al WhatsApp que pusiste arriba, sólo por ofertas y cosas nuevas. Nunca
+            por este pedido —eso te llega igual— y tu número no se lo pasamos a nadie. Pedinos que
+            te saquemos cuando quieras.
+          </span>
+        </span>
+      </label>
 
       <div className="border-border grid gap-1 border-t pt-4 text-sm">
         <div className="flex items-center justify-between">
