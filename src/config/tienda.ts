@@ -56,8 +56,8 @@ export const TIENDA_TEMPLATE: Tienda = {
  * producto, que legítimamente usan la palabra. Elegí un nombre propio.
  */
 export const TIENDA: Tienda = {
-  nombre: "Amaranta",
-  titulo: "Amaranta — Lencería online en Paraguay",
+  nombre: "lenceria.com.py",
+  titulo: "lenceria.com.py — Lencería online en Paraguay",
   descripcion:
     "Lencería para todos los días y para los que no lo son. Precios en guaraníes con IVA incluido, envío discreto a todo el país y cambios sin vueltas.",
   tagline: "Lencería con envío discreto a todo el país. Guaraníes, IVA incluido.",
