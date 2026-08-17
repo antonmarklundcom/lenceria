@@ -19,6 +19,23 @@ export type ShippingQuote = {
   zoneName: string;
   shippingPyg: number;
   isFree: boolean;
+  /**
+   * De dónde salió el precio. No cambia lo que se cobra —eso ya está decidido
+   * arriba— pero la pantalla dice cosas distintas en cada caso, y son tres, no
+   * dos:
+   *
+   * - `exacta`: la ciudad cayó en una zona. Se puede nombrar.
+   * - `mas_cara`: no cayó en ninguna y se cobró la tarifa más alta por
+   *   descarte. Hay que avisarlo: el nombre de esa zona no significa nada
+   *   para quien compra.
+   * - `sin_zonas`: la tienda todavía no configuró zonas, así que el envío es
+   *   ₲0 de verdad. Antes esto se mezclaba con `mas_cara` y el checkout
+   *   mostraba "Gratis" y "te cobramos la tarifa más alta" en la misma
+   *   pantalla — el estado en el que sale toda tienda recién clonada.
+   */
+  match: "exacta" | "mas_cara" | "sin_zonas";
+  /** Umbral de envío gratis de la zona elegida. NULL = la zona no lo ofrece. */
+  freeThresholdPyg: number | null;
 };
 
 /** Ciudad sin acentos, sin dobles espacios y en minúsculas. */
@@ -50,22 +67,30 @@ export async function quoteShipping(
     .orderBy(asc(shippingZones.position));
 
   if (zones.length === 0) {
-    return { zoneId: null, zoneName: "Sin zonas configuradas", shippingPyg: 0, isFree: true };
+    return {
+      zoneId: null,
+      zoneName: "Sin zonas configuradas",
+      shippingPyg: 0,
+      isFree: true,
+      match: "sin_zonas",
+      freeThresholdPyg: null,
+    };
   }
 
   const target = normalizeCity(city);
-  const matched =
-    zones.find((zone) => zone.cities.some((name) => normalizeCity(name) === target)) ??
-    zones.reduce((worst, zone) => (zone.pricePyg > worst.pricePyg ? zone : worst), zones[0]!);
+  const found = zones.find((zone) => zone.cities.some((name) => normalizeCity(name) === target));
+  const zone =
+    found ?? zones.reduce((worst, item) => (item.pricePyg > worst.pricePyg ? item : worst), zones[0]!);
 
-  const isFree =
-    matched.freeThresholdPyg !== null && subtotalPyg >= matched.freeThresholdPyg;
+  const isFree = zone.freeThresholdPyg !== null && subtotalPyg >= zone.freeThresholdPyg;
 
   return {
-    zoneId: matched.id,
-    zoneName: matched.name,
-    shippingPyg: isFree ? 0 : matched.pricePyg,
+    zoneId: zone.id,
+    zoneName: zone.name,
+    shippingPyg: isFree ? 0 : zone.pricePyg,
     isFree,
+    match: found !== undefined ? "exacta" : "mas_cara",
+    freeThresholdPyg: zone.freeThresholdPyg,
   };
 }
 

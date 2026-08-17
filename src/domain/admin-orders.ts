@@ -1,4 +1,4 @@
-import { and, count, desc, eq, gte, like, lt, or, sql, type SQL } from "drizzle-orm";
+import { and, asc, count, desc, eq, gte, inArray, like, lt, or, sql, type SQL } from "drizzle-orm";
 
 import { getDb } from "@/db";
 import {
@@ -282,4 +282,93 @@ export async function countAwaitingVerification(executor?: Executor): Promise<nu
     .from(orders)
     .where(eq(orders.status, "esperando_verificacion"));
   return row?.total ?? 0;
+}
+
+/**
+ * "Por cobrar": los pedidos que quedaron a mitad de camino.
+ *
+ * `pendiente_pago` y `vencido` juntos y ordenados por antigüedad, porque para
+ * recuperarlos son el mismo trabajo: alguien tiene que escribirle. El más
+ * viejo primero — es el que está más cerca de perderse del todo.
+ *
+ * Trae el `access_token` porque el mensaje de recuperación lleva el link
+ * tokenizado del pedido (ver `order-messages.ts`). Sale sólo hacia el panel,
+ * que se sirve con `no-store` y `noindex`.
+ *
+ * Lo que esta consulta **no** hace es tocar reservas. La disponibilidad se
+ * calcula en vivo (ARCH.md §2): extender o rehacer la reserva de un pedido
+ * que alguien va a "empujar" le bloquearía la unidad a todos los demás
+ * compradores, en silencio y por tiempo indefinido. La reserva vence sola y,
+ * si el pago llega, `transitionOrder` vuelve a asegurar el stock contra la
+ * disponibilidad viva o se niega (ARCH.md §4.1).
+ */
+export const RECOVERABLE_STATUSES = ["pendiente_pago", "vencido", "rechazado"] as const;
+
+export function isRecoverableStatus(
+  status: OrderStatus,
+): status is (typeof RECOVERABLE_STATUSES)[number] {
+  return (RECOVERABLE_STATUSES as readonly string[]).includes(status);
+}
+
+export type RecoverableOrderRow = {
+  id: number;
+  orderNumber: string;
+  status: OrderStatus;
+  paymentMethod: PaymentMethod;
+  customerName: string;
+  customerPhone: string;
+  accessToken: string;
+  totalPyg: number;
+  createdAt: Date;
+  reservedUntil: Date | null;
+  /**
+   * Días enteros transcurridos, contados en MySQL contra `UTC_TIMESTAMP()`.
+   *
+   * `NOW()` devuelve la hora de **sesión** del servidor, y `created_at` está
+   * guardado en UTC: en un MySQL con `time_zone` local (el default de
+   * Hostinger es SYSTEM) la resta se iba por el offset y un pedido de 25
+   * horas aparecía como "hoy". El `timezone: 'Z'` del pool no arregla esto
+   * —es conversión del lado de mysql2, no un `SET time_zone`.
+   */
+  ageDays: number;
+};
+
+export type RecoverableOrders = {
+  rows: RecoverableOrderRow[];
+  /** Cuántos hay en total. Si es mayor que `rows.length`, la lista está cortada. */
+  total: number;
+};
+
+export async function listOrdersToRecover(
+  limit = 100,
+  executor?: Executor,
+): Promise<RecoverableOrders> {
+  const tx = executor ?? getDb();
+  const where = inArray(orders.status, [...RECOVERABLE_STATUSES]);
+
+  // El total sale de su propia consulta: sin esto la pantalla mostraba
+  // `rows.length` como si fuera todo, y un comercio con 140 pedidos colgados
+  // veía "100 pedidos" y creía haber terminado la lista.
+  const [{ total = 0 } = {}] = await tx.select({ total: count() }).from(orders).where(where);
+
+  const rows = await tx
+    .select({
+      id: orders.id,
+      orderNumber: orders.orderNumber,
+      status: orders.status,
+      paymentMethod: orders.paymentMethod,
+      customerName: orders.customerName,
+      customerPhone: orders.customerPhone,
+      accessToken: orders.accessToken,
+      totalPyg: orders.totalPyg,
+      createdAt: orders.createdAt,
+      reservedUntil: orders.reservedUntil,
+      ageDays: sql<number>`TIMESTAMPDIFF(DAY, \`orders\`.\`created_at\`, UTC_TIMESTAMP())`,
+    })
+    .from(orders)
+    .where(where)
+    .orderBy(asc(orders.createdAt), asc(orders.id))
+    .limit(Math.min(500, Math.max(1, limit)));
+
+  return { rows: rows.map((row) => ({ ...row, ageDays: Number(row.ageDays) })), total };
 }

@@ -10,12 +10,12 @@ import {
   type DocType,
   type PaymentMethod,
 } from "@/db/schema";
-import { assertGs, ivaIncluded } from "@/lib/money";
+import { formatGs } from "@/lib/money";
 import { normalizePhonePY, validateDoc } from "@/lib/py";
 
-import { priceCart, type CartInput } from "./cart";
+import type { CartInput } from "./cart";
 import { nextOrderNumber } from "./order-number";
-import { SHIPPING_IVA_RATE, quoteShipping } from "./shipping";
+import { computeOrderTotals } from "./order-totals";
 import { RESERVATION_TTL_MINUTES, reserveStock } from "./stock";
 import type { CartIssue } from "@/lib/cart-issues";
 
@@ -45,6 +45,25 @@ export type CreateOrderInput = {
   shipReference?: string | null;
   shipMapsUrl?: string | null;
   paymentMethod: PaymentMethod;
+  /**
+   * Novedades y promociones. `null`/`undefined` = no se preguntó; se guarda
+   * tal cual, sin convertirlo a `false` (ver `orders.marketing_opt_in`).
+   */
+  marketingOptIn?: boolean | null;
+  /** Pedido para regalar, con un mensaje opcional para la tarjeta. */
+  isGift?: boolean;
+  giftNote?: string | null;
+  /**
+   * El total que el navegador venía **mostrando**, para poder avisar si
+   * cambió. Se compara, nunca se cobra: lo que se cobra sale de
+   * `computeOrderTotals` unas líneas más abajo, contra la DB y adentro de
+   * esta transacción (ARCH.md §1 regla 1). Mismo criterio que
+   * `expectedPrices` en `priceCart`.
+   *
+   * `undefined` = no se le mostró ningún total (no llegó a poner la ciudad),
+   * así que no hay nada que comparar y el pedido sigue de largo.
+   */
+  expectedTotalPyg?: number | null;
 };
 
 export type CreatedOrder = {
@@ -66,6 +85,32 @@ export class CheckoutError extends Error {
   ) {
     super(message);
     this.name = "CheckoutError";
+  }
+}
+
+/**
+ * El total cambió entre lo que ella vio y lo que corresponde cobrar.
+ *
+ * Existe porque el umbral de envío gratis hace que el total **no** sea
+ * monótono en el precio: un producto de ₲500.000 con envío gratis a partir de
+ * ₲500.000 que el comercio baja a ₲490.000 cae abajo del umbral y pasa a
+ * pagar flete — más barato el producto, más caro el total. Sin este aviso,
+ * cobrarle de más después de una rebaja es indistinguible de un error.
+ *
+ * No se cobra ninguno de los dos números por venir del navegador: `after` es
+ * el que acaba de calcular el servidor, y es el que se cobra si ella
+ * confirma de nuevo.
+ */
+export class TotalChangedError extends CheckoutError {
+  constructor(
+    readonly before: number,
+    readonly after: number
+  ) {
+    super(
+      `El total cambió de ${formatGs(before)} a ${formatGs(after)} mientras completabas los datos. ` +
+        "Revisalo y confirmá de nuevo."
+    );
+    this.name = "TotalChangedError";
   }
 }
 
@@ -92,8 +137,12 @@ export async function createOrder(input: CreateOrderInput): Promise<CreatedOrder
   }
 
   return getDb().transaction(async (tx) => {
-    // 1. Re-precio: precio, IVA y stock salen de la DB.
-    const cart = await priceCart(input.items, { executor: tx });
+    // 1 y 2. Re-precio y envío, con el executor de **esta** transacción. Es la
+    //    misma función que usa la cotización pública (`computeOrderTotals`),
+    //    corrida de nuevo acá: lo que la compradora vio en pantalla no viaja
+    //    en el input y no se compara con nada, se recalcula.
+    const { cart, shipping, subtotalPyg, shippingPyg, totalPyg, iva10Pyg, iva5Pyg } =
+      await computeOrderTotals(input.items, input.shipCity, { executor: tx });
 
     const blocking = cart.issues.filter((issue) => issue.type !== "precio_cambio");
     if (cart.lines.length === 0 || blocking.length > 0) {
@@ -103,15 +152,20 @@ export async function createOrder(input: CreateOrderInput): Promise<CreatedOrder
       );
     }
 
-    // 2. Envío por zona, con umbral de envío gratis.
-    const shipping = await quoteShipping(input.shipCity, cart.subtotalPyg, tx);
-
-    const subtotalPyg = assertGs(cart.subtotalPyg, "subtotal_pyg");
-    const shippingPyg = assertGs(shipping.shippingPyg, "shipping_pyg");
-    const totalPyg = assertGs(subtotalPyg + shippingPyg, "total_pyg");
-    // El flete también viene con IVA incluido (ver SHIPPING_IVA_RATE).
-    const iva10Pyg = cart.iva10Pyg + ivaIncluded(shippingPyg, SHIPPING_IVA_RATE);
-    const iva5Pyg = cart.iva5Pyg;
+    // 2.b. ¿Le estamos por cobrar algo distinto de lo que vio?
+    //
+    //      La comparación va **adentro** de la transacción y antes de
+    //      escribir nada: si no coincide, esto tira y no queda ni el pedido,
+    //      ni el número consumido, ni la reserva. El número del navegador no
+    //      participa del cobro en ningún caso — sólo dice qué había en
+    //      pantalla.
+    if (
+      input.expectedTotalPyg !== undefined &&
+      input.expectedTotalPyg !== null &&
+      input.expectedTotalPyg !== totalPyg
+    ) {
+      throw new TotalChangedError(input.expectedTotalPyg, totalPyg);
+    }
 
     // 3. Número de pedido del contador, adentro de la misma transacción.
     const orderNumber = await nextOrderNumber(tx);
@@ -143,6 +197,16 @@ export async function createOrder(input: CreateOrderInput): Promise<CreatedOrder
       iva5Pyg,
       paymentMethod: input.paymentMethod,
       reservedUntil,
+      isGift: input.isGift ?? false,
+      // La nota se descarta si el pedido no es un regalo: si no, destildar la
+      // casilla dejaría el mensaje viejo colgado y alguien lo imprimiría.
+      giftNote: input.isGift ? input.giftNote?.trim() || null : null,
+      marketingOptIn: input.marketingOptIn ?? null,
+      // La fecha acompaña a cualquier respuesta explícita, no sólo al "sí":
+      // saber cuándo dijo que no es lo que después evita mandarle igual.
+      marketingOptInAt: input.marketingOptIn === null || input.marketingOptIn === undefined
+        ? null
+        : new Date(),
     });
 
     const inserted = await tx

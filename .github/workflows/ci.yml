@@ -36,6 +36,12 @@ jobs:
       DATABASE_URL: mysql://root:root@127.0.0.1:3306/lenceria
       TEST_DATABASE_URL: mysql://root:root@127.0.0.1:3306/lenceria_test
       SESSION_SECRET: ci-session-secret-de-al-menos-32-caracteres
+      # Sin esto, `next build` avisa que no puede resolver la URL absoluta de
+      # la imagen de Open Graph y cae en localhost. En la tienda real lo
+      # bloquea `pnpm preflight`; acá alcanza con un dominio de mentira, que
+      # es justamente lo que el código se niega a inventar por su cuenta
+      # (ver src/lib/site-url.ts).
+      NEXT_PUBLIC_SITE_URL: https://ci.example.py
 
     steps:
       - uses: actions/checkout@v4
@@ -54,6 +60,29 @@ jobs:
       - run: pnpm typecheck
 
       - run: pnpm lint
+
+      # `POST /api/setup/init` deploya **migraciones**, no `schema.ts`: en el
+      # servidor no hay drizzle-kit y `db:push` no corre. O sea que una columna
+      # agregada a schema.ts sin su migración generada compila, pasa los tests
+      # (que también migran) y recién falla en producción, con la tienda arriba
+      # y la columna faltando. Acá se ve en el PR.
+      #
+      # El dev local sigue usando `pnpm db:push`; lo que se pide es que la
+      # migración esté generada y commiteada.
+      - name: schema.ts no se despegó de las migraciones
+        run: |
+          set -euo pipefail
+
+          pnpm db:generate
+
+          if [ -n "$(git status --porcelain drizzle)" ]; then
+            echo "::error::schema.ts cambió sin su migración. Corré \`pnpm db:generate\` y commiteá lo que aparezca en drizzle/."
+            git status --porcelain drizzle
+            git --no-pager diff -- drizzle
+            exit 1
+          fi
+
+          echo "✓ schema.ts y drizzle/ están al día"
 
       - run: pnpm test
         timeout-minutes: 8

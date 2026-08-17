@@ -2,10 +2,12 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState, useTransition } from "react";
+import { useRef, useState, useTransition } from "react";
 import { toast } from "sonner";
 
 import { submitCheckout } from "@/app/actions/checkout";
+import { quoteCartShipping, type CartQuote } from "@/app/actions/shipping-quote";
+import { FreeShippingBar } from "@/components/free-shipping-bar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -16,8 +18,10 @@ import { formatGs } from "@/lib/money";
 /**
  * Formulario de checkout.
  *
- * Ojo con lo que NO manda: ningún monto. El total que se ve acá es
- * informativo; el que se cobra lo calcula `createOrder` desde la DB.
+ * El único monto que manda es `expectedTotalPyg`, y va para **comparar**: es
+ * lo que había en pantalla, para que el servidor pueda avisar si el total
+ * cambió mientras ella completaba los datos. No se cobra. Lo que se cobra lo
+ * calcula `createOrder` desde la DB, adentro de su transacción.
  */
 export function CheckoutForm({
   cities,
@@ -27,15 +31,76 @@ export function CheckoutForm({
   pagoparEnabled?: boolean;
 }) {
   const router = useRouter();
-  const { lines, clear } = useCart();
+  const { lines, clear, freeShipping } = useCart();
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [docType, setDocType] = useState<"NINGUNO" | "CI" | "RUC">("NINGUNO");
   const [paymentMethod, setPaymentMethod] = useState<"transferencia" | "contra_entrega" | "tarjeta">(
     "transferencia"
   );
+  const [marketingOptIn, setMarketingOptIn] = useState(false);
+  const [isGift, setIsGift] = useState(false);
+  const [city, setCity] = useState("");
+  const [quote, setQuote] = useState<(CartQuote & { itemsKey: string }) | null>(null);
+  const [isQuoting, setIsQuoting] = useState(false);
+  const quoteTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const quoteTicket = useRef(0);
+  /**
+   * El total que ella ya vio y aceptó tras un aviso de cambio. Se manda para
+   * comparar, nunca para cobrar (`expectedTotalPyg`). Se invalida en cuanto
+   * cambia la ciudad o el carrito: a partir de ahí manda la cotización nueva.
+   */
+  const [acceptedTotal, setAcceptedTotal] = useState<number | null>(null);
 
   const subtotal = cartSubtotal(lines);
+
+  /**
+   * Cotización del envío, disparada por lo que hace la compradora al tipear la
+   * ciudad y no por un efecto — mismo criterio que la revalidación del
+   * carrito. Es sólo lectura y no crea nada (ver `quoteCartShipping`), así que
+   * se puede volver a pedir en cada corrección.
+   */
+  const itemsKey = lines.map((line) => `${line.variantId}x${line.qty}`).join(",");
+
+  const requestQuote = (nextCity: string, delayMs = 400) => {
+    if (quoteTimer.current) clearTimeout(quoteTimer.current);
+
+    const target = nextCity.trim();
+    const items = useCart
+      .getState()
+      .lines.map((line) => ({ variantId: line.variantId, qty: line.qty }));
+
+    if (target.length < 2 || items.length === 0) {
+      setQuote(null);
+      setIsQuoting(false);
+      return;
+    }
+
+    // Cada pedido lleva su número: la respuesta de una ciudad ya corregida
+    // llega tarde y no tiene que pisar a la actual.
+    const ticket = ++quoteTicket.current;
+    setIsQuoting(true);
+    quoteTimer.current = setTimeout(() => {
+      void quoteCartShipping({ items, city: target })
+        .then((result) => {
+          if (ticket !== quoteTicket.current) return;
+          setQuote(result.shipping ? { ...result, itemsKey } : null);
+          setIsQuoting(false);
+        })
+        .catch(() => {
+          if (ticket !== quoteTicket.current) return;
+          setQuote(null);
+          setIsQuoting(false);
+        });
+    }, delayMs);
+  };
+
+  // Si el carrito cambió desde el slide-over, la cotización de recién ya no
+  // corresponde: se muestra el subtotal del navegador hasta que se vuelva a
+  // cotizar, en vez de un total de otro carrito.
+  const currentQuote = quote?.itemsKey === itemsKey ? quote : null;
+  // Un total aceptado deja de valer si el carrito cambió debajo.
+  const expectedTotal = quote?.itemsKey === itemsKey ? acceptedTotal : null;
 
   if (lines.length === 0) {
     return (
@@ -70,11 +135,28 @@ export function CheckoutForm({
             shipAddress: String(data.get("shipAddress") ?? ""),
             shipReference: String(data.get("shipReference") ?? ""),
             paymentMethod,
+            marketingOptIn,
+            isGift,
+            giftNote: String(data.get("giftNote") ?? ""),
+            // Lo que hay en pantalla, para que el servidor pueda avisar si no
+            // coincide con lo que corresponde cobrar. Si nunca vio un total
+            // —no llegó a poner la ciudad— no va nada y no hay nada que
+            // comparar.
+            expectedTotalPyg: expectedTotal ?? currentQuote?.totalPyg ?? undefined,
           });
 
           if (!result.ok) {
             setError(result.error);
             result.issues?.forEach((issue) => toast.error(describeIssue(issue)));
+            if (result.totalChanged) {
+              // El pedido NO se creó. Se guarda el total nuevo —el que acaba
+              // de calcular el servidor— para que el segundo click pase, y se
+              // vuelve a cotizar para que la pantalla muestre de dónde sale.
+              setAcceptedTotal(result.totalChanged.after);
+              // Sin esperar los 400ms del debounce: la pantalla tiene que
+              // mostrar el número nuevo antes de que ella vuelva a apretar.
+              requestQuote(city, 0);
+            }
             return;
           }
 
@@ -140,7 +222,21 @@ export function CheckoutForm({
       <div className="grid gap-3 sm:grid-cols-2">
         <div className="grid gap-1.5">
           <Label htmlFor="shipCity">Ciudad</Label>
-          <Input id="shipCity" name="shipCity" required list="ciudades" autoComplete="address-level2" />
+          <Input
+            id="shipCity"
+            name="shipCity"
+            required
+            list="ciudades"
+            autoComplete="address-level2"
+            value={city}
+            onChange={(event) => {
+              setCity(event.target.value);
+              // Otra ciudad es otro envío: lo que aceptó para la anterior no
+              // vale más.
+              setAcceptedTotal(null);
+              requestQuote(event.target.value);
+            }}
+          />
           <datalist id="ciudades">
             {cities.map((city) => (
               <option key={city} value={city} />
@@ -200,13 +296,124 @@ export function CheckoutForm({
         ))}
       </fieldset>
 
-      <div className="border-border flex items-center justify-between border-t pt-4 text-sm">
-        <span className="text-muted-foreground">Subtotal (IVA incluido)</span>
-        <span className="font-semibold tabular-nums">{formatGs(subtotal)}</span>
+      <div className="grid gap-2">
+        <label className="border-border flex cursor-pointer items-start gap-3 rounded-lg border p-3 text-sm">
+          <input
+            type="checkbox"
+            name="isGift"
+            checked={isGift}
+            onChange={(event) => setIsGift(event.target.checked)}
+            className="mt-1"
+          />
+          <span>
+            <span className="font-medium">Es un regalo</span>
+            <span className="text-muted-foreground block text-xs">
+              Lo preparamos para regalar y le sumamos una tarjeta con tu mensaje. El empaque sigue
+              siendo discreto: quien lo recibe abre el regalo, no el pedido.
+            </span>
+          </span>
+        </label>
+
+        {isGift ? (
+          <div className="grid gap-1.5">
+            <Label htmlFor="giftNote">Mensaje para la tarjeta (opcional)</Label>
+            <textarea
+              id="giftNote"
+              name="giftNote"
+              rows={2}
+              maxLength={300}
+              placeholder="¡Feliz cumple! Con todo mi cariño."
+              className="border-input bg-background rounded-md border px-3 py-2 text-sm"
+            />
+          </div>
+        ) : null}
       </div>
+
+      {/* Sin tildar de entrada y con el texto completo al lado: un permiso
+          pre-aceptado no es un permiso. Lo que se guarda es la respuesta, no
+          la ausencia de respuesta (ver `orders.marketing_opt_in`). */}
+      <label className="border-border flex cursor-pointer items-start gap-3 rounded-lg border p-3 text-sm">
+        <input
+          type="checkbox"
+          name="marketingOptIn"
+          checked={marketingOptIn}
+          onChange={(event) => setMarketingOptIn(event.target.checked)}
+          className="mt-1"
+        />
+        <span>
+          <span className="font-medium">Quiero recibir novedades y promociones</span>
+          <span className="text-muted-foreground block text-xs">
+            Te escribimos al WhatsApp que pusiste arriba, sólo por ofertas y cosas nuevas. Nunca
+            por este pedido —eso te llega igual— y tu número no se lo pasamos a nadie. Pedinos que
+            te saquemos cuando quieras.
+          </span>
+        </span>
+      </label>
+
+      {/* Lo que el servidor encontró al re-preciar. Sin esto, un carrito con
+          stock parcial mostraba un total más chico que el carrito —el
+          re-precio recorta la cantidad a lo que hay— sin decir por qué, y el
+          error recién aparecía al confirmar. */}
+      {currentQuote && currentQuote.issues.length > 0 ? (
+        <ul className="border-border bg-muted/40 space-y-1 rounded-lg border p-3 text-xs">
+          {currentQuote.issues.map((issue) => (
+            <li key={`${issue.type}-${issue.variantId}`}>{describeIssue(issue)}</li>
+          ))}
+        </ul>
+      ) : null}
+
+      <div className="border-border grid gap-1 border-t pt-4 text-sm">
+        <div className="flex items-center justify-between">
+          <span className="text-muted-foreground">Subtotal (IVA incluido)</span>
+          <span className="tabular-nums">{formatGs(currentQuote?.subtotalPyg ?? subtotal)}</span>
+        </div>
+
+        {currentQuote?.shipping ? (
+          <>
+            <div className="flex items-center justify-between">
+              <span className="text-muted-foreground">
+                Envío
+                {currentQuote.shipping.match === "exacta"
+                  ? ` — ${currentQuote.shipping.zoneName}`
+                  : ""}
+                {isQuoting ? "…" : ""}
+              </span>
+              <span className="tabular-nums">
+                {currentQuote.shipping.isFree
+                  ? "Gratis"
+                  : formatGs(currentQuote.shipping.shippingPyg)}
+              </span>
+            </div>
+            <div className="flex items-center justify-between pt-1">
+              <span className="font-medium">Total</span>
+              <span className="text-base font-semibold tabular-nums">
+                {formatGs(currentQuote.totalPyg ?? 0)}
+              </span>
+            </div>
+          </>
+        ) : null}
+      </div>
+
+      {/* La cotización es para mostrar. El total que se cobra lo recalcula
+          `createOrder` desde la DB cuando se confirma, así que decirlo acá no
+          es una nota al pie: es lo que pasa. */}
       <p className="text-muted-foreground -mt-3 text-xs">
-        El envío se calcula según tu ciudad y se confirma en la próxima pantalla.
+        {!currentQuote?.shipping
+          ? "Poné tu ciudad y te calculamos el envío antes de que confirmes."
+          : currentQuote.shipping.match === "mas_cara"
+            ? `No encontramos tu ciudad entre nuestras zonas, así que te cotizamos la tarifa más alta (${currentQuote.shipping.zoneName}). Escribinos por WhatsApp y lo vemos.`
+            : // `exacta` y `sin_zonas` comparten esta línea: en la segunda el
+              // envío es ₲0 de verdad, así que no hay nada que aclararle a
+              // quien compra (el que tiene que configurar zonas es el dueño).
+              "El total se confirma al crear tu pedido."}
       </p>
+
+      {/* Con la ciudad puesta el número es el de su zona; sin ella, el que
+          dejó la revalidación del carrito, que se dibuja aclarado. */}
+      <FreeShippingBar
+        progress={currentQuote?.freeShipping ?? freeShipping}
+        subtotalPyg={currentQuote?.subtotalPyg ?? subtotal}
+      />
 
       {/* La duda de "¿qué va a ver quien reciba el paquete?" aparece justo acá,
           con el dedo sobre el botón de confirmar. Decirlo antes del click es lo
