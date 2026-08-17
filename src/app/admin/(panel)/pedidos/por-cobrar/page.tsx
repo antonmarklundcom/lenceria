@@ -70,7 +70,7 @@ export default async function PorCobrarPage() {
 
       {rows.length === 0 ? (
         <p className="text-muted-foreground border-border mt-6 rounded-xl border border-dashed p-8 text-center text-sm">
-          No hay pedidos esperando pago. 🎉
+          No hay pedidos esperando pago.
         </p>
       ) : (
         <ul className="mt-4 grid gap-3">
@@ -125,6 +125,7 @@ function RecoveryLink({ order }: { order: RecoverableOrderRow }) {
         href={href}
         target="_blank"
         rel="noopener noreferrer"
+        referrerPolicy="no-referrer"
         className="text-sm font-medium underline"
       >
         Escribirle por WhatsApp →
