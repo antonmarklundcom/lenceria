@@ -6,10 +6,6 @@ on:
   pull_request:
     branches: [main]
 
-concurrency:
-  group: ci-${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
-
 jobs:
   checks:
     runs-on: ubuntu-latest
@@ -25,9 +21,9 @@ jobs:
         image: mysql:8
         env:
           MYSQL_ROOT_PASSWORD: root
-          MYSQL_DATABASE: lenceria
-          MYSQL_USER: lenceria
-          MYSQL_PASSWORD: lenceria
+          MYSQL_DATABASE: ecom
+          MYSQL_USER: ecom
+          MYSQL_PASSWORD: ecom
         ports:
           - 3306:3306
         options: >-
@@ -37,8 +33,8 @@ jobs:
           --health-retries=20
 
     env:
-      DATABASE_URL: mysql://root:root@127.0.0.1:3306/lenceria
-      TEST_DATABASE_URL: mysql://root:root@127.0.0.1:3306/lenceria_test
+      DATABASE_URL: mysql://root:root@127.0.0.1:3306/ecom
+      TEST_DATABASE_URL: mysql://root:root@127.0.0.1:3306/ecom_test
       SESSION_SECRET: ci-session-secret-de-al-menos-32-caracteres
       # Sin esto, `next build` avisa que no puede resolver la URL absoluta de
       # la imagen de Open Graph y cae en localhost. En la tienda real lo
@@ -60,10 +56,6 @@ jobs:
           cache: pnpm
 
       - run: pnpm install --frozen-lockfile
-
-      - run: pnpm typecheck
-
-      - run: pnpm lint
 
       # `POST /api/setup/init` deploya **migraciones**, no `schema.ts`: en el
       # servidor no hay drizzle-kit y `db:push` no corre. O sea que una columna
@@ -88,7 +80,49 @@ jobs:
 
           echo "✓ schema.ts y drizzle/ están al día"
 
+      - run: pnpm typecheck
+
+      - run: pnpm lint
+
       - run: pnpm test
         timeout-minutes: 8
 
       - run: pnpm build
+
+  # El pin de "packageManager" es lo que hace reproducible el install, acá y en
+  # el contenedor de build de Hostinger. El problema del pin es que envejece
+  # callado: el día que Hostinger levanta su Corepack a la major siguiente, el
+  # lockfile deja de instalar y el error aparece en el deploy, no acá.
+  #
+  # Este job no actualiza nada —el pin se sube a mano, con su lockfile— pero
+  # falla el PR cuando la major pineada quedó atrás. Preferimos ese rojo, que
+  # se lee en 10 segundos, al de Hostinger.
+  pnpm-al-dia:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: La major de pnpm pineada sigue siendo la última
+        run: |
+          set -euo pipefail
+
+          pineado=$(node -p "require('./package.json').packageManager.replace(/^pnpm@/, '')")
+          ultimo=$(curl -fsS --retry 3 --retry-delay 2 https://registry.npmjs.org/pnpm/latest \
+            | node -p "JSON.parse(require('fs').readFileSync(0, 'utf8')).version")
+
+          major_pineado=${pineado%%.*}
+          major_ultimo=${ultimo%%.*}
+
+          echo "packageManager: pnpm@$pineado (major $major_pineado)"
+          echo "registry:       pnpm@$ultimo (major $major_ultimo)"
+
+          # Sólo la major. Cada patch de pnpm rompería todos los PRs abiertos y
+          # el job se terminaría ignorando, que es peor que no tenerlo.
+          if [ "$major_pineado" -lt "$major_ultimo" ]; then
+            echo "::error::pnpm@$pineado está una major atrás de pnpm@$ultimo. Actualizá \"packageManager\" en package.json, corré \`pnpm install\` para regenerar el lockfile y commiteá los dos."
+            exit 1
+          fi
+
+          echo "✓ al día"

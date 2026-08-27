@@ -2,7 +2,7 @@ import path from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
-import { listSourceFiles, readCode } from '../helpers/source';
+import { exportedAsyncFunctions, listSourceFiles, readCode } from '../helpers/source';
 
 /**
  * Guardarraíl del PR #4 (PLAN.md 4.9): **toda** server action de admin
@@ -31,73 +31,10 @@ async function adminActionModules(): Promise<string[]> {
   );
 }
 
-/**
- * Extrae el cuerpo de cada `export async function` del módulo.
- *
- * Cuenta llaves para encontrar el cierre en vez de usar una regex sobre todo
- * el archivo: si no, una acción sin guard "pasa" porque la de al lado sí lo
- * tiene.
- */
-/**
- * Encuentra la llave que abre el cuerpo, saltándose los parámetros y el tipo
- * de retorno.
- *
- * Tomar la primera `{` que aparece no sirve: en
- * `): Promise<AdminActionResult<{ productId: number }>> {` esa llave es la del
- * tipo genérico, y el cuerpo extraído queda vacío — o sea, una acción sin
- * guard pasaría el test.
- *
- * @param from índice justo después del `(` que abre los parámetros.
- */
-function findBodyStart(code: string, from: number): number {
-  let parens = 1;
-  let index = from;
-  while (index < code.length && parens > 0) {
-    if (code[index] === '(') parens += 1;
-    else if (code[index] === ')') parens -= 1;
-    index += 1;
-  }
-
-  // Ya pasamos los parámetros: ahora el tipo de retorno. La `{` del cuerpo es
-  // la primera que aparece fuera de todo `<...>`.
-  let angles = 0;
-  for (; index < code.length; index += 1) {
-    const char = code[index];
-    if (char === '<') angles += 1;
-    else if (char === '>') angles = Math.max(0, angles - 1);
-    else if (char === '{' && angles === 0) return index;
-  }
-  return -1;
-}
-
-function exportedActions(code: string): Array<{ name: string; body: string }> {
-  const actions: Array<{ name: string; body: string }> = [];
-  const signature = /export\s+async\s+function\s+(\w+)\s*\(/g;
-
-  let match: RegExpExecArray | null;
-  while ((match = signature.exec(code)) !== null) {
-    const name = match[1];
-    if (!name) continue;
-
-    const bodyStart = findBodyStart(code, signature.lastIndex);
-    if (bodyStart === -1) continue;
-
-    let depth = 0;
-    let end = bodyStart;
-    for (let i = bodyStart; i < code.length; i += 1) {
-      if (code[i] === '{') depth += 1;
-      else if (code[i] === '}') {
-        depth -= 1;
-        if (depth === 0) {
-          end = i;
-          break;
-        }
-      }
-    }
-    actions.push({ name, body: code.slice(bodyStart, end + 1) });
-  }
-  return actions;
-}
+// La extracción de cuerpos (llaves contadas, genéricos del tipo de retorno
+// salteados) vive en `tests/helpers/source.ts` y la comparten los tres tests
+// que grepean cuerpos de funciones.
+const exportedActions = exportedAsyncFunctions;
 
 describe('server actions de admin', () => {
   it('hay acciones de admin para revisar (el test no se quedó sin objetivo)', async () => {
@@ -118,7 +55,7 @@ describe('server actions de admin', () => {
     for (const file of await adminActionModules()) {
       const code = await readCode(file);
       for (const action of exportedActions(code)) {
-        if (!/require(Admin|Owner)Session\s*\(/.test(action.body)) {
+        if (!/require(Admin|Staff|Owner)Session\s*\(/.test(action.body)) {
           offenders.push(`${file} → ${action.name}()`);
         }
       }
@@ -133,7 +70,7 @@ describe('server actions de admin', () => {
     for (const file of await adminActionModules()) {
       const code = await readCode(file);
       for (const action of exportedActions(code)) {
-        const guardAt = action.body.search(/require(Admin|Owner)Session\s*\(/);
+        const guardAt = action.body.search(/require(Admin|Staff|Owner)Session\s*\(/);
         const parseAt = action.body.search(/\.safeParse\s*\(|formData\.get\s*\(/);
         // Validar la entrada antes de saber quién llama no rompe nada por sí
         // solo, pero es el orden en el que después se cuela una consulta a la
@@ -159,5 +96,129 @@ describe('server actions de admin', () => {
     );
 
     expect(unguarded).toEqual([]);
+  });
+});
+
+/**
+ * La matriz de PLAN.md PR B, clavada acción por acción.
+ *
+ * El test de arriba pide "algún guard"; éste pide **el que corresponde**.
+ * Sin esto, cambiar `requireOwnerSession` por `requireAdminSession` en la
+ * acción de reembolsos —un carácter de diferencia en un merge apurado— pasa
+ * CI verde y le devuelve a cualquier `vendedor` el poder de registrar plata
+ * que sale.
+ *
+ * Agregar una acción obliga a decidir acá quién la puede llamar: una acción
+ * que no está en esta tabla falla el test. Esa es la idea.
+ */
+const GUARD_ESPERADO: Readonly<Record<string, 'Admin' | 'Staff' | 'Owner'>> = {
+  // Los tres roles avanzan pedidos; qué destino puede cada uno lo decide
+  // `assertCanTransitionTo` adentro, no el guard del módulo.
+  advanceOrder: 'Admin',
+
+  // Comprobantes: decidir si una transferencia entró es plata.
+  decideReceipt: 'Staff',
+  previewReceipt: 'Staff',
+
+  // Recuperar un pedido con un pago huérfano es operación; devolverlo es
+  // plata que sale y no se delega.
+  retryPaymentRevival: 'Staff',
+  markPaymentRefunded: 'Owner',
+
+  // Catálogo y stock: la operación diaria, sin el mostrador.
+  saveProduct: 'Staff',
+  saveProductVariant: 'Staff',
+  adjustVariantStock: 'Staff',
+  uploadProductImage: 'Staff',
+  removeProductImage: 'Staff',
+
+  // Un CSV es la base del comercio en un archivo que sale del edificio.
+  exportOrdersCsv: 'Owner',
+  exportProductsCsv: 'Owner',
+  // La lista de gente que consintió recibir mensajes: lo que se lleva quien
+  // se va a la competencia.
+  exportMarketingOptInsCsv: 'Owner',
+
+  // Repartir accesos es repartir todo lo de arriba: quien puede crear un
+  // usuario puede crearse un segundo dueño.
+  crearUsuario: 'Owner',
+  cambiarEstadoUsuario: 'Owner',
+  cambiarRolUsuario: 'Owner',
+  resetearPassword: 'Owner',
+
+  // Un cupón es plata que la tienda resigna en cada venta, y uno mal puesto se
+  // descubre cuando ya lo usaron cien personas.
+  crearCupon: 'Owner',
+  editarCupon: 'Owner',
+  cambiarEstadoCupon: 'Owner',
+
+  // Apagar una categoría le saca de la vidriera también a sus productos, y
+  // cambiarle el slug rompe todas las URLs de esa sección que anden dando
+  // vueltas. Un encargado no tiene por qué poder vaciar la tienda de un clic.
+  crearCategoria: 'Owner',
+  editarCategoria: 'Owner',
+  cambiarEstadoCategoria: 'Owner',
+  moverCategoria: 'Owner',
+
+  // A qué cuenta transfieren las compradoras. Quien lo puede cambiar puede
+  // desviar la facturación entera a otra cuenta sin dejar un pedido raro ni un
+  // log de plata: la tienda sigue andando igual y el dueño se entera cuando
+  // mira su banco. No se delega.
+  guardarDatosBancarios: 'Owner',
+  subirQrBancario: 'Owner',
+  quitarQrBancario: 'Owner',
+
+  // El flete es plata que entra en cada pedido, y el error se cobra en
+  // silencio: no rompe nada, no deja log, y se descubre al cerrar el mes.
+  crearZonaEnvio: 'Owner',
+  editarZonaEnvio: 'Owner',
+  cambiarEstadoZonaEnvio: 'Owner',
+  moverZonaEnvio: 'Owner',
+};
+
+describe('cada acción llama al guard que le corresponde', () => {
+  it('ninguna acción quedó fuera de la matriz', async () => {
+    const sinDeclarar: string[] = [];
+
+    for (const file of await adminActionModules()) {
+      for (const action of exportedActions(await readCode(file))) {
+        if (!(action.name in GUARD_ESPERADO)) sinDeclarar.push(`${file} → ${action.name}()`);
+      }
+    }
+
+    expect(sinDeclarar).toEqual([]);
+  });
+
+  it('la matriz no quedó con acciones que ya no existen', async () => {
+    const existentes = new Set<string>();
+    for (const file of await adminActionModules()) {
+      for (const action of exportedActions(await readCode(file))) existentes.add(action.name);
+    }
+
+    const fantasmas = Object.keys(GUARD_ESPERADO).filter((name) => !existentes.has(name));
+    expect(fantasmas).toEqual([]);
+  });
+
+  it('el guard de cada acción es exactamente el declarado', async () => {
+    const offenders: string[] = [];
+
+    for (const file of await adminActionModules()) {
+      for (const action of exportedActions(await readCode(file))) {
+        const esperado = GUARD_ESPERADO[action.name];
+        if (!esperado) continue;
+
+        const usados = [...action.body.matchAll(/require(Admin|Staff|Owner)Session\s*\(/g)].map(
+          (match) => match[1],
+        );
+
+        if (usados.length !== 1 || usados[0] !== esperado) {
+          offenders.push(
+            `${file} → ${action.name}(): esperaba require${esperado}Session, encontré [${usados.join(', ') || 'ninguno'}]`,
+          );
+        }
+      }
+    }
+
+    expect(offenders).toEqual([]);
   });
 });

@@ -7,9 +7,11 @@ import { refundPayment, retryOrderRevival } from "@/domain/payment-recovery";
 import {
   actorLabel,
   adminActionError,
-  requireAdminSession,
+  requireOwnerSession,
+  requireStaffSession,
   type AdminActionResult,
 } from "@/lib/admin-guard";
+import { t } from "@/i18n";
 
 /**
  * Las dos acciones sobre "Pagos sin pedido vivo" (ARCH.md §4.1).
@@ -37,16 +39,17 @@ export async function retryPaymentRevival(
   input: unknown,
 ): Promise<AdminActionResult<{ orderNumber: string; changed: boolean }>> {
   try {
-    const actor = await requireAdminSession();
+    const actor = await requireStaffSession();
 
     const parsed = PaymentSchema.safeParse(input);
     if (!parsed.success) {
-      return { ok: false, error: "No entendí de qué pago se trata." };
+      return { ok: false, error: t("adminError.noEntendi.pago") };
     }
 
     const result = await retryOrderRevival({
       paymentId: parsed.data.paymentId,
       actor: actorLabel(actor),
+      actorUserId: actor.userId,
     });
 
     revalidatePayment(result.orderId);
@@ -58,21 +61,29 @@ export async function retryPaymentRevival(
 
 const RefundSchema = PaymentSchema.extend({ reason: z.string().trim().max(500) });
 
+/**
+ * Registrar una devolución. **Sólo el dueño** (ARCH.md §1).
+ *
+ * Es la única acción del panel que reconoce plata que sale, y ningún otro
+ * control la revisa después: quien la aprieta decide solo. Hasta este PR la
+ * podía hacer cualquier `staff`.
+ */
 export async function markPaymentRefunded(
   input: unknown,
 ): Promise<AdminActionResult<{ orderNumber: string; changed: boolean }>> {
   try {
-    const actor = await requireAdminSession();
+    const actor = await requireOwnerSession();
 
     const parsed = RefundSchema.safeParse(input);
     if (!parsed.success) {
-      return { ok: false, error: "Faltan datos para registrar la devolución." };
+      return { ok: false, error: t("adminError.noEntendi.devolucion") };
     }
 
     const result = await refundPayment({
       paymentId: parsed.data.paymentId,
       reason: parsed.data.reason,
       actor: actorLabel(actor),
+      actorUserId: actor.userId,
     });
 
     revalidatePayment(result.orderId);

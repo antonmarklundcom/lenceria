@@ -41,8 +41,18 @@ const TABLES = [
   'products',
   'categories',
   'shipping_zones',
+  // Antes que `users`, que la referencia con FK (updated_by).
+  'bank_details',
   'users',
+  // Antes que `customers`, que la referencia con FK.
+  'login_tokens',
+  'customers',
+  // Después de `orders`, que la referencia con FK.
+  'coupons',
   'counters',
+  // La marca de `POST /api/setup/init`: sin vaciarla, el segundo test de esa
+  // ruta arranca creyendo que la tienda ya se inicializó.
+  'setup_state',
 ];
 
 /**

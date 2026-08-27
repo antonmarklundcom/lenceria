@@ -16,9 +16,10 @@ import { CLOUDINARY_PRODUCTS_FOLDER, cloudinary } from "@/lib/cloudinary";
 import {
   actorLabel,
   adminActionError,
-  requireAdminSession,
+  requireStaffSession,
   type AdminActionResult,
 } from "@/lib/admin-guard";
+import { t } from "@/i18n";
 
 /**
  * Alta y edición del catálogo (PLAN.md 4.6).
@@ -33,7 +34,7 @@ const ProductSchema = z.object({
     .string()
     .trim()
     .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "El slug va en minúsculas y con guiones: remera-azul"),
-  name: z.string().trim().min(2, "Poné el nombre del producto").max(200),
+  name: z.string().trim().min(2, t("adminForm.nombreProducto")).max(200),
   description: z.string().trim().max(5000).optional(),
   categoryId: z.number().int().positive(),
   brand: z.string().trim().max(120).optional(),
@@ -47,7 +48,7 @@ export async function saveProduct(
   input: unknown,
 ): Promise<AdminActionResult<{ productId: number }>> {
   try {
-    await requireAdminSession();
+    await requireStaffSession();
 
     const parsed = ProductSchema.safeParse(input);
     if (!parsed.success) {
@@ -84,18 +85,18 @@ export async function saveProduct(
 const VariantSchema = z.object({
   productId: z.number().int().positive(),
   variantId: z.number().int().positive().optional(),
-  sku: z.string().trim().min(1, "Falta el SKU").max(64),
-  label: z.string().trim().min(1, "Poné una etiqueta: Talle M, 500 ml…").max(120),
+  sku: z.string().trim().min(1, t("adminForm.sku")).max(64),
+  label: z.string().trim().min(1, t("adminForm.etiquetaVariante")).max(120),
   // Enteros en guaraníes. Nada de decimales: el guaraní no tiene céntimos y un
   // float acá es el principio de un total que no cuadra.
-  pricePyg: z.number().int("El precio va en guaraníes enteros").nonnegative(),
+  pricePyg: z.number().int(t("adminForm.precioEntero")).nonnegative(),
   compareAtPyg: z.number().int().nonnegative().nullable().optional(),
   isActive: z.boolean(),
 });
 
 export async function saveProductVariant(input: unknown): Promise<AdminActionResult> {
   try {
-    await requireAdminSession();
+    await requireStaffSession();
 
     const parsed = VariantSchema.safeParse(input);
     if (!parsed.success) {
@@ -120,10 +121,10 @@ export async function saveProductVariant(input: unknown): Promise<AdminActionRes
 
 const AdjustSchema = z.object({
   variantId: z.number().int().positive(),
-  delta: z.number().int().refine((value) => value !== 0, "El ajuste no puede ser cero"),
+  delta: z.number().int().refine((value) => value !== 0, t("adminForm.ajusteCero")),
   // El motivo es obligatorio acá y otra vez en el dominio: este mensaje es
   // para el formulario, el del dominio es la regla real.
-  reason: z.string().trim().min(4, "Escribí el motivo del ajuste"),
+  reason: z.string().trim().min(4, t("adminForm.motivoAjuste")),
   productId: z.number().int().positive().optional(),
 });
 
@@ -132,7 +133,7 @@ export async function adjustVariantStock(
   input: unknown,
 ): Promise<AdminActionResult<{ newOnHand: number }>> {
   try {
-    const actor = await requireAdminSession();
+    const actor = await requireStaffSession();
 
     const parsed = AdjustSchema.safeParse(input);
     if (!parsed.success) {
@@ -144,6 +145,7 @@ export async function adjustVariantStock(
       delta: parsed.data.delta,
       reason: parsed.data.reason,
       actor: actorLabel(actor),
+      actorUserId: actor.userId,
     });
 
     if (parsed.data.productId) revalidatePath(`/admin/productos/${parsed.data.productId}`);
@@ -164,16 +166,16 @@ export async function adjustVariantStock(
  */
 export async function uploadProductImage(formData: FormData): Promise<AdminActionResult> {
   try {
-    await requireAdminSession();
+    await requireStaffSession();
 
     const productId = Number(formData.get("productId"));
     if (!Number.isInteger(productId) || productId <= 0) {
-      return { ok: false, error: "Producto inválido." };
+      return { ok: false, error: t("adminError.productoInvalido") };
     }
 
     const file = formData.get("file");
     if (!(file instanceof File)) {
-      return { ok: false, error: "Elegí la foto." };
+      return { ok: false, error: t("adminError.elegiFoto") };
     }
 
     const content = Buffer.from(await file.arrayBuffer());
@@ -205,11 +207,11 @@ const RemoveImageSchema = z.object({
 
 export async function removeProductImage(input: unknown): Promise<AdminActionResult> {
   try {
-    await requireAdminSession();
+    await requireStaffSession();
 
     const parsed = RemoveImageSchema.safeParse(input);
     if (!parsed.success) {
-      return { ok: false, error: "Imagen inválida." };
+      return { ok: false, error: t("adminError.imagenInvalida") };
     }
 
     // Se borra sólo la fila. El archivo queda en Cloudinary a propósito: si

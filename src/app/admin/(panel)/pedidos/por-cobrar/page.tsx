@@ -2,14 +2,16 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 import { OrderStatusBadge } from "@/components/admin/order-status-badge";
-import { PAYMENT_METHOD_LABEL } from "@/components/admin/labels";
+import { PAYMENT_METHOD_LABEL } from "@/lib/order-labels";
 import { listOrdersToRecover, type RecoverableOrderRow } from "@/domain/admin-orders";
 import { buyerWaLink, recoveryMessage } from "@/domain/order-messages";
-import { comercioDatosBancarios } from "@/lib/comercio";
+import { getDatosBancarios, type DatosBancarios } from "@/lib/comercio";
 import { formatGs } from "@/lib/money";
 import { formatDateTimePY } from "@/lib/py";
+import { requireCapabilityPage } from "@/lib/admin-guard";
+import { t, tPlural } from "@/i18n";
 
-export const metadata: Metadata = { title: "Por cobrar" };
+export const metadata: Metadata = { title: t("panel.porCobrar.meta") };
 
 export const dynamic = "force-dynamic";
 
@@ -30,47 +32,51 @@ export const dynamic = "force-dynamic";
  * (ver `listOrdersToRecover`).
  */
 export default async function PorCobrarPage() {
-  const { rows, total } = await listOrdersToRecover();
-  const banco = comercioDatosBancarios();
+  await requireCapabilityPage("pedidos.cobrar");
+
+  const [{ rows, total }, banco] = await Promise.all([
+    listOrdersToRecover(),
+    // Una sola vez para toda la pantalla y no una por fila: `recoveryMessage`
+    // los recibe como parámetro desde el PR T (ver `order-messages.ts`).
+    getDatosBancarios(),
+  ]);
 
   const vencidos = rows.filter((row) => row.status === "vencido").length;
 
   return (
     <div>
       <Link href="/admin/pedidos" className="text-muted-foreground text-sm">
-        ← Pedidos
+        {t("panel.porCobrar.volver")}
       </Link>
 
       <div className="mt-2 flex flex-wrap items-baseline justify-between gap-2">
-        <h1 className="text-xl font-semibold tracking-tight">Por cobrar</h1>
+        <h1 className="text-xl font-semibold tracking-tight">{t("panel.porCobrar.titulo")}</h1>
         <p className="text-muted-foreground text-sm tabular-nums">
-          {total} {total === 1 ? "pedido" : "pedidos"}
-          {vencidos > 0 ? ` · ${vencidos} vencido${vencidos === 1 ? "" : "s"}` : ""}
+          {tPlural("panel.pedidos.cuenta", total)}
+          {vencidos > 0 ? tPlural("panel.porCobrar.vencidos", vencidos) : ""}
         </p>
       </div>
       <p className="text-muted-foreground mt-1 text-sm">
-        Pendientes de pago, vencidos y con el comprobante rechazado, del más viejo al más nuevo.
-        El mensaje ya lleva los datos para transferir, el total y el link del pedido.
+        {t("panel.porCobrar.bajada")}
       </p>
 
       {/* Un listado cortado que no dice que está cortado es peor que uno
           paginado: el dueño llega al final y cree que terminó. */}
       {rows.length < total ? (
         <p className="text-muted-foreground mt-2 text-sm">
-          Mostramos los {rows.length} más viejos de {total}. Cobrá estos y volvé a entrar.
+          {t("panel.porCobrar.cortado", { n: rows.length, total })}
         </p>
       ) : null}
 
       {!banco ? (
         <p className="border-border bg-muted/40 mt-4 rounded-lg border p-3 text-sm">
-          Faltan los datos bancarios (<code>BANCO_*</code> en el entorno): el mensaje sale sin la
-          parte de la transferencia. Cargalos y el botón queda completo.
+          {t("panel.porCobrar.sinBanco")}
         </p>
       ) : null}
 
       {rows.length === 0 ? (
         <p className="text-muted-foreground border-border mt-6 rounded-xl border border-dashed p-8 text-center text-sm">
-          No hay pedidos esperando pago.
+          {t("panel.porCobrar.sinResultados")}
         </p>
       ) : (
         <ul className="mt-4 grid gap-3">
@@ -93,7 +99,7 @@ export default async function PorCobrarPage() {
                 </p>
               </Link>
 
-              <RecoveryLink order={order} />
+              <RecoveryLink order={order} banco={banco} />
             </li>
           ))}
         </ul>
@@ -107,16 +113,18 @@ export default async function PorCobrarPage() {
  * El número lo cuenta MySQL en la misma consulta: acá sólo se conjuga.
  */
 function Antiguedad({ days }: { days: number }) {
-  if (days <= 0) return <>hoy</>;
-  return (
-    <>
-      hace {days} {days === 1 ? "día" : "días"}
-    </>
-  );
+  if (days <= 0) return <>{t("panel.porCobrar.hoy")}</>;
+  return <>{tPlural("panel.porCobrar.antiguedad", days)}</>;
 }
 
-function RecoveryLink({ order }: { order: RecoverableOrderRow }) {
-  const href = buyerWaLink(order, recoveryMessage(order));
+function RecoveryLink({
+  order,
+  banco,
+}: {
+  order: RecoverableOrderRow;
+  banco: DatosBancarios | null;
+}) {
+  const href = buyerWaLink(order, recoveryMessage(order, banco));
   if (!href) return null;
 
   return (
@@ -128,7 +136,7 @@ function RecoveryLink({ order }: { order: RecoverableOrderRow }) {
         referrerPolicy="no-referrer"
         className="text-sm font-medium underline"
       >
-        Escribirle por WhatsApp →
+        {t("panel.porCobrar.escribir")}
       </a>
     </div>
   );

@@ -111,11 +111,64 @@ export const LOGIN_LIMIT = 8;
 export const LOGIN_WINDOW_MS = 15 * 60 * 1000;
 
 /**
+ * Límite del login y del registro de clientes (PLAN.md FASE 2, PR E).
+ *
+ * Más holgado que el del panel y por un motivo concreto: del otro lado no hay
+ * una contraseña que abra todos los pedidos del comercio, sino la de una
+ * compradora que ve los suyos. Y la que se equivoca acá es una clienta con el
+ * carrito lleno — bloquearla de más es perder la venta, que es el daño que
+ * este límite tendría que estar evitando.
+ *
+ * Sigue siendo mucho más apretado que "sin límite": alcanza para que nadie
+ * pruebe contraseñas en volumen, que es lo único que se está cuidando.
+ */
+export const CUSTOMER_LOGIN_LIMIT = 10;
+export const CUSTOMER_LOGIN_WINDOW_MS = 15 * 60 * 1000;
+
+/**
+ * Límite del alta de cuenta. Más apretado que el login: registrarse es un
+ * gesto que se hace una vez, y el volumen sólo puede ser automático.
+ */
+export const CUSTOMER_REGISTER_LIMIT = 5;
+export const CUSTOMER_REGISTER_WINDOW_MS = 60 * 60 * 1000;
+
+/**
+ * Límite del pedido de código de acceso (PLAN.md FASE 2, PR F).
+ *
+ * El más apretado de todos los de cliente, y por un motivo que no es la
+ * seguridad de la cuenta: **cada intento manda un WhatsApp**. Un script sin
+ * freno acá no adivina nada, pero le llena el teléfono de mensajes a una
+ * persona real y le gasta la cuota de Meta al comercio. Por eso el límite es
+ * por teléfono además de por IP: el daño se le hace al dueño del número.
+ */
+export const OTP_REQUEST_LIMIT = 3;
+export const OTP_REQUEST_WINDOW_MS = 15 * 60 * 1000;
+
+/**
+ * Límite del canje del código. Seis dígitos son un millón de combinaciones y
+ * el código vive diez minutos: sin este límite, un script las prueba todas
+ * mucho antes de que venza.
+ */
+export const OTP_VERIFY_LIMIT = 6;
+export const OTP_VERIFY_WINDOW_MS = 15 * 60 * 1000;
+
+/**
  * Límite del cron: la ruta es pública y compara un secreto, así que sin esto
  * es un oráculo para adivinarlo a fuerza de intentos.
  */
 export const CRON_LIMIT = 30;
 export const CRON_WINDOW_MS = 60 * 1000;
+
+/**
+ * Límite de la ruta de setup (DEPLOY.md §4).
+ *
+ * Mucho más apretado que el del cron y a propósito: del otro lado hay un
+ * secreto que corre migraciones y crea al dueño de la tienda, y el uso legítimo
+ * es **una** llamada por deploy hecha por una persona con un curl. Cualquier
+ * volumen mayor que esto es alguien probando secretos.
+ */
+export const SETUP_LIMIT = 5;
+export const SETUP_WINDOW_MS = 10 * 60 * 1000;
 
 /**
  * Límite del webhook de Pagopar (PLAN.md 5.2).

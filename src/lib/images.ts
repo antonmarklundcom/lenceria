@@ -12,7 +12,7 @@ const CLOUD_NAME = process.env.CLOUDINARY_CLOUD_NAME;
 /** Transformaciones por defecto: formato y calidad los decide Cloudinary. */
 const DEFAULT_TRANSFORMS = "f_auto,q_auto";
 
-export type ImageSize = "thumb" | "card" | "detail" | "og";
+export type ImageSize = "thumb" | "card" | "detail" | "og" | "hero" | "qr";
 
 /**
  * 1200×630 es la caja que esperan WhatsApp, Instagram y Facebook. `c_fill` y
@@ -27,6 +27,22 @@ const SIZE_TRANSFORMS: Record<ImageSize, string> = {
   card: "c_fill,w_600,h_600",
   detail: "c_fit,w_1200,h_1200",
   og: `c_fill,w_${OG_IMAGE_SIZE.width},h_${OG_IMAGE_SIZE.height}`,
+  /**
+   * La portada de la home (PR O). Ancha y baja, y con `c_fill` para que una
+   * foto vertical no salga con franjas: es la primera pantalla y ahí una
+   * imagen deformada o con bordes vacíos se lee como tienda descuidada.
+   *
+   * 1600 de ancho y no 2400: el techo real de este template es una pantalla de
+   * escritorio común, y en el celular paraguayo cada 100 kB de portada son
+   * segundos antes de ver un producto (ARCH.md §6).
+   */
+  hero: "c_fill,w_1600,h_600",
+  /**
+   * El QR del SPI (PR T). `c_fit` y no `c_fill`: recortar un QR lo rompe —
+   * deja de escanear— y ahí no hay "se ve un poco mal", hay una compradora
+   * parada frente a la app del banco que no puede pagar.
+   */
+  qr: "c_fit,w_600,h_600",
 };
 
 /**
@@ -51,16 +67,25 @@ export function productImageUrl(
  * foto", no un producto de mentira disfrazado de real.
  */
 const CATEGORY_PLACEHOLDERS = new Set([
-  "corpinos",
-  "bombachas",
-  "conjuntos",
-  "body",
-  "pijamas",
-  "medias",
+  "electronica",
+  "hogar-y-cocina",
+  "moda",
+  "deportes",
 ]);
 
 /** `categoryPlaceholderSrc("moda")` → `/placeholders/moda.svg`. */
 export function categoryPlaceholderSrc(categorySlug: string): string {
   const slug = CATEGORY_PLACEHOLDERS.has(categorySlug) ? categorySlug : "generico";
   return `/placeholders/${slug}.svg`;
+}
+
+/**
+ * El QR SPI del comercio, subido desde `/admin/banco` (PLAN.md FASE 2, PR T).
+ *
+ * Es la misma URL pública de siempre con la transformación `qr`; existe como
+ * función propia para que quien la lee no tenga que acordarse de pasar el
+ * tamaño correcto, que en un QR no es cosmético (ver arriba).
+ */
+export function bankQrUrl(cloudinaryId: string | null | undefined): string | null {
+  return productImageUrl(cloudinaryId, "qr");
 }

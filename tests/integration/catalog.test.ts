@@ -9,35 +9,19 @@ import {
   getCategoryBySlug,
   getCategoryProducts,
   getProductBySlug,
+  getSitemapEntries,
   searchProducts,
 } from "@/db/queries";
+import { getDb } from "@/db";
+import { products } from "@/db/schema";
+import { eq } from "drizzle-orm";
+
 import { reserveStock } from "@/domain/stock";
 
-import { SEED_CATEGORIES, SEED_PRODUCTS } from "../../scripts/seed-data";
 import { TEST_DATABASE_URL, closeTestDb, hasTestDb, resetTables } from "../helpers/db";
 import { createOrder } from "../helpers/factories";
 
 const run = promisify(execFile);
-
-/**
- * Lo que se afirma sale del seed, no de una lista copiada.
- *
- * La versión anterior de este archivo tenía los slugs del catálogo de ejemplo
- * escritos a mano, así que cambiar el rubro de la tienda —justo lo que este
- * repo existe para hacer fácil— rompía nueve tests que no tenían nada que ver
- * con las queries. Lo que se prueba acá es el comportamiento de `queries.ts`;
- * el catálogo es apenas el material de prueba.
- */
-const cheapestOf = (product: (typeof SEED_PRODUCTS)[number]) =>
-  Math.min(...product.variants.map((variant) => variant.pricePyg));
-
-const productsIn = (categorySlug: string) =>
-  SEED_PRODUCTS.filter((product) => product.categorySlug === categorySlug);
-
-/** Una categoría con varios productos, para poder paginarla de verdad. */
-const PAGED = SEED_CATEGORIES.map((category) => category.slug).find(
-  (slug) => productsIn(slug).length >= 5
-)!;
 
 describe.skipIf(!hasTestDb)("queries del catálogo", () => {
   beforeAll(async () => {
@@ -53,24 +37,22 @@ describe.skipIf(!hasTestDb)("queries del catálogo", () => {
 
   it("lista las categorías activas en orden", async () => {
     const categories = await getCategories();
-    expect(categories.map((category) => category.slug)).toEqual(
-      [...SEED_CATEGORIES]
-        .sort((a, b) => a.position - b.position)
-        .map((category) => category.slug)
-    );
+    expect(categories.map((category) => category.slug)).toEqual([
+      "electronica",
+      "hogar-y-cocina",
+      "moda",
+      "deportes",
+    ]);
   });
 
   it("pagina la categoría", async () => {
-    const total = productsIn(PAGED).length;
-    const perPage = total - 1;
-
-    const first = await getCategoryProducts({ categorySlug: PAGED, perPage, page: 1 });
-    expect(first.products).toHaveLength(perPage);
-    expect(first.total).toBe(total);
+    const first = await getCategoryProducts({ categorySlug: "moda", perPage: 4, page: 1 });
+    expect(first.products).toHaveLength(4);
+    expect(first.total).toBe(6);
     expect(first.totalPages).toBe(2);
 
-    const second = await getCategoryProducts({ categorySlug: PAGED, perPage, page: 2 });
-    expect(second.products).toHaveLength(1);
+    const second = await getCategoryProducts({ categorySlug: "moda", perPage: 4, page: 2 });
+    expect(second.products).toHaveLength(2);
 
     const overlap = first.products.filter((product) =>
       second.products.some((other) => other.id === product.id)
@@ -80,7 +62,7 @@ describe.skipIf(!hasTestDb)("queries del catálogo", () => {
 
   it("ordena por precio mínimo de las variantes", async () => {
     const asc = await getCategoryProducts({
-      categorySlug: PAGED,
+      categorySlug: "deportes",
       sort: "precio-asc",
       perPage: 60,
     });
@@ -89,52 +71,64 @@ describe.skipIf(!hasTestDb)("queries del catálogo", () => {
     );
     expect([...prices]).toEqual([...prices].sort((a, b) => a - b));
 
-    const masCaro = [...productsIn(PAGED)].sort((a, b) => cheapestOf(b) - cheapestOf(a))[0]!;
     const desc = await getCategoryProducts({
-      categorySlug: PAGED,
+      categorySlug: "deportes",
       sort: "precio-desc",
       perPage: 60,
     });
-    expect(desc.products[0]?.slug).toBe(masCaro.slug);
+    expect(desc.products[0]?.slug).toBe("bicicleta-rodado-29");
   });
 
   it("filtra por rango de precio y por marca", async () => {
-    // Un techo que deja afuera al menos un producto de la categoría, para que
-    // el filtro tenga algo real que filtrar.
-    const enCategoria = productsIn(PAGED);
-    const techo = Math.min(...enCategoria.map(cheapestOf));
-
     const baratos = await getCategoryProducts({
-      categorySlug: PAGED,
-      maxPricePyg: techo,
+      categorySlug: "moda",
+      maxPricePyg: 100000,
       perPage: 60,
     });
-    expect(baratos.products.length).toBeLessThan(enCategoria.length);
     for (const product of baratos.products) {
-      expect(Math.min(...product.variants.map((v) => v.pricePyg))).toBeLessThanOrEqual(techo);
+      expect(Math.min(...product.variants.map((v) => v.pricePyg))).toBeLessThanOrEqual(100000);
     }
 
-    const marca = enCategoria[0]!.brand;
-    const brands = await getBrands(PAGED);
-    expect(brands).toContain(marca);
+    const brands = await getBrands("moda");
+    const basics = brands.find((facet) => facet.brand === "Basics PY");
+    expect(basics).toBeDefined();
 
-    const soloMarca = await getCategoryProducts({
-      categorySlug: PAGED,
-      brand: marca,
+    const soloBasics = await getCategoryProducts({
+      categorySlug: "moda",
+      brand: "Basics PY",
       perPage: 60,
     });
-    expect(soloMarca.products.every((product) => product.brand === marca)).toBe(true);
-    expect(soloMarca.total).toBe(soloMarca.products.length);
+    expect(soloBasics.products.every((product) => product.brand === "Basics PY")).toBe(true);
+    expect(soloBasics.total).toBe(soloBasics.products.length);
+
+    // El conteo del filtro tiene que ser el mismo número que va a aparecer al
+    // usarlo. Si se separan, "Basics PY (12)" lleva a una grilla de 3 y el
+    // filtro deja de ser confiable para siempre.
+    expect(basics?.total).toBe(soloBasics.total);
+  });
+
+  it("las marcas salen ordenadas y sin las de otras categorías", async () => {
+    const moda = await getBrands("moda");
+    const nombres = moda.map((facet) => facet.brand);
+
+    // Con `localeCompare("es")` y no con el `.sort()` pelado: el orden lo hace
+    // MySQL con `utf8mb4_general_ci`, donde la Ñ vale lo mismo que la N, así
+    // que "Ñande Moda" va antes que "Totto". El `.sort()` de JS compara code
+    // points y la manda al final — no es que la consulta esté desordenada, es
+    // que son dos alfabetos distintos.
+    expect(nombres).toEqual([...nombres].sort((a, b) => a.localeCompare(b, "es")));
+    expect(new Set(nombres).size).toBe(nombres.length);
+    expect(moda.every((facet) => facet.total > 0)).toBe(true);
+
+    const electronica = (await getBrands("electronica")).map((facet) => facet.brand);
+    expect(electronica).not.toContain("Basics PY");
   });
 
   it("trae la ficha del producto con sus variantes", async () => {
-    const seeded = SEED_PRODUCTS[0]!;
-    const product = await getProductBySlug(seeded.slug);
+    const product = await getProductBySlug("auriculares-bluetooth-tws");
     expect(product).not.toBeNull();
-    expect(product?.categorySlug).toBe(seeded.categorySlug);
-    expect(product?.variants.map((variant) => variant.label).sort()).toEqual(
-      seeded.variants.map((variant) => variant.label).sort()
-    );
+    expect(product?.categorySlug).toBe("electronica");
+    expect(product?.variants.map((variant) => variant.label).sort()).toEqual(["Blanco", "Negro"]);
     expect(product?.variants[0]?.available).toBeGreaterThan(0);
   });
 
@@ -144,9 +138,7 @@ describe.skipIf(!hasTestDb)("queries del catálogo", () => {
   });
 
   it("la disponibilidad del listado descuenta reservas vigentes", async () => {
-    // Un producto con stock de sobra, para que restarle 4 no lo deje en cero.
-    const holgado = SEED_PRODUCTS.find((product) => product.variants[0]!.onHand > 10)!.slug;
-    const before = await getProductBySlug(holgado);
+    const before = await getProductBySlug("power-bank-20000mah");
     const variant = before?.variants[0];
     expect(variant).toBeDefined();
 
@@ -155,24 +147,23 @@ describe.skipIf(!hasTestDb)("queries del catálogo", () => {
       expiresAt: new Date(Date.now() + 3600_000),
     });
 
-    const after = await getProductBySlug(holgado);
+    const after = await getProductBySlug("power-bank-20000mah");
     expect(after?.variants[0]?.available).toBe(variant!.available - 4);
   });
 
   it("busca por FULLTEXT y por prefijo", async () => {
-    const exact = await searchProducts("pijama");
-    expect(exact.map((product) => product.slug)).toContain("pijama-satinado-short");
+    const exact = await searchProducts("auriculares");
+    expect(exact.map((product) => product.slug)).toContain("auriculares-bluetooth-tws");
 
-    const prefix = await searchProducts("pijam");
-    expect(prefix.map((product) => product.slug)).toContain("pijama-satinado-short");
+    const prefix = await searchProducts("auricu");
+    expect(prefix.map((product) => product.slug)).toContain("auriculares-bluetooth-tws");
   });
 
   it("cae al LIKE con términos cortos que FULLTEXT ignora", async () => {
-    // "body" tiene 4 caracteres: entra justo en el mínimo de InnoDB, pero el
-    // fallback por LIKE es lo que salva a la categoría entera si algún día
-    // ft_min_word_len sube en el MySQL de Hostinger.
-    const bodies = await searchProducts("body");
-    expect(bodies.map((product) => product.slug)).toContain("body-encaje-manga-larga");
+    // "jean" tiene 4 caracteres: entra justo, pero el fallback es lo que
+    // salva a "gorra" y compañía si ft_min_word_len sube.
+    const jeans = await searchProducts("jean");
+    expect(jeans.map((product) => product.slug)).toContain("jean-slim-hombre");
   });
 
   it("no devuelve nada con términos vacíos o de una letra", async () => {
@@ -183,5 +174,36 @@ describe.skipIf(!hasTestDb)("queries del catálogo", () => {
 
   it("no rompe con caracteres especiales del modo booleano", async () => {
     await expect(searchProducts('remera +-><()~*"@')).resolves.toBeInstanceOf(Array);
+  });
+
+  /**
+   * El sitemap le enseña al buscador qué existe. Un producto despublicado que
+   * siga en el XML es una promesa de 404 —y peor, es publicar algo que el
+   * comercio decidió esconder—, así que el filtro tiene que ser el mismo de la
+   * vidriera y no una consulta paralela que se olvide de `published_at`.
+   */
+  it("el sitemap lista sólo lo que la vidriera muestra", async () => {
+    const antes = await getSitemapEntries();
+    expect(antes.categories.map((category) => category.slug)).toEqual([
+      "electronica",
+      "hogar-y-cocina",
+      "moda",
+      "deportes",
+    ]);
+    expect(antes.products.map((product) => product.slug)).toContain("jean-slim-hombre");
+
+    await getDb()
+      .update(products)
+      .set({ publishedAt: null })
+      .where(eq(products.slug, "jean-slim-hombre"));
+
+    const despues = await getSitemapEntries();
+    expect(despues.products.map((product) => product.slug)).not.toContain("jean-slim-hombre");
+    expect(despues.products).toHaveLength(antes.products.length - 1);
+
+    await getDb()
+      .update(products)
+      .set({ publishedAt: new Date() })
+      .where(eq(products.slug, "jean-slim-hombre"));
   });
 });

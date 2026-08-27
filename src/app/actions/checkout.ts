@@ -9,6 +9,8 @@ import { isPagoparConfigured, pagoparCheckoutUrl } from "@/domain/pagopar/config
 import { startPagoparCheckout } from "@/domain/pagopar/checkout";
 import { DOC_TYPES, PAYMENT_METHODS } from "@/db/schema";
 import type { CartIssue } from "@/lib/cart-issues";
+import { t } from "@/i18n";
+import { currentCustomer } from "@/lib/customer-session";
 import {
   CHECKOUT_LIMIT,
   CHECKOUT_WINDOW_MS,
@@ -34,7 +36,13 @@ const CheckoutActionSchema = z.object({
     .min(1, "El carrito está vacío"),
   customerName: z.string().trim().min(3, "Poné tu nombre completo").max(160),
   customerPhone: z.string().trim().min(6, "Falta tu WhatsApp").max(30),
-  customerEmail: z.string().trim().max(200).optional().or(z.literal("")),
+  // Opcional de verdad: vacío es lo normal y se guarda como NULL. Lo que no
+  // pasa es un email mal escrito — desde que el campo se renderiza (PR A.3)
+  // esta columna recibe lo que tipeó una persona, y un "juan@" guardado es un
+  // dato que nadie va a poder usar el día que el WhatsApp falle.
+  customerEmail: z
+    .union([z.literal(""), z.email("Revisá el email: parece incompleto").max(200)])
+    .optional(),
   docType: z.enum(DOC_TYPES),
   docNumber: z.string().trim().max(32).optional().or(z.literal("")),
   isConsumidorFinal: z.boolean(),
@@ -45,6 +53,8 @@ const CheckoutActionSchema = z.object({
   paymentMethod: z.enum(PAYMENT_METHODS),
   // Ausente = no se preguntó (un POST viejo, o el formulario sin la casilla).
   // No se completa con `false`: ver `orders.marketing_opt_in`.
+  /** El código tipeado. El descuento lo calcula el servidor (PR G). */
+  couponCode: z.string().trim().max(40).optional(),
   marketingOptIn: z.boolean().optional(),
   isGift: z.boolean().optional(),
   giftNote: z.string().trim().max(300).optional().or(z.literal("")),
@@ -72,27 +82,32 @@ export async function submitCheckout(input: unknown): Promise<CheckoutResult> {
   // transacción que reserva stock al final.
   const ip = clientIp(await headers());
   if (!rateLimit(`checkout:${ip}`, { limit: CHECKOUT_LIMIT, windowMs: CHECKOUT_WINDOW_MS }).ok) {
-    return {
-      ok: false,
-      error: "Demasiados intentos seguidos. Esperá unos minutos y probá de nuevo.",
-    };
+    return { ok: false, error: t("error.checkout.demasiadosIntentos") };
   }
 
   const parsed = CheckoutActionSchema.safeParse(input);
   if (!parsed.success) {
     const first = parsed.error.issues[0];
-    return { ok: false, error: first?.message ?? "Revisá los datos del formulario." };
+    return { ok: false, error: first?.message ?? t("error.checkout.revisaDatos") };
   }
 
   // El form ya lo oculta si no está configurado; esto es el guard del lado
   // servidor para quien lo intente igual con un POST directo.
   if (parsed.data.paymentMethod === "tarjeta" && !isPagoparConfigured()) {
-    return { ok: false, error: "El pago con tarjeta no está disponible en este momento." };
+    return { ok: false, error: t("error.checkout.sinTarjeta") };
   }
 
   try {
+    // La cuenta sale de **la cookie**, no del formulario: un `customerId` que
+    // viaje en el input deja atar la compra propia a la cuenta de cualquiera.
+    // Sin sesión —el checkout de invitado, que es el camino principal— queda
+    // null y el pedido es exactamente el de siempre.
+    const customer = await currentCustomer();
+
     const order = await createOrder({
       ...parsed.data,
+      customerId: customer?.customerId ?? null,
+      couponCode: parsed.data.couponCode || null,
       customerEmail: parsed.data.customerEmail || null,
       docNumber: parsed.data.docNumber || null,
       shipBarrio: parsed.data.shipBarrio || null,
@@ -144,6 +159,6 @@ export async function submitCheckout(input: unknown): Promise<CheckoutResult> {
     }
     // El detalle queda en el log del servidor; al comprador no le sirve.
     console.error("createOrder falló", error);
-    return { ok: false, error: "No pudimos crear el pedido. Probá de nuevo en un momento." };
+    return { ok: false, error: t("error.checkout.generico") };
   }
 }

@@ -227,7 +227,8 @@ describe('cobertura de la revisión', () => {
     // Cada acción exportada tiene que llamar a *algún* guard: el de admin, el
     // del comprador (token del pedido) o el rate limit. Las de carrito son
     // stateless y no tocan nada del servidor.
-    const GUARDS = /requireAdminSession|requireOwnerSession|requireOrderAccess|rateLimit\s*\(/;
+    const GUARDS =
+      /requireAdminSession|requireStaffSession|requireOwnerSession|requireCustomerSession|requireOrderAccess|rateLimit\s*\(|cuentasClientesHabilitadas\s*\(/;
     const SIN_ESTADO = new Set([path.join(ACTIONS, 'cart.ts')]);
 
     const offenders: string[] = [];
@@ -245,8 +246,16 @@ describe('cobertura de la revisión', () => {
     const routes = (await listSourceFiles([API])).filter((file) => file.endsWith('route.ts'));
     expect(routes.length).toBeGreaterThan(0);
 
+    // La única excepción, y con nombre y apellido: el health check tiene que
+    // poder llamarlo el monitoreo sin credenciales. Se la banca porque no toca
+    // ningún dato —un `SELECT 1`— y contesta dos booleanos: ni versiones, ni
+    // schema, ni el error de MySQL. Cualquier ruta nueva que quiera entrar acá
+    // tiene que poder decir lo mismo.
+    const SIN_GUARD = new Set([path.join(API, 'health', 'route.ts')]);
+
     const offenders: string[] = [];
     for (const file of routes) {
+      if (SIN_GUARD.has(file)) continue;
       const code = await readCode(file);
       // Firma, secreto o sesión: alguna de las tres. Una ruta pública que
       // mueve pedidos y no compara nada es exactamente lo que se busca.

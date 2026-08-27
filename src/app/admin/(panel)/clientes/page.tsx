@@ -1,11 +1,17 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
+import { CsvDownloadButton } from "@/components/admin/csv-download";
+import { cuentasClientesHabilitadas } from "@/config/tienda";
 import { listCustomers } from "@/domain/admin-customers";
+import { customersByPhone } from "@/domain/customers";
+import { can } from "@/lib/permissions";
 import { formatGs } from "@/lib/money";
 import { formatDatePY, formatPhonePY } from "@/lib/py";
+import { requireCapabilityPage } from "@/lib/admin-guard";
+import { t, tPlural } from "@/i18n";
 
-export const metadata: Metadata = { title: "Clientes" };
+export const metadata: Metadata = { title: t("panel.clientes.meta") };
 
 export const dynamic = "force-dynamic";
 
@@ -29,6 +35,8 @@ export default async function AdminCustomersPage({
 }: {
   searchParams: SearchParams;
 }) {
+  const actor = await requireCapabilityPage("clientes");
+
   const query = await searchParams;
   const search = first(query.q);
   const rawPage = Number(first(query.pagina) ?? 1);
@@ -37,6 +45,13 @@ export default async function AdminCustomersPage({
     search,
     page: Number.isFinite(rawPage) ? rawPage : 1,
   });
+
+  // Con las cuentas apagadas esto ni se consulta y la pantalla queda igual que
+  // antes de la feature: "cliente" sigue siendo lo que siempre fue, una vista
+  // sobre los pedidos agrupados por WhatsApp.
+  const conCuenta = cuentasClientesHabilitadas()
+    ? await customersByPhone(result.rows.map((row) => row.phone))
+    : new Map();
 
   const href = (page: number): string => {
     const params = new URLSearchParams();
@@ -49,34 +64,49 @@ export default async function AdminCustomersPage({
   return (
     <div>
       <div className="flex flex-wrap items-baseline justify-between gap-2">
-        <h1 className="text-xl font-semibold tracking-tight">Clientes</h1>
+        <h1 className="text-xl font-semibold tracking-tight">{t("panel.clientes.titulo")}</h1>
         <p className="text-muted-foreground text-sm tabular-nums">
-          {result.total} {result.total === 1 ? "cliente" : "clientes"}
+          {tPlural("panel.clientes.cuenta", result.total)}
         </p>
       </div>
 
       <p className="text-muted-foreground mt-1 text-xs">
-        Sale de los pedidos, agrupados por WhatsApp. Lo gastado cuenta sólo los pedidos ya
-        cobrados (pagado en adelante).
+        {t("panel.clientes.bajada")}
       </p>
+
+      {/* La lista de marketing que hasta ahora no existía: sólo las cuentas
+          activas que dijeron que sí, y sólo para el dueño — es la base de
+          clientes en un archivo que sale del edificio (ARCH.md §1). */}
+      {cuentasClientesHabilitadas() && can(actor.role, "exports") ? (
+        <div className="mt-4">
+          <CsvDownloadButton
+            kind="clientes-opt-in"
+            params={{}}
+            label={t("panel.clientes.csvNovedades")}
+          />
+          <p className="text-muted-foreground mt-1 text-xs">
+            {t("panel.clientes.csvAyuda")}
+          </p>
+        </div>
+      ) : null}
 
       <form className="mt-4 flex gap-2" action="/admin/clientes">
         <input
           type="search"
           name="q"
           defaultValue={search ?? ""}
-          placeholder="Nombre, WhatsApp o RUC"
-          aria-label="Buscar cliente"
+          placeholder={t("panel.clientes.buscar.placeholder")}
+          aria-label={t("panel.clientes.buscar.label")}
           className="border-input bg-background h-9 flex-1 rounded-md border px-3 text-sm"
         />
         <button type="submit" className="border-border rounded-lg border px-4 text-sm">
-          Buscar
+          {t("panel.filtros.buscar")}
         </button>
       </form>
 
       {result.rows.length === 0 ? (
         <p className="text-muted-foreground border-border mt-6 rounded-xl border border-dashed p-8 text-center text-sm">
-          {search ? "Ningún cliente coincide con esa búsqueda." : "Todavía no hay pedidos."}
+          {search ? t("panel.clientes.sinBusqueda") : t("panel.clientes.sinPedidos")}
         </p>
       ) : (
         // Tarjetas y no tabla, igual que el listado de pedidos: el dueño abre
@@ -100,12 +130,27 @@ export default async function AdminCustomersPage({
                   {customer.docNumber ? ` · ${customer.docNumber}` : ""}
                 </p>
 
+                {/* Quién tiene cuenta y quién aceptó novedades. Sin cuentas
+                    prendidas, este bloque no existe. */}
+                {conCuenta.has(customer.phone) ? (
+                  <p className="mt-1 text-xs">
+                    <span className="border-border rounded border px-1.5 py-0.5">
+                      {t("panel.clientes.conCuenta")}
+                    </span>
+                    {conCuenta.get(customer.phone)?.marketingOptIn === true ? (
+                      <span className="text-muted-foreground">
+                        {t("panel.clientes.aceptaNovedades")}
+                      </span>
+                    ) : null}
+                  </p>
+                ) : null}
+
                 <p className="text-muted-foreground mt-1 text-xs">
-                  {customer.orders} {customer.orders === 1 ? "pedido" : "pedidos"}
+                  {tPlural("panel.clientes.pedidos", customer.orders)}
                   {customer.paidOrders < customer.orders
-                    ? ` (${customer.paidOrders} cobrado${customer.paidOrders === 1 ? "" : "s"})`
-                    : ""}{" "}
-                  · último el {formatDatePY(customer.lastOrderAt)}
+                    ? tPlural("panel.clientes.cobrados", customer.paidOrders)
+                    : ""}
+                  {t("panel.clientes.ultimoEl", { fecha: formatDatePY(customer.lastOrderAt) })}
                 </p>
               </Link>
             </li>
@@ -114,20 +159,20 @@ export default async function AdminCustomersPage({
       )}
 
       {result.totalPages > 1 ? (
-        <nav className="mt-6 flex items-center justify-between gap-3 text-sm" aria-label="Paginación">
+        <nav className="mt-6 flex items-center justify-between gap-3 text-sm" aria-label={t("nav.paginacion")}>
           {result.page > 1 ? (
             <Link href={href(result.page - 1)} className="border-border rounded-lg border px-3 py-2">
-              ← Anteriores
+              {t("panel.paginacion.anteriores")}
             </Link>
           ) : (
             <span />
           )}
           <span className="text-muted-foreground tabular-nums">
-            Página {result.page} de {result.totalPages}
+            {t("nav.pagina", { actual: result.page, total: result.totalPages })}
           </span>
           {result.page < result.totalPages ? (
             <Link href={href(result.page + 1)} className="border-border rounded-lg border px-3 py-2">
-              Siguientes →
+              {t("panel.paginacion.siguientes")}
             </Link>
           ) : (
             <span />

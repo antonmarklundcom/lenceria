@@ -1,5 +1,6 @@
 import type { OrderStatus } from "@/db/schema";
-import { comercioDatosBancarios, type DatosBancarios } from "@/lib/comercio";
+import { t } from "@/i18n";
+import type { DatosBancarios } from "@/lib/comercio";
 import { formatGs } from "@/lib/money";
 import { waLink } from "@/lib/py";
 import { siteOrigin } from "@/lib/site-url";
@@ -44,10 +45,12 @@ function firstName(fullName: string): string {
 
 /** Seguimiento genérico: el que se usa desde el detalle del pedido. */
 export function followUpMessage(order: OrderContact): string {
-  return (
-    `Hola ${firstName(order.customerName)}! Te escribo por tu pedido ${order.orderNumber} ` +
-    `(${formatGs(order.totalPyg)}). Podés seguirlo acá: ${buyerOrderUrl(order)}`
-  );
+  return t("wa.seguimiento", {
+    nombre: firstName(order.customerName),
+    numero: order.orderNumber,
+    total: formatGs(order.totalPyg),
+    url: buyerOrderUrl(order),
+  });
 }
 
 /**
@@ -55,43 +58,51 @@ export function followUpMessage(order: OrderContact): string {
  *
  * Lleva exactamente lo que sacó del camino a ese pedido — a dónde transferir,
  * cuánto exacto, y el link para subir el comprobante — porque la fricción que
- * lo frenó fue tener que pedir esos datos de nuevo. Sin `BANCO_*` configurado
- * se manda igual, sin la parte bancaria: mejor un recordatorio incompleto que
- * un banco inventado (mismo criterio que la página del pedido).
+ * lo frenó fue tener que pedir esos datos de nuevo. Sin datos bancarios
+ * cargados se manda igual, sin la parte bancaria: mejor un recordatorio
+ * incompleto que un banco inventado (mismo criterio que la página del pedido).
+ *
+ * `banco` es un **parámetro obligatorio y sin default**, a propósito. Tenía un
+ * default que leía los datos por su cuenta, y desde el PR T esa lectura toca
+ * la base: un default así convertía el listado de "por cobrar" en una consulta
+ * por fila. Que lo resuelva quien arma la pantalla, una vez, y lo pase.
  */
 export function recoveryMessage(
   order: OrderContact,
-  banco: DatosBancarios | null = comercioDatosBancarios()
+  banco: DatosBancarios | null
 ): string {
-  const hola = `Hola ${firstName(order.customerName)}!`;
+  // El saludo va **adentro** de cada mensaje y no concatenado adelante: en
+  // otro idioma el nombre puede no ir primero, y quien traduce necesita la
+  // frase entera para poder moverlo.
+  const quien = { nombre: firstName(order.customerName), numero: order.orderNumber };
   const saludo =
     order.status === "vencido"
-      ? `${hola} Tu pedido ${order.orderNumber} quedó sin pagar y se venció la reserva. Si todavía lo querés, avisanos y lo revisamos según disponibilidad.`
+      ? t("wa.recuperar.vencido", quien)
       : order.status === "rechazado"
         ? // El comprobante no se pudo validar. El motivo lo escribió el dueño y
           // ella lo lee en la página del pedido; repetirlo por WhatsApp sería
           // contar en una pantalla de bloqueo por qué no le aceptaron un pago.
-          `${hola} No pudimos validar el comprobante de tu pedido ${order.orderNumber}. Entrá al link de abajo, mirá el motivo y subí uno nuevo.`
-        : `${hola} Te recuerdo tu pedido ${order.orderNumber}, que quedó pendiente de pago.`;
+          t("wa.recuperar.rechazado", quien)
+        : t("wa.recuperar.pendiente", quien);
 
   const datos = banco
     ? [
         "",
-        "Para transferir:",
-        `${banco.banco} — ${banco.tipoCuenta}`,
-        `Titular: ${banco.titular}`,
-        `RUC: ${banco.ruc}`,
-        `Cuenta: ${banco.cuenta}`,
+        t("wa.recuperar.paraTransferir"),
+        t("wa.recuperar.banco", { banco: banco.banco, tipoCuenta: banco.tipoCuenta }),
+        t("wa.recuperar.titular", { titular: banco.titular }),
+        t("wa.recuperar.ruc", { ruc: banco.ruc }),
+        t("wa.recuperar.cuenta", { cuenta: banco.cuenta }),
       ]
     : [];
 
   return [
     saludo,
     "",
-    `Total: ${formatGs(order.totalPyg)}`,
+    t("wa.recuperar.total", { total: formatGs(order.totalPyg) }),
     ...datos,
     "",
-    `Cuando pagues, subí el comprobante acá: ${buyerOrderUrl(order)}`,
+    t("wa.recuperar.subiComprobante", { url: buyerOrderUrl(order) }),
   ].join("\n");
 }
 

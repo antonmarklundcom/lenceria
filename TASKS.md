@@ -1,7 +1,9 @@
 # TASKS.md — Sprint activo: **cierre de bloqueos de terceros**
 
-PR #1 a #5 del `PLAN.md` ya están mergeados en `main` — schema, vidriera,
-checkout SPI/QR, admin y Pagopar. `pnpm demo` deja la base en un estado
+La FASE 1 (PR #1 a #5 — schema, vidriera, checkout SPI/QR, admin y Pagopar) y
+la **FASE 2 entera** (PR A a U de `PLAN.md` — roles, cuentas de cliente,
+cupones, los ABMs que faltaban del panel, i18n y `pnpm nueva-tienda`) están
+mergeadas en `main`. `pnpm demo` deja la base en un estado
 mostrable con un pedido en cada estado (ver README). Lo único que queda sin
 marcar en este archivo son ítems que dependen de que alguien fuera de este
 repo entregue algo: una cuenta, un dominio, credenciales o datos reales del
@@ -9,7 +11,7 @@ comercio. La sección **"Bloqueado por terceros"** de abajo los junta todos en
 un solo lugar con quién tiene que resolver cada uno — antes había que
 peinar los cinco PRs para armar esa lista.
 
-Stack: Next.js 15 + Drizzle + **Hostinger MySQL** + **Hostinger Node.js** + Cloudinary.
+Stack: Next.js 16 + Drizzle + **Hostinger MySQL** + **Hostinger Node.js** + Cloudinary.
 Marcá `[x]` al terminar. Cada bloque es un commit.
 
 ---
@@ -406,7 +408,7 @@ marcados como pendientes en varias secciones más abajo.
 
 ---
 
-# Etapa 2 · Que el link se comparta, que el envío se sepa antes, y que el pedido colgado se pueda cobrar
+# PR #12 · Que el link se comparta, que el envío se sepa antes, y que el pedido colgado se pueda cobrar
 
 ## 34. Compartir un producto *(OG)*
 - [x] La ficha manda su foto principal recortada a 1200×630 (`c_fill`, la caja de WhatsApp e Instagram)
@@ -425,8 +427,8 @@ marcados como pendientes en varias secciones más abajo.
 ## 36. Cotización de envío antes del pedido *(la grande)*
 - [x] `computeOrderTotals` — una sola cuenta, usada por la cotización pública y por `createOrder` adentro de su transacción
 - [x] Server action de sólo lectura: no crea pedido, no reserva, no toca `on_hand`; con rate limit igual (60/min por IP)
-- [x] El total cotizado no se cobra nunca; el que ella tenía en pantalla sí vuelve, sólo para comparar: si no coincide, `TotalChangedError` adentro de la transacción y antes de escribir nada
-- [x] `ShippingQuote.match` (`exacta` | `mas_cara` | `sin_zonas`) — la ciudad que no cae en ninguna zona cotiza la tarifa más cara **y la pantalla lo dice**; sin zonas configuradas el envío es ₲0 y no se aclara nada
+- [x] El total cotizado no viaja de vuelta ni se compara con nada: un precio que cambia en el medio se cobra nuevo
+- [x] `ShippingQuote.matched` — la ciudad que no cae en ninguna zona cotiza la tarifa más cara **y la pantalla lo dice**
 - [x] Tests: cotizar no escribe nada · cotizado === cobrado hasta el guaraní · guardarraíl de que nadie rehaga la aritmética del otro lado
 
 ## 37. Envío gratis: cuánto falta
@@ -446,7 +448,7 @@ marcados como pendientes en varias secciones más abajo.
 - [x] Copy genérica — esto es el template
 
 ## 40. "Por cobrar"
-- [x] `pendiente_pago` + `vencido` + `rechazado` juntos, del más viejo al más nuevo (`TIMESTAMPDIFF` en MySQL, sin zona horaria de por medio)
+- [x] `pendiente_pago` + `vencido` juntos, del más viejo al más nuevo (`TIMESTAMPDIFF` en MySQL, sin zona horaria de por medio)
 - [x] El `wa.me` en la fila y no un click más adentro
 - [x] El mensaje lleva banco + total exacto + link tokenizado; sin `BANCO_*` sale sin la parte bancaria en vez de inventarla
 - [x] **Nunca itemiza lo comprado**: el tipo de entrada no recibe ítems (aterriza en una pantalla de bloqueo)

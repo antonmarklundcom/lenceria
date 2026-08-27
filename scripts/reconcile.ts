@@ -18,7 +18,7 @@ async function main(): Promise<void> {
   const report = await reconcile();
 
   if (report.ok) {
-    console.log("✓ Todo cuadra: totales, líneas y las cinco invariantes entre tablas.");
+    console.log("✓ Todo cuadra: totales, líneas y las invariantes entre tablas.");
     return;
   }
 
@@ -36,6 +36,7 @@ async function main(): Promise<void> {
       console.error(
         `  ${row.orderNumber} (${row.status})\n` +
           `    subtotal guardado ${formatGs(row.storedSubtotalPyg)} vs ítems ${formatGs(row.itemsSubtotalPyg)} (dif ${row.subtotalDiffPyg})\n` +
+          (row.discountPyg > 0 ? `    descuento         ${formatGs(row.discountPyg)}\n` : "") +
           `    total guardado    ${formatGs(row.storedTotalPyg)} vs esperado ${formatGs(row.expectedTotalPyg)} (dif ${row.totalDiffPyg})`,
       );
     }

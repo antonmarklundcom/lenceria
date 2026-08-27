@@ -9,9 +9,12 @@ import { receiptPreview, reviewReceipt } from "@/domain/receipt-review";
 import {
   actorLabel,
   adminActionError,
+  assertCanTransitionTo,
   requireAdminSession,
+  requireStaffSession,
   type AdminActionResult,
 } from "@/lib/admin-guard";
+import { t } from "@/i18n";
 
 /**
  * Acciones del panel sobre un pedido (PLAN.md 4.4 y 4.5).
@@ -39,14 +42,21 @@ export async function advanceOrder(input: unknown): Promise<AdminActionResult> {
 
     const parsed = AdvanceSchema.safeParse(input);
     if (!parsed.success) {
-      return { ok: false, error: "No entendí qué querés hacer con el pedido." };
+      return { ok: false, error: t("adminError.noEntendi.pedido") };
     }
+
+    // El destino es lo que decide el permiso: los tres roles usan esta misma
+    // acción, y el vendedor sólo puede despachar (ARCH.md §1).
+    assertCanTransitionTo(actor, parsed.data.to);
 
     await transitionOrder(
       parsed.data.orderId,
       parsed.data.to,
       actorLabel(actor),
       parsed.data.reason || null,
+      // El string `admin:email` es la verdad histórica; el id es lo que hace
+      // consultable "qué hizo esta persona" (PR D).
+      { actorUserId: actor.userId },
     );
 
     revalidatePath(`/admin/pedidos/${parsed.data.orderId}`);
@@ -67,11 +77,11 @@ const ReviewSchema = z.object({
 /** Aprobar / rechazar un comprobante. El estado lo mueve `reviewReceipt`. */
 export async function decideReceipt(input: unknown): Promise<AdminActionResult> {
   try {
-    const actor = await requireAdminSession();
+    const actor = await requireStaffSession();
 
     const parsed = ReviewSchema.safeParse(input);
     if (!parsed.success) {
-      return { ok: false, error: "Faltan datos para revisar el comprobante." };
+      return { ok: false, error: t("adminError.noEntendi.comprobante") };
     }
 
     const result = await reviewReceipt({
@@ -105,11 +115,11 @@ export async function previewReceipt(
   input: unknown,
 ): Promise<AdminActionResult<{ url: string; mime: string }>> {
   try {
-    await requireAdminSession();
+    await requireStaffSession();
 
     const parsed = PreviewSchema.safeParse(input);
     if (!parsed.success) {
-      return { ok: false, error: "Comprobante inválido." };
+      return { ok: false, error: t("adminError.comprobanteInvalido") };
     }
 
     const preview = await receiptPreview(parsed.data.receiptId);

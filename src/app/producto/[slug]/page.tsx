@@ -5,7 +5,9 @@ import { cache } from "react";
 
 import { AddToCart } from "@/components/add-to-cart";
 import { ProductImage } from "@/components/product-image";
-import { getProductBySlug } from "@/db/queries";
+import { ProductCard } from "@/components/product-card";
+import { getProductBySlug, getRelatedProducts } from "@/db/queries";
+import { t } from "@/i18n";
 import { comercioWaLink } from "@/lib/comercio";
 import { OG_IMAGE_SIZE, productImageUrl } from "@/lib/images";
 import { formatGs } from "@/lib/money";
@@ -27,7 +29,7 @@ const loadProduct = cache(async (slug: string) => getProductBySlug(slug));
 export async function generateMetadata({ params }: { params: Params }): Promise<Metadata> {
   const { slug } = await params;
   const product = await loadProduct(slug).catch(() => null);
-  if (!product) return { title: "Producto no encontrado" };
+  if (!product) return { title: t("producto.noEncontrado") };
 
   const cheapest = product.variants.reduce<number | undefined>(
     (min, variant) => (min === undefined || variant.pricePyg < min ? variant.pricePyg : min),
@@ -36,7 +38,10 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
 
   const description =
     product.description?.slice(0, 160) ??
-    `${product.name} — ${cheapest ? formatGs(cheapest) : ""}, IVA incluido.`;
+    t("producto.metaDescripcion", {
+      nombre: product.name,
+      precio: cheapest ? formatGs(cheapest) : "",
+    });
 
   // La foto principal, recortada a la caja que espera WhatsApp. Si el
   // producto todavía no tiene fotos (o falta el cloud de Cloudinary), se
@@ -82,9 +87,17 @@ export default async function ProductPage({ params }: { params: Params }) {
   );
   const totalAvailable = product.variants.reduce((total, variant) => total + variant.available, 0);
 
-  const waHref = comercioWaLink(
-    `¡Hola! Me interesa "${product.name}". ¿Está disponible?`
-  );
+  // Misma categoría, con stock, precio parecido. Sin nada que mostrar la
+  // sección no se dibuja: una fila vacía o con un solo producto de relleno es
+  // peor que no tenerla.
+  const related = await getRelatedProducts({
+    productId: product.id,
+    categorySlug: product.categorySlug,
+    brand: product.brand,
+    pricePyg: cheapest,
+  });
+
+  const waHref = comercioWaLink(t("producto.consultaWhatsApp", { nombre: product.name }));
 
   // JSON-LD: PYG y priceValidUntil no se inventan — se dejan afuera si no
   // hay dato, que es mejor que un dato falso en el rich result.
@@ -117,7 +130,7 @@ export default async function ProductPage({ params }: { params: Params }) {
 
       <nav className="text-muted-foreground text-sm">
         <Link href="/" className="hover:text-foreground">
-          Inicio
+          {t("nav.inicio")}
         </Link>
         <span aria-hidden> / </span>
         <Link href={`/categoria/${product.categorySlug}`} className="hover:text-foreground">
@@ -155,28 +168,9 @@ export default async function ProductPage({ params }: { params: Params }) {
           <p className="text-muted-foreground text-sm">{product.brand ?? product.categoryName}</p>
           <h1 className="mt-1 text-2xl font-semibold tracking-tight sm:text-3xl">{product.name}</h1>
 
-          {/* Arriba del botón, no abajo: la duda del talle aparece cuando se
-              mira el selector, y una compradora que no la resuelve no compra. */}
-          <p className="text-muted-foreground mt-4 text-sm">
-            ¿No sabés tu talle?{" "}
-            <Link href="/guia-de-talles" className="text-primary underline underline-offset-4">
-              Mirá la guía de talles
-            </Link>
-          </p>
-
-          <div className="mt-4">
+          <div className="mt-6">
             <AddToCart product={product} />
           </div>
-
-          <p className="text-muted-foreground mt-4 text-sm">
-            <Link href="/envio-discreto" className="hover:text-foreground underline underline-offset-4">
-              Envío discreto
-            </Link>
-            <span aria-hidden> · </span>
-            <Link href="/cambios" className="hover:text-foreground underline underline-offset-4">
-              Cambio de talle en 7 días
-            </Link>
-          </p>
 
           {waHref ? (
             <a
@@ -185,13 +179,13 @@ export default async function ProductPage({ params }: { params: Params }) {
               rel="noopener noreferrer"
               className="text-muted-foreground hover:text-foreground mt-4 inline-block text-sm underline"
             >
-              ¿Tenés una duda? Consultanos por WhatsApp
+              {t("producto.dudaWhatsApp")}
             </a>
           ) : null}
 
           {product.description ? (
             <div className="border-border mt-8 border-t pt-6">
-              <h2 className="text-sm font-medium">Descripción</h2>
+              <h2 className="text-sm font-medium">{t("producto.descripcion")}</h2>
               <p className="text-muted-foreground mt-2 text-sm whitespace-pre-line">
                 {product.description}
               </p>
@@ -199,21 +193,34 @@ export default async function ProductPage({ params }: { params: Params }) {
           ) : null}
 
           <dl className="border-border text-muted-foreground mt-6 grid grid-cols-2 gap-2 border-t pt-6 text-sm">
-            <dt>IVA</dt>
-            <dd className="text-foreground">{product.ivaRate}% incluido en el precio</dd>
-            <dt>Disponibilidad</dt>
+            <dt>{t("producto.iva")}</dt>
+            <dd className="text-foreground">{t("producto.ivaValor", { tasa: product.ivaRate })}</dd>
+            <dt>{t("producto.disponibilidad")}</dt>
             <dd className="text-foreground">
-              {totalAvailable > 0 ? `${totalAvailable} unidades` : "Sin stock"}
+              {totalAvailable > 0
+                ? t("producto.unidades", { n: totalAvailable })
+                : t("stock.sin")}
             </dd>
             {cheapest !== undefined ? (
               <>
-                <dt>Desde</dt>
+                <dt>{t("producto.desde")}</dt>
                 <dd className="text-foreground tabular-nums">{formatGs(cheapest)}</dd>
               </>
             ) : null}
           </dl>
         </div>
       </div>
+
+      {related.length > 0 ? (
+        <section className="border-border mt-12 border-t pt-8">
+          <h2 className="text-lg font-semibold tracking-tight">{t("producto.relacionados")}</h2>
+          <div className="mt-4 grid grid-cols-2 gap-4 lg:grid-cols-4">
+            {related.map((item) => (
+              <ProductCard key={item.id} product={item} />
+            ))}
+          </div>
+        </section>
+      ) : null}
     </main>
   );
 }
