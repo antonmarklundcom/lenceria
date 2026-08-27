@@ -14,10 +14,14 @@ import { formatGs } from "@/lib/money";
 import { normalizePhonePY, validateDoc } from "@/lib/py";
 
 import type { CartInput } from "./cart";
+import { lockCouponForUse, type CouponRejection } from "./coupons";
 import { nextOrderNumber } from "./order-number";
 import { computeOrderTotals } from "./order-totals";
 import { RESERVATION_TTL_MINUTES, reserveStock } from "./stock";
+import type { MessageKey, Params } from "@/i18n";
 import type { CartIssue } from "@/lib/cart-issues";
+
+import { DomainError } from "./errors";
 
 /**
  * Creación del pedido (PLAN.md 3.3).
@@ -45,6 +49,21 @@ export type CreateOrderInput = {
   shipReference?: string | null;
   shipMapsUrl?: string | null;
   paymentMethod: PaymentMethod;
+  /**
+   * La cuenta que hizo el pedido, si había sesión de cliente abierta (PR E).
+   *
+   * Lo pone la server action leyendo **la cookie**, nunca el navegador: si
+   * viniera del formulario, cualquiera podría atar su compra a la cuenta de
+   * otra persona mandando un id distinto. `undefined` es el caso normal —el
+   * checkout de invitado, que no se toca— y queda NULL en la columna.
+   */
+  customerId?: number | null;
+  /**
+   * El **código** de descuento que tipeó, si tipeó alguno (PR G). Nunca un
+   * monto: el descuento lo calcula `computeOrderTotals` contra la DB, adentro
+   * de esta misma transacción.
+   */
+  couponCode?: string | null;
   /**
    * Novedades y promociones. `null`/`undefined` = no se preguntó; se guarda
    * tal cual, sin convertirlo a `false` (ver `orders.marketing_opt_in`).
@@ -78,12 +97,12 @@ export type CreatedOrder = {
   reservedUntil: Date;
 };
 
-export class CheckoutError extends Error {
-  constructor(
-    message: string,
-    readonly issues: CartIssue[] = []
-  ) {
-    super(message);
+export class CheckoutError extends DomainError {
+  readonly issues: CartIssue[];
+
+  constructor(code: MessageKey, options: { params?: Params; issues?: CartIssue[] } = {}) {
+    super(code, options.params);
+    this.issues = options.issues ?? [];
     this.name = "CheckoutError";
   }
 }
@@ -106,11 +125,25 @@ export class TotalChangedError extends CheckoutError {
     readonly before: number,
     readonly after: number
   ) {
-    super(
-      `El total cambió de ${formatGs(before)} a ${formatGs(after)} mientras completabas los datos. ` +
-        "Revisalo y confirmá de nuevo."
-    );
+    super("error.checkout.totalCambio", {
+      params: { antes: formatGs(before), despues: formatGs(after) },
+    });
     this.name = "TotalChangedError";
+  }
+}
+
+/**
+ * El código de descuento dejó de servir entre que lo aplicó y que confirmó.
+ *
+ * Se venció, se agotó, el dueño lo desactivó, o el carrito cambió y ya no
+ * llega al mínimo. En todos los casos el pedido **no** se crea: cobrarle el
+ * precio sin descuento a alguien que confirmó contando con él es la clase de
+ * sorpresa que hace que no vuelva.
+ */
+export class CouponRejectedError extends CheckoutError {
+  constructor(readonly reason: CouponRejection) {
+    super("error.checkout.cuponCaido");
+    this.name = "CouponRejectedError";
   }
 }
 
@@ -122,18 +155,19 @@ function mintAccessToken(): string {
 export async function createOrder(input: CreateOrderInput): Promise<CreatedOrder> {
   const phone = normalizePhonePY(input.customerPhone);
   if (!phone) {
-    throw new CheckoutError("El número de WhatsApp no parece paraguayo.");
+    throw new CheckoutError("error.checkout.telefono");
   }
 
   const doc = validateDoc(input.docType, input.docNumber);
   if (!doc.ok) {
     throw new CheckoutError(
-      input.docType === "RUC" ? `RUC inválido: ${doc.reason}` : `CI inválida: ${doc.reason}`
+      input.docType === "RUC" ? "error.checkout.ruc" : "error.checkout.ci",
+      { params: { motivo: doc.reason ?? "" } }
     );
   }
 
   if (input.items.length === 0) {
-    throw new CheckoutError("El carrito está vacío.");
+    throw new CheckoutError("error.checkout.carritoVacio");
   }
 
   return getDb().transaction(async (tx) => {
@@ -141,15 +175,34 @@ export async function createOrder(input: CreateOrderInput): Promise<CreatedOrder
     //    misma función que usa la cotización pública (`computeOrderTotals`),
     //    corrida de nuevo acá: lo que la compradora vio en pantalla no viaja
     //    en el input y no se compara con nada, se recalcula.
-    const { cart, shipping, subtotalPyg, shippingPyg, totalPyg, iva10Pyg, iva5Pyg } =
-      await computeOrderTotals(input.items, input.shipCity, { executor: tx });
+    const {
+      cart,
+      shipping,
+      subtotalPyg,
+      discountPyg,
+      shippingPyg,
+      totalPyg,
+      iva10Pyg,
+      iva5Pyg,
+      coupon,
+      couponRejection,
+    } = await computeOrderTotals(input.items, input.shipCity, {
+      executor: tx,
+      couponCode: input.couponCode ?? null,
+      customerId: input.customerId ?? null,
+      customerPhone: phone,
+    });
+
+    // Si mandó un código y no sirve, el pedido **no** se crea en silencio sin
+    // el descuento: ella lo confirmó contando con ese precio. Se lo decimos y
+    // vuelve a confirmar, igual que con un cambio de total.
+    if (couponRejection) {
+      throw new CouponRejectedError(couponRejection);
+    }
 
     const blocking = cart.issues.filter((issue) => issue.type !== "precio_cambio");
     if (cart.lines.length === 0 || blocking.length > 0) {
-      throw new CheckoutError(
-        "Algunos productos ya no están disponibles. Revisá tu carrito.",
-        cart.issues
-      );
+      throw new CheckoutError("error.checkout.noDisponible", { issues: cart.issues });
     }
 
     // 2.b. ¿Le estamos por cobrar algo distinto de lo que vio?
@@ -165,6 +218,20 @@ export async function createOrder(input: CreateOrderInput): Promise<CreatedOrder
       input.expectedTotalPyg !== totalPyg
     ) {
       throw new TotalChangedError(input.expectedTotalPyg, totalPyg);
+    }
+
+    // 2.c. Gastar el uso del cupón, **con la fila bloqueada**.
+    //
+    //       La validación de arriba pasó antes del candado, así que no decide
+    //       nada por sí sola: dos checkouts simultáneos con un cupón de un
+    //       solo uso la pasan los dos. Lo que decide es esta re-lectura con
+    //       `FOR UPDATE`, exactamente igual que el stock. El que pierde la
+    //       carrera recibe `CouponRaceError` y no se crea su pedido.
+    if (coupon) {
+      await lockCouponForUse(tx, coupon.coupon.id, {
+        customerId: input.customerId ?? null,
+        customerPhone: phone,
+      });
     }
 
     // 3. Número de pedido del contador, adentro de la misma transacción.
@@ -196,6 +263,12 @@ export async function createOrder(input: CreateOrderInput): Promise<CreatedOrder
       iva10Pyg,
       iva5Pyg,
       paymentMethod: input.paymentMethod,
+      customerId: input.customerId ?? null,
+      couponId: coupon?.coupon.id ?? null,
+      // Snapshot del código, como los nombres de los ítems: si mañana el dueño
+      // borra el cupón, este pedido tiene que seguir explicando su descuento.
+      couponCode: coupon?.coupon.code ?? null,
+      discountPyg,
       reservedUntil,
       isGift: input.isGift ?? false,
       // La nota se descarta si el pedido no es un regalo: si no, destildar la
@@ -215,7 +288,7 @@ export async function createOrder(input: CreateOrderInput): Promise<CreatedOrder
       .where(eq(orders.orderNumber, orderNumber))
       .limit(1);
     const orderId = inserted[0]?.id;
-    if (!orderId) throw new CheckoutError("No pude crear el pedido. Probá de nuevo.");
+    if (!orderId) throw new CheckoutError("error.checkout.noPude");
 
     // 4. Ítems con snapshot: lo que el comprador aceptó, congelado.
     await tx.insert(orderItems).values(

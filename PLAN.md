@@ -1,126 +1,242 @@
-# PLAN.md — Tienda PY
+# PLAN.md — Tienda PY · FASE 2
 
-**Stack decision (locked):** Next.js 15 + Drizzle + **Hostinger MySQL** + **Hostinger Node.js slot** + Cloudinary.
-No Supabase, no Vercel, no Cloudflare. Deploy mechanics live in the `nextjs-deploy-hostinger` skill.
+**Stack (locked):** Next.js 16 + Drizzle + **Hostinger MySQL** + **Hostinger Node.js slot** + Cloudinary.
+No Supabase, no Vercel, no Cloudflare. Deploy mechanics live in `DEPLOY.md` and the `nextjs-deploy-hostinger` skill.
 
-**Goal of the MVP:** a store that takes orders reliably and is easy for the owner to run from a phone.
-**Explicitly not in the MVP:** legal invoicing, accounting, customer accounts, multi-tenant.
+**Estado:** la **FASE 2 está terminada y mergeada** — PR A a U, con CI verde completo en cada uno. El plan original (PR #1–#5: schema, vidriera, checkout, admin, Pagopar) y los PRs de endurecimiento #6–#12 ya estaban antes; el historial completo vive en `TASKS.md`. Lo que queda abierto no es código de este repo: son las cuentas y los datos de terceros que lista `TASKS.md` §"Bloqueado por terceros". Este archivo queda como el registro de qué se construyó en la FASE 2 —cuentas de cliente opcionales, roles de verdad, cupones, los ABMs que faltaban del panel, UX de la vidriera, i18n por tienda y el arranque automatizado de una tienda nueva— y de por qué cada decisión salió como salió.
 
-Task tags: **[Opus 5]** = schema, money logic, payment/webhook security, state machine, final review · **[Sonnet 5]** = UI, routes, forms, seeds, tables.
+**Objetivo de la FASE 2:** que el template sea *vendible* — que el dueño administre su tienda entera (usuarios, categorías, zonas) desde el navegador sin llamar al desarrollador, que la tienda pueda tener clientes con cuenta (para perks y marketing) **sin obligar a nadie a registrarse**, y que una tienda nueva pueda salir en otro idioma cambiando un solo archivo.
 
-**Release cut = PR #1 → #2 → #3 → #4.** PR #3 (checkout) and PR #4 (admin) together are the first thing a real customer can use — the owner needs the admin panel to approve receipts, so those two ship as one release. **PR #5 (Pagopar) is post-launch** and touches no schema.
+Task tags: **[Opus 5]** = schema, plata, auth/sesiones, guards, review final · **[Sonnet 5]** = UI, rutas, formularios, ABMs, extracción de strings.
 
-**Payment sequencing (decided):** SPI/QR manual + contra entrega first — no fees, no third-party credentials, no waiting on a Pagopar account. Card payments come after the store is already earning.
+**Ejecución en dos chats, para poder ir AFK:**
+
+- **CHAT 1 (Opus 5):** PR A–G — maquinaria: roles, cuentas de cliente, cupones. Todo lo que toca auth, sesiones o plata.
+- **CHAT 2 (Sonnet 5):** PR H–S — UX de vidriera, ABMs del panel, feed de actividad, i18n. Arranca **después** de mergear el chat 1.
+
+Dentro de cada chat: abrir el PR, esperar CI verde completo (unitarios **e integración** contra MySQL), mergear, seguir con el próximo. Los PRs sin dependencia entre sí pueden ir en paralelo; los `depende de:` no.
 
 ---
 
-## PR #1 — Foundation & Data Layer
-*Branch: `feat/foundation` · Demo: seeded catalog rendering from real Hostinger MySQL*
+## Guardarraíles (leer antes de escribir una línea)
+
+Los seis de `README.md` §"Reglas no negociables" siguen vigentes y tienen tests que los verifican en CI. Para la FASE 2 se suman:
+
+1. **Todo lo nuevo es opcional con default seguro.** Cada feature nueva visible (cuentas de cliente, login sin contraseña, cupones, hero de la home) va detrás de un flag en `src/config/tienda.ts` o de "cero filas = invisible". Con todos los flags apagados la tienda se comporta **exactamente** como hoy. El PR E agrega un test de CI que arranca con todos los flags apagados y verifica que nada nuevo se renderice.
+2. **El split maquinaria/piel es sagrado** (NEW-STORE.md). Todo esto es maquinaria (`src/domain`, `src/lib`, `/admin`, checkout) salvo el hero de la home (PR O, piel). `template:diff` tiene que seguir marcando bien.
+3. **Guards primero, siempre.** Toda server action nueva de `/admin` llama a su guard en la primera línea. Si un PR agrega una función guard nueva (`requireVendedorSession`, `requireCustomerSession`), **el mismo PR** actualiza el regex de `tests/unit/admin-guards.test.ts`.
+4. **Clientes ≠ usuarios del panel.** Tabla propia (`customers`), sesión propia con **cookie propia** (nunca la del admin), rate limit en el login, y el error de login jamás distingue "no existe" de "contraseña incorrecta" — igual que `authenticate()` hoy.
+5. **Descuentos son plata.** Los cupones pasan por `computeOrderTotals` y por los invariantes de `pnpm reconcile` (extenderlos en el mismo PR). El navegador nunca calcula un descuento.
+6. **Merge sólo con CI verde completo.** "Verde" = typecheck + lint + unitarios + integración (contenedor MySQL) + build + drift de migraciones. Nunca mergear con sólo los unitarios.
+7. **Migraciones versionadas** (`pnpm db:generate`), nunca `db:push` contra una base con pedidos reales. `/api/setup/init` las corre solo en el próximo deploy — no hay trabajo manual de base.
+
+---
+
+# CHAT 1 — Opus 5 · maquinaria: roles, cuentas, cupones
+
+## PR A — Higiene (sin dependencias, chico) — **hecho**
+*Branch: `feat/higiene-docs`*
 
 | # | Task | Model |
 |---|---|---|
-| 1.1 | `create-next-app` (TS, App Router, Tailwind) + shadcn/ui + ESLint/Prettier + `strict`/`noUncheckedIndexedAccess` | Sonnet 5 |
-| 1.2 | Drizzle + `mysql2` + `drizzle-kit` + `tsx`; `drizzle.config.ts`; pool with `connectionLimit: 8`, `timezone: "Z"` | Sonnet 5 |
-| 1.3 | Hostinger: create MySQL DB + user, enable **Remote MySQL** for the dev IP, verify connection from local | Sonnet 5 |
-| 1.4 | `src/db/schema.ts` — every table in ARCH.md §2. All money `BIGINT UNSIGNED`, ENUMs, FKs, indexes, FULLTEXT on products | **Opus 5** |
-| 1.5 | `transitionOrder()` + the allow-listed edge table + `order_events` audit write, in a transaction with `FOR UPDATE` | **Opus 5** |
-| 1.6 | `getAvailability()` / availability subquery (`on_hand − held reservations`), and `reserveStock()` with `FOR UPDATE` re-check | **Opus 5** |
-| 1.7 | `nextOrderNumber()` — dedicated counter row or `AUTO_INCREMENT` table, formatted `PY-000123`. **Never `COUNT(*)`** | **Opus 5** |
-| 1.8 | Money + PY utils with unit tests: `formatGs()`, `validateRuc()` (DV mod-11), `normalizePhonePY()`, `ivaIncluded()`, `waLink()` | **Opus 5** |
-| 1.9 | Auth foundation: `users` table, bcrypt, `iron-session`, `requireAdmin()` guard, owner-creation seed script (no public signup) | **Opus 5** |
-| 1.10 | Cloudinary setup: public `productos/` folder + private `comprobantes/` folder, signed-URL helpers | Sonnet 5 |
-| 1.11 | Zod schemas: `CartItem`, `CheckoutInput`, `AdminProductInput` | Sonnet 5 |
-| 1.12 | Idempotent seed: 4 categorías, ~24 productos con variantes, precios ₲ realistas, stock, ciudades PY, zonas de envío | Sonnet 5 |
-| 1.13 | Scripts `db:push` / `db:seed` / `db:studio`; CI running typecheck + lint + vitest | Sonnet 5 |
+| A.1 | Docs: "Next.js 15" → "Next.js 16" en ARCH.md/TASKS.md/README.md donde aparezca | Sonnet 5 |
+| A.2 | **Una sola fuente de labels de estado**: unificar `ORDER_STATUS_LABEL` (`src/components/admin/labels.tsx`) y el `STATUS_LABEL` inline de `src/app/pedido/[orderNumber]/page.tsx` en un módulo compartido (puede conservar la variante "para el comprador" y "para el panel", pero en un solo archivo). Prerrequisito del i18n del chat 2 | Sonnet 5 |
+| A.3 | Campo de email en el checkout: el schema ya lo acepta (`CheckoutInputSchema`), pero el `<Input>` nunca se renderizó y siempre viaja vacío. Agregarlo **opcional**, con label honesto ("por si tu WhatsApp falla") | Sonnet 5 |
 
-**Exit:** catalog renders from MySQL; `pnpm test` green; a raw `UPDATE orders SET status` appears nowhere in the codebase.
+**Exit:** `rg "Next.js 15"` sin resultados; un solo módulo exporta labels de estado; un checkout con email lo persiste en `orders.customer_email`.
 
----
+## PR B — Roles de verdad: owner / staff / vendedor — **hecho**
+*Branch: `feat/roles-reales` · Sin dependencias*
 
-## PR #2 — Storefront, Catalog & Cart
-*Branch: `feat/storefront` · Demo: browse → add to cart → cart survives a reload*
+Hoy `requireOwnerSession()` existe pero **nadie la llama**: owner y staff pueden lo mismo, incluidos reembolsos. Este PR cablea los dos niveles y agrega el tercero.
 
 | # | Task | Model |
 |---|---|---|
-| 2.1 | Layout: header + cart badge, footer, mobile nav, floating WhatsApp button, `es-PY` metadata, self-hosted fonts | Sonnet 5 |
-| 2.2 | `/` home: hero, destacados, grid de categorías | Sonnet 5 |
-| 2.3 | `/categoria/[slug]`: filtros (precio, marca), orden, paginación, ISR | Sonnet 5 |
-| 2.4 | `/producto/[slug]`: galería, selector de variante, disponibilidad, nota "IVA incluido", JSON-LD Product | Sonnet 5 |
-| 2.5 | Primitives: `ProductCard`, `PriceTag`, `StockBadge`, `QuantityStepper` | Sonnet 5 |
-| 2.6 | Zustand cart with `persist` + versioned migration, variant-level lines | Sonnet 5 |
-| 2.7 | Slide-over cart (Radix Dialog): edit, remove, subtotal, "Seguí comprando" / "Ir al checkout" | Sonnet 5 |
-| 2.8 | **Cart revalidation** — on cart open and checkout entry, re-price and re-check stock server-side; surface "cambió el precio / se quedó sin stock" | **Opus 5** |
-| 2.9 | Búsqueda con MySQL `FULLTEXT` (o `LIKE` + índice si FULLTEXT rinde mal en el plan de Hostinger) | Sonnet 5 |
-| 2.10 | Cloudinary image pipeline + blur placeholders + long cache headers | Sonnet 5 |
-| 2.11 | Empty / loading / error states, skeletons, `not-found.tsx` | Sonnet 5 |
+| B.1 | Migración: `USER_ROLES = ['owner', 'staff', 'vendedor']` + `users.last_login_at` | **Opus 5** |
+| B.2 | Matriz de permisos (documentarla en ARCH.md §1): **owner** = todo + gestión de usuarios, reembolsos (`markPaymentRefunded`), borrado de productos/variantes, edición de categorías y zonas, exports CSV · **staff** = pedidos, comprobantes (aprobar/rechazar), productos, ajustes de stock · **vendedor** = ver pedidos y transicionar sólo `pagado → enviado → entregado`; sin comprobantes, sin precios, sin stock, sin dashboard de plata, sin exports | **Opus 5** |
+| B.3 | Cablear: `requireOwnerSession()` en las acciones owner-only; nuevo `requireStaffSession()` (owner+staff, excluye vendedor) en las de plata/stock/productos; `requireAdminSession()` queda para lo que los tres pueden. Actualizar el regex de `admin-guards.test.ts` en este mismo PR | **Opus 5** |
+| B.4 | UI por rol: ocultar en el panel los botones/nav que el rol no puede usar (la defensa real son los guards; esto es UX) | Sonnet 5 |
+| B.5 | Tests: por cada acción, el rol de abajo recibe `ForbiddenError`; `authenticate()` actualiza `last_login_at` | **Opus 5** |
 
-**Exit:** Lighthouse mobile ≥ 90 perf/a11y on the product page; client JS < 120 KB gz.
+**Exit:** un `staff` que intenta reembolsar recibe error prolijo; un `vendedor` sólo ve pedidos y los marca enviados/entregados.
 
----
+## PR C — `/admin/usuarios` (depende de: B) — **hecho**
+*Branch: `feat/admin-usuarios`*
 
-## PR #3 — Checkout: SPI/QR manual + contra entrega  ← **the MVP ships here**
-*Branch: `feat/checkout` · Demo: a real order placed and confirmed on a phone, start to finish, with zero payment-gateway fees and zero third-party credentials*
-
-Decision: the manual + COD path ships **first**. It needs no Pagopar account, no sandbox keys, no fees, and it is how most PY stores actually get paid. Pagopar is PR #5 and touches no schema.
+La página que hace al template vendible: el dueño gestiona a sus empleados sin SSH ni llamarte.
 
 | # | Task | Model |
 |---|---|---|
-| 3.1 | `/checkout` form (RHF + Zod): nombre, WhatsApp, RUC/CI con validación de DV, toggle consumidor final, ciudad/barrio/dirección/referencia, método de pago | Sonnet 5 |
-| 3.2 | Envío por zona desde `shipping_zones` + umbral de envío gratis | Sonnet 5 |
-| 3.3 | **`createOrder` server action** — re-price everything from DB, insert order + items + holds in ONE transaction, mint `access_token`, set `reserved_until` per method | **Opus 5** |
-| 3.4 | Página SPI/QR: datos bancarios con botones de copiar en cada campo, QR, total exacto, instrucciones paso a paso | Sonnet 5 |
-| 3.5 | Subida de comprobante: validación MIME/tamaño/cantidad, upload privado a Cloudinary, fila en `receipts`, → `esperando_verificacion` | **Opus 5** |
-| 3.6 | Botón "Enviar comprobante por WhatsApp" con mensaje pre-armado (`waLink`) | Sonnet 5 |
-| 3.7 | Contra entrega: mismo state machine, sin comprobante; el dueño confirma al entregar | Sonnet 5 |
-| 3.8 | **`/pedido/[order_number]?t=`** — comparación de token en tiempo constante, timeline del pedido, se auto-actualiza al confirmarse el pago | Sonnet 5 (guard: **Opus 5**) |
-| 3.9 | **`/pedido/buscar`** — nro. de pedido + teléfono, rate-limited (5 intentos / 15 min / IP), mensaje de error genérico, redirige a la URL con token | **Opus 5** |
-| 3.10 | Notificación al dueño de un pedido nuevo (email o wa.me con un clic desde el admin) | Sonnet 5 |
+| C.1 | Página owner-only: listar usuarios del panel (email, nombre, rol, activo, último login), crear (email + contraseña temporal + rol), desactivar/reactivar, resetear contraseña, cambiar rol | Sonnet 5 |
+| C.2 | Server actions con `requireOwnerSession()`; reglas duras: no podés desactivarte a vos mismo, ni desactivar/degradar al último owner activo | **Opus 5** |
+| C.3 | `pnpm create-owner` queda como bootstrap del primer owner; documentar en README que el resto se crea desde el panel | Sonnet 5 |
 
-**Exit:** an order can be placed, paid by transfer, verified and marked shipped without any external payment service existing. **This is a sellable product.**
+**Exit:** flujo completo probado: owner crea un staff, el staff entra, el owner lo desactiva y el staff ya no entra.
 
----
-
-## PR #5 — Pagopar (después del MVP, sin tocar el schema)
-*Branch: `feat/pagopar` · Demo: sandbox purchase paid automatically end-to-end*
+## PR D — Atribución auditable (depende de: B, chico) — **hecho**
+*Branch: `feat/actor-user-id`*
 
 | # | Task | Model |
 |---|---|---|
-| 5.1 | **Pagopar client**: `iniciar-transaccion`, `sha1(private + order_number + total)` con total como string entero, req/res tipados, timeout + retry con jitter | **Opus 5** |
-| 5.2 | **Webhook `POST /api/webhooks/pagopar`**: guard en querystring → `sha1(private + hash_pedido)` con `timingSafeEqual` → idempotencia `INSERT IGNORE payment_events` → verificación de monto → `transitionOrder` → 200 en el formato que espera el proveedor, con logging redactado | **Opus 5** |
-| 5.3 | **Webhook test suite**: válido · firma alterada · replay ×3 · monto distinto · pedido inexistente · webhook antes del redirect · pedido ya enviado | **Opus 5** |
-| 5.4 | Confirmar contra la doc v2 actual + sandbox el formato exacto de la respuesta del webhook, y fijarlo con un test de integración | **Opus 5** |
-| 5.5 | Método "Tarjeta / Pagopar" en el checkout + página de retorno | Sonnet 5 |
-| 5.6 | Reserva de stock a 45 min para este método (ya soportado por `reserved_until`) | Sonnet 5 |
+| D.1 | Migración: `order_events.actor_user_id` y `stock_adjustments.actor_user_id` (FK nullable a `users.id`); las escrituras nuevas lo completan junto al `actor` de texto que ya existe (no se backfillea el histórico) | **Opus 5** |
 
-**Exit:** sandbox order paid end-to-end; a replayed webhook changes nothing; a tampered signature returns 401 and logs.
+**Exit:** un evento nuevo de admin queda con FK consultable, no sólo el string `admin:email`.
 
----
+## PR E — Cuentas de cliente (flag, apagado por defecto) (paralelo con B) — **hecho**
+*Branch: `feat/cuentas-clientes`*
 
-## PR #4 — Admin & Hardening
-*Branch: `feat/admin` · Demo: owner logs in on a phone, approves a receipt, marks an order shipped*
+**El checkout como invitado no se toca.** La cuenta es un upsell ("guardá tus datos para la próxima"), nunca una pared. Con `TIENDA.cuentasClientes: false` (el default) nada de esto se renderiza.
 
 | # | Task | Model |
 |---|---|---|
-| 4.1 | Login + session + `/admin/*` middleware, role re-checked in every action | **Opus 5** |
-| 4.2 | `/admin/pedidos`: filtros por estado/método/fecha, búsqueda por nro./WhatsApp/RUC, paginación server-side, **usable en celular** | Sonnet 5 |
-| 4.3 | `/admin/pedidos/[id]`: items, desglose de IVA, datos del cliente, timeline de `order_events`, botón wa.me | Sonnet 5 |
-| 4.4 | Revisión de comprobantes: preview con URL firmada, aprobar/rechazar con motivo | Sonnet 5 |
-| 4.5 | Acciones de estado conectadas **sólo** a `transitionOrder` | **Opus 5** |
-| 4.6 | `/admin/productos`: CRUD, subida de imágenes, ajuste de stock con motivo (auditado) | Sonnet 5 |
-| 4.7 | Dashboard: ventas del día/mes en ₲, pedidos esperando verificación, stock bajo | Sonnet 5 |
-| 4.8 | Cron (Hostinger cron job → ruta protegida por `CRON_SECRET`): vencer pedidos sin pago, GC de reservas viejas | Sonnet 5 |
-| 4.9 | **Security review**: guards en cada server action, rate limits, headers (CSP/HSTS/X-Frame-Options), scan de secretos, redacción de logs del webhook | **Opus 5** |
-| 4.10 | **Money audit**: cero `float`/`DECIMAL` en el camino del dinero, redondeo de IVA por línea, query de reconciliación de totales | **Opus 5** |
-| 4.11 | Deploy a Hostinger (slot Node.js, env vars, dominio, HTTPS), smoke test en producción, script de backup de la DB | Sonnet 5 |
+| E.1 | Migración: tabla `customers` (id, `phone` único normalizado PY, `email` único nullable, `password_hash` nullable, nombre, `marketing_opt_in`, `is_active`, `created_at`, `last_login_at`) + `orders.customer_id` (FK nullable). **Separada de `users`** — un cliente jamás pisa el panel | **Opus 5** |
+| E.2 | Sesión de cliente: iron-session con **cookie y secreto propios** (`customer_session`), `requireCustomerSession()`. Registro y login con **teléfono O email** + contraseña (bcrypt, mismos helpers), rate-limited, error genérico que no revela si la cuenta existe. Sin verificación de email/SMS en esta fase (no hay proveedor de envío) — documentar la limitación | **Opus 5** |
+| E.3 | Flag `cuentasClientes` en `tienda.ts`: apagado ⇒ las rutas `/cuenta/*` devuelven 404 y el header no muestra nada. **Test de CI "flags apagados = tienda de hoy"** (guardarraíl 1) | **Opus 5** |
+| E.4 | UI: `/cuenta` (mis pedidos — por `customer_id` y también los pedidos viejos que matcheen el teléfono verificado de la cuenta —, mis datos), login/registro, entrada discreta en el header | Sonnet 5 |
+| E.5 | Checkout logueado: prefill de nombre/WhatsApp/email/dirección, el pedido queda con `customer_id`. Checkout invitado: idéntico a hoy, con un "¿querés guardar tus datos?" opcional post-pedido | Sonnet 5 |
+| E.6 | Panel: `/admin/clientes` muestra si el comprador tiene cuenta y su opt-in de marketing; export CSV de clientes con opt-in (owner-only) — la lista de marketing que hoy no existe | Sonnet 5 |
 
-**Exit:** full order lifecycle demoable in Spanish on a phone; RLS-equivalent guard tests green; DB backup script proven.
+**Exit:** con el flag apagado, snapshot de la tienda idéntico a `main`; con el flag prendido, registro → compra logueada → historial en `/cuenta`, y el invitado compra igual que siempre.
+
+## PR F — Login sin contraseña, pre-armado (depende de: E) — **hecho**
+*Branch: `feat/login-sin-password`*
+
+Pre-construido para todas las tiendas, **inactivo hasta que la tienda tenga con qué mandar mensajes**: mandar un OTP por WhatsApp requiere WhatsApp Cloud API (credenciales + número verificado de Meta) — eso es lo que una tienda nueva "tiene que verificar antes de usarlo".
+
+| # | Task | Model |
+|---|---|---|
+| F.1 | Maquinaria de OTP/magic-link: token de un solo uso, hasheado en DB, expira a los 10 min, rate-limited, invalida los anteriores | **Opus 5** |
+| F.2 | Interfaz `MessageSender` con dos implementaciones: `whatsappCloud` (usa `WHATSAPP_CLOUD_*` del env) y `consola` (dev). Sin credenciales ⇒ la opción no se ofrece en el login — jamás un botón que no puede funcionar | **Opus 5** |
+| F.3 | UI del flujo + sección en NEW-STORE.md y `.env.example`: qué pide Meta y cómo prenderlo por tienda | Sonnet 5 |
+
+**Exit:** en dev (sender `consola`) el flujo completo anda; sin credenciales el login sólo ofrece contraseña.
+
+## PR G — Cupones (depende de: B; `solo_clientes` degrada sin E) — **hecho**
+*Branch: `feat/cupones`*
+
+| # | Task | Model |
+|---|---|---|
+| G.1 | Migración: `coupons` (código único, tipo `porcentaje`/`monto_fijo` — el monto en **Gs enteros**, jamás float —, mínimo de pedido, vigencia, límite de usos global y por cliente, `solo_clientes`, activo) + `orders.coupon_id` + columna de descuento en el desglose | **Opus 5** |
+| G.2 | Dominio: validación y aplicación **dentro de `computeOrderTotals` en el server**, redondeo de IVA por línea intacto; extender los invariantes de `pnpm reconcile` con el descuento en el mismo PR | **Opus 5** |
+| G.3 | Checkout: campo "código de descuento" plegado, feedback claro (vencido/mínimo no alcanzado/agotado), el desglose muestra el descuento; `solo_clientes` exige sesión de cliente (con el flag de cuentas apagado esos cupones simplemente no validan) | Sonnet 5 |
+| G.4 | `/admin/cupones` (owner-only): ABM + usos consumidos. Cero cupones = nada visible en el checkout | Sonnet 5 |
+| G.5 | Tests de concurrencia: dos checkouts simultáneos no gastan dos veces un cupón de un solo uso (`FOR UPDATE`, como el stock) | **Opus 5** |
+
+**Exit:** `pnpm reconcile` cuadra con pedidos con descuento; el cupón agotado pierde la carrera limpiamente.
+
+**Cierre del chat 1:** cumplido — A–G mergeados con CI verde completo (unitarios e integración contra MySQL), `/security-review` corrido sobre el acumulado, `pnpm reconcile` cuadrando y `pnpm preflight` bloqueando lo que tiene que bloquear.
 
 ---
 
-## FASE 2 — deliberately deferred
-0. **Pagopar** — now its own PR #5 above, post-launch.
-1. **FacturaPY integration** — contract already specified in `ARCH.md` §7. Store calls FacturaPY's `POST /api/public/invoices` with a Bearer API key; FacturaPY webhooks back the CDC + KuDE URL. Store needs three columns and one button. Requires the merchant's own timbrado/DNIT authorization — a legal prerequisite, not a software feature.
-2. Customer accounts + order history.
-3. Cupones, carritos abandonados, devoluciones/RMA.
-4. Multi-tenant (one install, many stores) — add `tenant_id` before this, not after.
-5. WhatsApp Cloud API automation (paid; manual deeplinks first).
+# CHAT 2 — Sonnet 5 · UX, ABMs, i18n (arranca con el chat 1 mergeado)
+
+## PR H — Skeletons (sin dependencias) — **hecho**
+`loading.tsx` para `/` reusando `ProductCardSkeleton` (antes sólo `/buscar` lo tenía).
+
+**Corrección de alcance:** el plan pedía además `/categoria/[slug]` y `/producto/[slug]`, y esas dos **no llevan `loading.tsx` a propósito** — decisión ya tomada y comentada en el código desde el PR de las fichas. Las dos deciden su 404 en el cuerpo (`notFound()`), y el Suspense de un `loading.tsx` manda el shell —y con él un HTTP 200— antes de que se sepa si la página existe: un producto borrado respondería 200 con la pantalla de 404, que es exactamente lo que hace que Google indexe fantasmas. El esqueleto de la home no tiene ese problema porque la home siempre existe.
+
+## PR I — SEO técnico (sin dependencias) — **hecho**
+`src/app/sitemap.ts` (home + categorías activas + productos publicados, con el mismo filtro `PUBLISHED()` de la vidriera) + `robots.ts` (bloquea `/admin`, `/api`, `/checkout`, `/pedido`, `/cuenta`, `/dev`) + JSON-LD `BreadcrumbList` e `ItemList` en categoría (producto ya tenía el suyo).
+
+Las piezas puras viven en `src/lib/seo.ts` para que se testeen sin Next ni base. Dos decisiones que valen: sin `NEXT_PUBLIC_SITE_URL` el sitemap sale **vacío** y `robots.txt` no declara `sitemap:` —una URL relativa no le sirve a ningún crawler y un dominio inventado es peor que no publicar—, y el `ItemList` numera desde la página actual (en la página 2 el primer producto es el 13). El test `tests/unit/seo.test.ts` recorre `src/app` y exige que toda ruta de nivel uno que no sea pública esté en `RUTAS_PRIVADAS`: una `/cuenta` nueva que se olvide de la lista se indexaría en silencio.
+
+## PR J — `/admin/categorias` (owner-only) — **hecho**
+ABM completo: crear, renombrar, cambiar el slug, reordenar y activar/desactivar. Hasta acá esta tabla la escribía sólo el seed.
+
+**Lo que se descubrió haciéndolo, y cambió el alcance:** el filtro `PUBLISHED()` de la vidriera miraba sólo el producto, así que desactivar una categoría dejaba la tienda incoherente — desaparecía del menú y devolvía 404, pero sus productos seguían en la home, en el buscador y en el sitemap, con una miga de pan que llevaba a ese 404. Mientras la tabla la escribía sólo el seed casi no pasaba; con un botón en el panel iba a pasar el primer día. Ahora `PUBLISHED()` exige además que la categoría esté activa (ARCH.md §"Qué se ve en la vidriera"), y la confirmación de desactivar dice el número exacto de productos que dejan de verse.
+
+El orden se guarda renumerando `0..n-1` adentro de la transacción y no intercambiando posiciones: dos tiendas clonadas del mismo seed pueden tener varias categorías en `position = 0`, y ahí un intercambio no cambia nada nunca.
+
+## PR K — `/admin/envios` (owner-only) — **hecho**
+ABM de `shipping_zones`: precio, ciudades, umbral de envío gratis, orden y activar/desactivar. La cotización del checkout ya leía de acá y sigue recalculándose server-side; los pedidos en vuelo conservan el flete que la compradora aceptó (`orders.shipping_pyg`).
+
+Tres reglas nuevas en el dominio, cada una por una forma de perder plata en silencio: una ciudad no puede estar en dos zonas (`quoteShipping` se queda con la primera por `position`, sin avisar), una zona sin ciudades es válida y sirve de comodín del interior, y no se puede apagar la última zona activa (sin ninguna, la tienda cobra ₲0 de flete a todo el país sin que ningún cartel lo diga).
+
+## PR L — `/admin/actividad` (owner y staff) — **hecho**
+Feed global paginado de `order_events` + `stock_adjustments`, filtrable por persona (el `actor_user_id` del PR D), tipo y fecha. "¿Qué hizo X hoy?" en una pantalla.
+
+Lo único difícil fue la paginación: son dos tablas y un solo orden. Traer N de cada una y ordenarlas en memoria funciona en la página 1 y miente en la 2 — con 300 eventos y 3 ajustes en el rango, los eventos tapan a los ajustes. El orden y el `LIMIT/OFFSET` los hace MySQL sobre un `UNION ALL` de `(tipo, id, fecha)`, y los detalles se buscan después sólo para las filas de esa página. El desempate va por `id` además de por fecha: dos eventos de la misma transacción comparten `created_at` al segundo, y sin eso una fila aparece dos veces y otra nunca.
+
+Dos detalles que no estaban en el plan y se ganaron el lugar: **"el sistema"** es un filtro (las filas sin `actor_user_id`: el cron, Pagopar, la compradora), y el desplegable de personas incluye a los **desactivados**, porque revisar qué hizo alguien antes de que le cortaran el acceso es justo la consulta que importa.
+
+## PR M — Productos relacionados — **hecho**
+"También te puede interesar" en `/producto/[slug]`: misma categoría, en stock, sin el que se está mirando. Sin nada que mostrar, la sección no se renderiza.
+
+El orden mezcla dos señales: **la misma marca primero** (quien mira una Marca X suele estar decidiendo entre Marca X) y después **el precio más parecido**, que es la señal de relevancia más honesta que hay en una góndola — a quien mira algo de ₲80.000 no le sirve que le ofrezcan uno de ₲2.000.000.
+
+El filtro de stock va en dos pasos: `on_hand > 0` en SQL (barato, descarta casi todo) y después, con las reservas ya calculadas por `hydrate`, se caen los que quedaron en cero por holds ajenos. Por eso se piden `limit * 3` candidatos. La comparación de marca usa `<=>` y no `=`: con `=`, dos productos sin marca comparan NULL contra NULL y el CASE se cae siempre.
+
+## PR N — Filtros y búsqueda — **hecho**
+Chips de filtros activos con su ✕ (uno por uno; "Limpiar todo" obliga a rehacer los que sí servían), contadores por marca ("Basics PY (12)") y sugerencias as-you-type en el buscador.
+
+Los contadores tienen un test que exige que el número del filtro sea **el mismo** que devuelve el filtro al usarse: si se separan, "Basics PY (12)" lleva a una grilla de 3 y el filtro deja de ser confiable para siempre.
+
+Las sugerencias son `suggestProducts`, que es `searchProducts` **sin `hydrate()`**: esto se dispara con cada tecla y `hydrate` trae variantes, fotos y calcula las reservas de stock de cada producto, nada de lo cual se dibuja en una lista de sugerencias. La server action es pública pero rate-limited por IP (30/min) — cada tecla que se escapa del debounce es un `MATCH … AGAINST` en el mismo slot de Node donde corre el checkout.
+
+El buscador pasó a ser un `<form method="get" action="/buscar">`: sin JavaScript, o mientras el bundle baja en una 3G paraguaya, escribir y apretar Enter lleva igual a los resultados. Las sugerencias son una mejora encima de algo que ya funciona.
+
+## PR O — Hero de la home (piel, config-driven) — **hecho**
+Slot `hero` en `tienda.ts`: foto de Cloudinary + título + bajada + un botón. Sin configurar (`hero: null`, el default) la home queda **exactamente** como estaba — el texto que hoy tiene escrito a mano pasó a ser el hero por defecto, así que una tienda que se actualiza no ve ningún cambio.
+
+**Sin carrusel, a propósito.** El plan lo dejaba abierto ("o lista para carrusel simple") y la respuesta es que no: un carrusel es JavaScript, autoplay, gestos y un estado que se sincroniza, o sea maquinaria, en el único lugar de la FASE 2 que es piel. Una portada más ambiciosa se escribe en `src/app/page.tsx`, que es de la tienda y se puede reescribir entero.
+
+Dos bordes que el test fija: sin `CLOUDINARY_CLOUD_NAME` en el entorno —el estado de toda tienda recién clonada— el hero sale de texto y no con un `<img>` roto; y sin categorías cargadas todavía, el hero por defecto sale sin botón en vez de con uno que lleva a un 404.
+
+## PR P–S — i18n por tienda (Nivel A: un idioma por tienda, elegido en `tienda.ts`)
+**En serie y al final** (así las features de arriba se extraen una sola vez). No hay switcher para el visitante ni rutas por locale — eso sería un Nivel B futuro sobre esta base. Las URLs quedan en español para siempre (decisión: son parte del template). Moneda y dinero **fuera de alcance**: `money.ts` queda PYG-entero con su `₲` literal.
+
+| PR | Task |
+|---|---|
+| P | **hecho** — Infra propia, sin librería: `t()` / `tPlural()` síncronas y sin contexto, `TIENDA.lang` elige el catálogo, `es-PY` completo como default **y fallback por clave**. Se descartó next-intl: resuelve rutas por locale y un idioma que cambia por request, y acá el idioma es una constante de build. La consecuencia práctica es que `t()` anda igual en un Server Component, en un `"use client"`, en `generateMetadata` y en un script de Node — un provider de React no serviría para lo último, y medio catálogo vive en `order-messages.ts`, que corre fuera de React. Incluye la extracción de **toda la vidriera de navegación** (header, pie, carrito, fichas, filtros, buscador, home, categoría, producto, 404 y error). Dos tests de CI cierran el círculo: toda clave usada existe, y **ninguna clave del catálogo quedó muerta**. *Branch: `feat/i18n-infra`* |
+| Q | **hecho** — Lo transaccional: checkout completo, la página del pedido (datos bancarios, pasos del SPI, comprobante), la vuelta de Pagopar, `/pedido/buscar` y toda la rama `/cuenta/*`. También `coupon-messages.ts`, que era prosa suelta. La vidriera queda sin un solo texto escrito a mano. *Branch: `feat/i18n-vidriera`* |
+| R | **hecho** — El panel entero: las 14 pantallas, los 20 componentes, las server actions y los errores de dominio que sólo lee el dueño. Salieron ~500 claves y no 150 — el panel tiene más texto del que parece, sobre todo en las ayudas que explican por qué un botón hace lo que hace. También `order-labels.ts` (las dos vistas de cada estado), `admin-product-sort.ts` y las cabeceras de los CSV. `validatePasswordStrength` pasó a devolver una **clave** en vez de prosa, que era el último helper de `lib/` con texto adentro. *Branch: `feat/i18n-admin`* |
+| S | **hecho** — Templates de WhatsApp parametrizados y errores de dominio con **código** en vez de prosa: `DomainError` recibe una clave del catálogo, arma el `message` con ella y guarda el `code`. `error.message` sigue siendo lo que era (lo leen los formularios, los logs y `adminActionError` sin cambiar una línea) y ahora además se puede preguntar *qué* pasó sin comparar strings. Convertidos los que **una persona lee**: checkout, comprobantes, cuentas y OTP. Los que sólo lee un desarrollador (`qty inválida para la variante 3`, transiciones inválidas) siguen siendo `Error` con su mensaje técnico, a propósito: nadie los va a leer en guaraní y un stack trace tiene que decir exactamente qué pasó. *Branch: `feat/i18n-dominio`* |
+
+**Exit del chat 2:** cumplido. Con `lang: "es-PY"` —el default— los textos son los de siempre; el catálogo tiene ~890 claves y cubre la vidriera **y** el panel; los tres tests de CI (toda clave usada existe, ninguna clave muerta, mismos parámetros en todos los catálogos) sostienen que siga siendo cierto. Un segundo idioma es copiar `es-PY.ts`, traducir los valores y agregarlo a `CATALOGOS` — las claves son el contrato y el test no deja mergear uno incompleto.
+
+**Cierre del chat 2:** mismo informe final: hecho, riesgos, ideas.
+
+---
+
+# DESPUÉS DE LOS DOS CHATS — lo que faltaba para que el template se use solo
+
+Los dos PRs que cierran la FASE 2. No estaban en el plan original: salieron de
+usar el template desde cero y anotar qué seguía siendo trabajo manual.
+
+## PR T — Los datos bancarios salen del entorno y entran al panel — **hecho**
+`/admin/banco` (owner-only): banco, titular, RUC, cuenta, tipo de cuenta y el
+QR, editables con la tienda arriba y sin redeploy. Las variables `BANCO_*`
+siguen andando como **fallback** —una tienda ya configurada no cambia en nada—
+y la fila cargada desde el panel les gana; la precedencia está fijada en
+ARCH.md §5.1. El motivo es el de siempre en esta familia de permisos: quien
+puede cambiar el número de cuenta al que transfieren las compradoras desvía la
+facturación entera sin generar un solo pedido raro (ARCH.md §1), así que es
+owner-only y queda auditado.
+
+## PR U — De "Use this template" a preflight verde, sin editar archivos a mano — **hecho**
+`pnpm nueva-tienda`: seis preguntas y con eso reescribe la marca de
+`tienda.ts`, genera `SESSION_SECRET` / `CRON_SECRET` / `SETUP_SECRET` con
+`crypto.randomBytes` (no con `openssl`, que en Windows no existe), escribe
+`.env.local`, imprime el bloque exacto del hPanel y corre
+`template:diff --marcar`. Idempotente y **nunca regenera un secreto que ya
+exista** —uno nuevo cierra todas las sesiones del panel y deja al cron llamando
+con la llave vieja—; `--dry-run` no escribe nada y las seis respuestas se
+pueden pasar por bandera para correrlo sin TTY.
+
+Se suman `CLOUDINARY_FOLDER_PREFIX` (varias tiendas en una misma cuenta de
+Cloudinary dejan de mezclar comprobantes: todas acuñan `PY-000123`) y, en
+`/api/setup/init`, el alta de zonas de envío por `{zonas:[...]}` más el reporte
+de `preflight()` medido **contra el entorno del servidor**, que es lo que mata
+el paso de correr el preflight desde tu máquina contra un `.env` parecido al de
+producción.
+
+---
+
+## FASE 3 — deliberadamente afuera (no arrancar sin decisión explícita)
+
+1. **FacturaPY** — contrato listo en `ARCH.md` §7; requiere timbrado/DNIT del comercio.
+2. **Nivel B de i18n** — switcher para el visitante, rutas por locale, hreflang. Sobre la base del PR P.
+3. **Wishlist y reseñas** — recién tienen sentido con cuentas de cliente maduras y moderación.
+4. **Multi-tenant** — agregar `tenant_id` antes, no después.
+5. **WhatsApp Cloud API para notificaciones salientes** (pedido confirmado, enviado) — el sender del PR F.2 ya deja la interfaz lista.
+6. **Carritos abandonados, devoluciones/RMA.**

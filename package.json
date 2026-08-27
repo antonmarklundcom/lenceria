@@ -1,5 +1,5 @@
 {
-  "name": "lenceria",
+  "name": "ecom",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -11,16 +11,21 @@
     "test": "vitest run",
     "db:push": "drizzle-kit push && tsx scripts/post-push.ts",
     "db:seed": "tsx scripts/seed.ts",
+    "nueva-tienda": "tsx scripts/nueva-tienda.ts",
+    "importar:productos": "tsx scripts/importar-productos.ts",
     "demo": "tsx scripts/demo.ts",
     "db:studio": "drizzle-kit studio",
-    "prepare": "husky",
+    "db:check": "tsx scripts/db-check.ts",
+    "prepare": "husky || true",
     "test:watch": "vitest",
     "db:generate": "drizzle-kit generate",
     "create-owner": "tsx scripts/create-owner.ts",
     "reconcile": "tsx scripts/reconcile.ts",
     "backfill:pagos-manuales": "tsx scripts/backfill-manual-payments.ts",
     "preflight": "tsx scripts/preflight.ts",
-    "template:diff": "tsx scripts/template-diff.ts"
+    "backup": "tsx scripts/backup-db.ts",
+    "template:diff": "tsx scripts/template-diff.ts",
+    "setup:doctor": "tsx scripts/doctor.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.7.1",
@@ -71,5 +76,8 @@
     "typescript": "^5",
     "vitest": "^4.1.10"
   },
-  "packageManager": "pnpm@11.22.0"
+  "packageManager": "pnpm@11.22.0",
+  "engines": {
+    "node": ">=20 <25"
+  }
 }

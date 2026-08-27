@@ -1,59 +1,16 @@
-import Image from "next/image";
 import Link from "next/link";
 
+import { HomeHero } from "@/components/home-hero";
 import { ProductCard } from "@/components/product-card";
-import { Button } from "@/components/ui/button";
+import { TIENDA, type Hero } from "@/config/tienda";
 import { getCatalog, getCategories, type CatalogProduct } from "@/db/queries";
-import { categoryPlaceholderSrc } from "@/lib/images";
+import { t } from "@/i18n";
 
 /**
  * Home. ISR: el catálogo cambia poco y las redes móviles paraguayas
  * agradecen el HTML ya armado. La disponibilidad exacta se ve en la ficha.
- *
- * Composición (skill web-design-system, track EDITORIAL — sin colores nuevos:
- * sólo los tokens de `globals.css`, un acento vino y su blush):
- *
- *   1. Hero          P1 split asimétrico 7/5 · imagen arriba en mobile
- *   2. Categorías    grilla de fichas 3:4 con el nombre encima — es la
- *                    navegación real de este rubro, por eso va arriba de todo
- *   3. Confianza     P8 cinta a sangre, cuatro hechos
- *   4. Destacados    grilla con el card de producto de siempre
- *   5. Guía          P9 declaración grande sobre blush, a sangre
- *   6. Envío         P1 espejado 5/7 con el hueco de la foto real
- *
- * Casi todo el tráfico entra desde el navegador de Instagram en un teléfono:
- * el orden de arriba es el orden en que se scrollea con el pulgar, y no hay
- * carrusel ni animación de entrada que retrase el primer pintado.
- *
- * Fotos: todavía no hay ninguna. Cada hueco muestra la ilustración de
- * `public/placeholders/` —la misma que usa el resto del sitio, que dice "Foto
- * próximamente"— y está marcado acá abajo con `SLOT`. No se inventan imágenes
- * de producto.
  */
 export const revalidate = 300;
-
-/** Las cuatro objeciones que en lencería se responden antes de la compra. */
-const CONFIANZA: { titulo: string; detalle: string; href?: string }[] = [
-  {
-    titulo: "Envío discreto",
-    detalle: "Empaque opaco, sin logo ni detalle del contenido por fuera.",
-    href: "/envio-discreto",
-  },
-  {
-    titulo: "Cambio de talle en 7 días",
-    detalle: "Sin uso, con la etiqueta puesta y en su empaque.",
-    href: "/cambios",
-  },
-  {
-    titulo: "Guía de talles",
-    detalle: "Dos medidas con una cinta y sabés qué pedir.",
-    href: "/guia-de-talles",
-  },
-  {
-    titulo: "Pagás como quieras",
-    detalle: "Transferencia, QR o contra entrega. IVA incluido.",
-  },
-];
 
 export default async function HomePage() {
   let categories: Awaited<ReturnType<typeof getCategories>> = [];
@@ -66,203 +23,82 @@ export default async function HomePage() {
     error = cause instanceof Error ? cause.message : String(cause);
   }
 
-  // El botón del hero manda a la primera categoría; sin base todavía, a la
-  // grilla de más abajo.
-  const heroHref = categories[0] ? `/categoria/${categories[0].slug}` : "#categorias";
-
   return (
-    <main>
-      {/* --- 1. Hero -------------------------------------------------------- */}
-      <section className="border-border/60 border-b">
-        <div className="mx-auto grid w-full max-w-6xl min-h-[62vh] grid-cols-1 items-center gap-8 px-4 pt-4 pb-10 sm:min-h-[64vh] lg:min-h-[74vh] lg:grid-cols-12 lg:gap-14 lg:py-20">
-          {/* SLOT hero — foto de campaña, 4:5 vertical. Hoy, ilustración. */}
-          <div className="relative lg:col-span-5 lg:order-2">
-            {/* Encuadre ancho en el teléfono y vertical en desktop, para que
-                el hero entre en 60–70vh sin empujar el botón abajo del pliegue.
-                Nunca más ancho que 16/9: con `cover`, un recorte más agresivo
-                se come el "Foto próximamente" de la ilustración. */}
-            <div className="bg-accent relative aspect-16/9 w-full overflow-hidden rounded-lg lg:aspect-4/5">
-              <Image
-                src="/placeholders/conjuntos.svg"
-                alt="Conjunto de lencería (foto de campaña próximamente)"
-                fill
-                priority
-                sizes="(max-width: 1024px) 100vw, 460px"
-                className="object-cover"
-              />
-            </div>
-            {/* Cruza el borde de abajo de la foto. Sólo en desktop: en el
-                encuadre apaisado del teléfono le taparía el "Foto
-                próximamente" a la ilustración, y ahí abajo lo dice igual la
-                cinta de confianza. */}
-            <p className="border-border bg-background text-muted-foreground hidden rounded-md border px-3 py-1.5 text-xs lg:absolute lg:-bottom-3 lg:left-4 lg:block">
-              Todos los pedidos salen en empaque discreto
-            </p>
-          </div>
+    <main className="mx-auto w-full max-w-6xl px-4 py-8">
+      {/*
+        La portada. Sin `TIENDA.hero` configurado sale la de siempre, con el
+        texto del template: una tienda recién clonada no tiene foto de
+        portada, y un hueco gris arriba de todo es peor que un párrafo
+        honesto. Configurarlo la reemplaza entera — ver `src/config/tienda.ts`.
 
-          <div className="lg:col-span-7 lg:order-1">
-            <p className="eyebrow">Lencería online en Paraguay</p>
-            <h1 className="mt-3 text-[2.25rem] sm:text-6xl lg:text-7xl">
-              Para todos los días y para los que no lo son.
-            </h1>
-            <p className="text-muted-foreground mt-5 max-w-[52ch] text-base leading-relaxed sm:text-lg">
-              Precios en guaraníes con IVA incluido, envío discreto a todo el país y
-              cambio de talle sin vueltas.
-            </p>
-            <Button asChild size="lg" className="mt-7">
-              <Link href={heroHref}>Ver la colección</Link>
-            </Button>
-          </div>
-        </div>
-      </section>
+        El "Ver productos" apunta a la primera categoría porque es lo único
+        que se sabe seguro que existe; sin categorías todavía, no se dibuja un
+        botón que lleve a un 404.
+      */}
+      <HomeHero hero={TIENDA.hero ?? heroPorDefecto(categories[0]?.slug)} />
 
       {error ? (
-        <div className="border-border border-l-primary mx-auto mt-8 w-full max-w-6xl rounded-lg border border-l-2 p-4">
-          <p className="text-sm">No pude leer el catálogo:</p>
+        <div className="border-border border-l-primary mt-8 rounded-lg border border-l-2 p-4">
+          <p className="text-sm">{t("home.errorCatalogo")}</p>
           <p className="mt-1 font-mono text-xs break-all">{error}</p>
-          <p className="text-muted-foreground mt-2 text-sm">
-            Levantá la base con <code>docker compose up -d</code>, después{" "}
-            <code>pnpm db:push &amp;&amp; pnpm db:seed</code>.
-          </p>
+          <p className="text-muted-foreground mt-2 text-sm">{t("home.errorCatalogo.ayuda")}</p>
         </div>
-      ) : null}
-
-      {/* --- 2. Categorías -------------------------------------------------- */}
-      {categories.length > 0 ? (
-        <section id="categorias" className="mx-auto w-full max-w-6xl px-4 py-14 sm:py-20">
-          <p className="eyebrow">El catálogo</p>
-          <h2 className="mt-2 text-3xl sm:text-4xl">Por dónde empezar</h2>
-
-          <div className="mt-8 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3">
-            {categories.map((category) => (
-              <Link
-                key={category.id}
-                href={`/categoria/${category.slug}`}
-                className="group focus-visible:ring-ring relative block aspect-3/4 overflow-hidden rounded-lg focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
-              >
-                {/* SLOT categoría — foto vertical 3:4. Hoy, ilustración. */}
-                <Image
-                  src={categoryPlaceholderSrc(category.slug)}
-                  alt={`${category.name} (sin foto todavía)`}
-                  fill
-                  sizes="(max-width: 1024px) 50vw, 33vw"
-                  className="object-cover transition-transform duration-300 ease-out group-hover:scale-[1.04] motion-reduce:transition-none motion-reduce:group-hover:scale-100"
-                />
-                {/* El nombre va encima de la foto: sin este velo no se lee.
-                    Y va arriba, no abajo, porque abajo está el "Foto
-                    próximamente" de la ilustración — dos textos peleándose. */}
-                <div className="from-foreground/65 absolute inset-0 bg-linear-to-b to-transparent to-50%" />
-                <h3 className="text-background absolute inset-x-0 top-0 p-3 text-xl sm:p-5 sm:text-2xl">
-                  {category.name}
-                </h3>
-              </Link>
-            ))}
-          </div>
-        </section>
-      ) : null}
-
-      {/* --- 3. Confianza --------------------------------------------------- */}
-      <section aria-label="Cómo comprás" className="bg-foreground text-background">
-        <ul className="mx-auto grid w-full max-w-6xl grid-cols-2 gap-x-6 gap-y-8 px-4 py-10 sm:py-12 lg:grid-cols-4 lg:gap-x-10">
-          {CONFIANZA.map((item) => (
-            <li key={item.titulo}>
-              <p className="text-sm font-medium sm:text-base">
-                {item.href ? (
-                  <Link href={item.href} className="underline-offset-4 hover:underline">
-                    {item.titulo}
+      ) : (
+        <>
+          {categories.length > 0 ? (
+            <section className="mt-10">
+              <h2 className="text-lg font-semibold">{t("home.categorias")}</h2>
+              <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                {categories.map((category) => (
+                  <Link
+                    key={category.id}
+                    href={`/categoria/${category.slug}`}
+                    className="border-border hover:border-foreground/30 rounded-xl border p-4 transition-colors"
+                  >
+                    <p className="font-medium">{category.name}</p>
+                    <p className="text-muted-foreground mt-1 text-sm">{t("home.categorias.verTodo")}</p>
                   </Link>
-                ) : (
-                  item.titulo
-                )}
-              </p>
-              <p className="text-background/75 mt-1.5 max-w-[32ch] text-sm leading-relaxed">
-                {item.detalle}
-              </p>
-            </li>
-          ))}
-        </ul>
-      </section>
+                ))}
+              </div>
+            </section>
+          ) : null}
 
-      {/* --- 4. Destacados -------------------------------------------------- */}
-      {featured.length > 0 ? (
-        <section className="mx-auto w-full max-w-6xl px-4 py-14 sm:py-20">
-          <p className="eyebrow">Selección</p>
-          <h2 className="mt-2 text-3xl sm:text-4xl">Destacados</h2>
-          <div className="mt-8 grid grid-cols-2 gap-4 lg:grid-cols-4">
-            {featured.map((product) => (
-              <ProductCard key={product.id} product={product} />
-            ))}
-          </div>
-        </section>
-      ) : error ? null : (
-        <section className="mx-auto w-full max-w-6xl px-4 py-14">
-          <p className="text-muted-foreground text-sm">
-            Todavía no hay productos publicados. Sembrá el catálogo con{" "}
-            <code>pnpm db:seed</code>.
-          </p>
-        </section>
+          {featured.length > 0 ? (
+            <section className="mt-12">
+              <div className="flex items-baseline justify-between">
+                <h2 className="text-lg font-semibold">{t("home.destacados")}</h2>
+              </div>
+              <div className="mt-4 grid grid-cols-2 gap-4 lg:grid-cols-4">
+                {featured.map((product, index) => (
+                  <ProductCard key={product.id} product={product} priority={index < 4} />
+                ))}
+              </div>
+            </section>
+          ) : (
+            <p className="text-muted-foreground mt-10 text-sm">{t("home.sinProductos")}</p>
+          )}
+        </>
       )}
-
-      {/* --- 5. Guía de talles ---------------------------------------------- */}
-      <section className="bg-accent text-accent-foreground">
-        <div className="mx-auto w-full max-w-6xl px-4 py-16 sm:py-24">
-          <p className="eyebrow">Antes de comprar</p>
-          <h2 className="mt-3 max-w-[18ch] text-4xl sm:text-6xl lg:text-7xl">
-            El talle correcto se mide, no se adivina.
-          </h2>
-          <p className="mt-6 max-w-[58ch] text-base leading-relaxed sm:text-lg">
-            Dos medidas con una cinta de costura y ya sabés qué pedir — corpiño y
-            bombacha, con la tabla de conversión al lado. Y si dudás entre dos talles,
-            preguntanos antes de comprar: sale más barato que un cambio.
-          </p>
-          <Button asChild size="lg" className="mt-8">
-            <Link href="/guia-de-talles">Ver la guía de talles</Link>
-          </Button>
-        </div>
-      </section>
-
-      {/* --- 6. Envío discreto ---------------------------------------------- */}
-      <section className="mx-auto w-full max-w-6xl px-4 py-14 sm:py-20">
-        <div className="grid gap-10 lg:grid-cols-12 lg:items-center lg:gap-14">
-          {/* SLOT foto real del paquete cerrado, 4:3. Va una foto de verdad del
-              empaque que usa el comercio — no una ilustración ni un render: es
-              la prueba de una promesa operativa (ver /envio-discreto). */}
-          <div className="lg:col-span-5">
-            <div className="border-border bg-muted flex aspect-4/3 items-center justify-center rounded-lg border border-dashed p-8">
-              <Image
-                src="/placeholders/generico.svg"
-                alt="El paquete cerrado, tal como te llega (foto próximamente)"
-                width={176}
-                height={176}
-                className="w-32 max-w-full rounded-md sm:w-44"
-              />
-            </div>
-          </div>
-
-          <div className="lg:col-span-7">
-            <p className="eyebrow">Cómo te llega</p>
-            <h2 className="mt-2 text-3xl sm:text-4xl">
-              Nadie tiene por qué saber qué pediste
-            </h2>
-            <p className="text-muted-foreground mt-5 max-w-[62ch] text-base leading-relaxed">
-              Todos los pedidos salen en empaque opaco, sin logo y sin ninguna imagen.
-              Por fuera van tu nombre, tu teléfono y tu dirección — nada más. El detalle
-              de lo que compraste viaja adentro, en un sobre cerrado, y el repartidor
-              tampoco sabe qué lleva.
-            </p>
-            <p className="text-muted-foreground mt-4 max-w-[62ch] text-base leading-relaxed">
-              No es un extra que se pide ni que se paga aparte: es como sale todo,
-              siempre, sin que tengas que aclarar nada.
-            </p>
-            <Link
-              href="/envio-discreto"
-              className="text-primary mt-6 inline-block text-sm underline underline-offset-4"
-            >
-              Cómo viaja tu pedido
-            </Link>
-          </div>
-        </div>
-      </section>
     </main>
   );
+}
+
+/**
+ * La portada con la que sale el template. Es exactamente el bloque que la home
+ * tenía escrito a mano antes del PR O: una tienda que se actualiza y no
+ * configura nada no ve ningún cambio.
+ *
+ * El botón necesita un destino que exista, y lo único que se sabe seguro es la
+ * primera categoría. Sin ninguna categoría todavía —el estado de una tienda
+ * recién instalada— el hero sale sin botón, que es mejor que uno que lleva a
+ * un 404.
+ */
+function heroPorDefecto(primeraCategoria: string | undefined): Hero {
+  return {
+    titulo: t("home.hero.titulo"),
+    texto: t("home.hero.texto"),
+    cta: primeraCategoria
+      ? { label: t("home.hero.cta"), href: `/categoria/${primeraCategoria}` }
+      : undefined,
+  };
 }

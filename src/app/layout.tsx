@@ -1,13 +1,15 @@
 import type { Metadata } from "next";
 import type React from "react";
-import { Cormorant_Garamond, Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono } from "next/font/google";
 
 import { TIENDA } from "@/config/tienda";
+import { Analytics } from "@/components/analytics";
 import { CartSheet } from "@/components/cart-sheet";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { WhatsAppFab } from "@/components/whatsapp-fab";
 import { Toaster } from "@/components/ui/sonner";
+import { idiomaActivo } from "@/i18n";
 import { siteOrigin } from "@/lib/site-url";
 import "./globals.css";
 
@@ -19,24 +21,6 @@ const geistSans = Geist({
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
-});
-
-/**
- * Serif de titulares. Es la mitad del cambio de piel: los tokens de color de
- * `globals.css` son la otra.
- *
- * Sólo dos pesos: 400 para los titulares grandes y 500 para los chicos. Una
- * serif en 600/700 se lee a presupuesto, no a marca, así que directamente no
- * se cargan — lo que no está no se puede usar por accidente.
- *
- * Para vestir otra tienda se cambia la familia acá y `--font-display` en
- * `globals.css` la levanta sola.
- */
-const displaySerif = Cormorant_Garamond({
-  variable: "--font-display-serif",
-  subsets: ["latin"],
-  weight: ["400", "500"],
-  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -61,10 +45,14 @@ export const metadata: Metadata = {
 export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
+  // El idioma **efectivo** y no el que dice el config: si `TIENDA.lang` apunta
+  // a un catálogo que no existe, los textos salen en es-PY y el `lang` del
+  // HTML tiene que decir es-PY. Un lector de pantalla leyendo español con
+  // fonética inglesa es peor que no declarar nada.
   return (
     <html
-      lang={TIENDA.lang}
-      className={`${geistSans.variable} ${geistMono.variable} ${displaySerif.variable} h-full antialiased`}
+      lang={idiomaActivo()}
+      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col">
         <SiteHeader />
@@ -73,6 +61,9 @@ export default function RootLayout({
         <CartSheet />
         <WhatsAppFab />
         <Toaster />
+        {/* Nada de terceros salvo que esta tienda configure medidores —
+            src/lib/analytics.ts. Sin variables, esto no renderiza nada. */}
+        <Analytics />
       </body>
     </html>
   );

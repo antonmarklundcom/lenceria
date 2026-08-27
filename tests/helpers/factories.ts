@@ -2,7 +2,9 @@ import { randomBytes } from 'node:crypto';
 
 import { eq } from 'drizzle-orm';
 
-import { categories, orders, products, variants, type OrderStatus, type PaymentMethod } from '../../src/db/schema';
+import { categories, orders, products, variants, type OrderStatus, type PaymentMethod, type UserRole } from '../../src/db/schema';
+import { createUser } from '../../src/lib/auth';
+
 import { getTestDb } from './db';
 
 export async function createCategory(slug = `cat-${randomBytes(4).toString('hex')}`): Promise<number> {
@@ -45,7 +47,13 @@ export async function createVariant(options: { onHand: number; pricePyg?: number
 }
 
 export async function createOrder(
-  options: { status?: OrderStatus; paymentMethod?: PaymentMethod; totalPyg?: number } = {},
+  options: {
+    status?: OrderStatus;
+    paymentMethod?: PaymentMethod;
+    totalPyg?: number;
+    customerPhone?: string;
+    customerId?: number | null;
+  } = {},
 ): Promise<number> {
   const db = getTestDb();
   const orderNumber = `PY-T${randomBytes(4).toString('hex').toUpperCase()}`;
@@ -54,7 +62,8 @@ export async function createOrder(
     accessToken: randomBytes(32).toString('hex'),
     status: options.status ?? 'pendiente_pago',
     customerName: 'Cliente de Prueba',
-    customerPhone: '+595981123456',
+    customerPhone: options.customerPhone ?? '+595981123456',
+    customerId: options.customerId ?? null,
     shipCity: 'Asunción',
     shipAddress: 'Av. Mcal. López 1234',
     paymentMethod: options.paymentMethod ?? 'transferencia',
@@ -78,4 +87,24 @@ export async function getStatus(orderId: number): Promise<OrderStatus> {
   const row = (await db.select().from(orders).where(eq(orders.id, orderId)).limit(1))[0];
   if (!row) throw new Error(`pedido ${orderId} inexistente`);
   return row.status;
+}
+
+/**
+ * Un usuario del panel de verdad.
+ *
+ * Desde el PR D, `order_events.actor_user_id` y `stock_adjustments.actor_user_id`
+ * son FK contra `users`: un id inventado en un test ya no es "un número
+ * cualquiera", es una fila que MySQL rechaza. Que los tests usen un usuario
+ * real es además lo que pasa en producción — el id sale siempre de una sesión
+ * abierta contra esta tabla.
+ */
+export async function createAdminUser(
+  options: { email?: string; role?: UserRole } = {},
+): Promise<number> {
+  const email = options.email ?? `admin-${randomBytes(4).toString('hex')}@tienda.py`;
+  const created = await createUser(
+    { email, password: 'tienda2026segura', role: options.role ?? 'owner' },
+    getTestDb(),
+  );
+  return created.id;
 }

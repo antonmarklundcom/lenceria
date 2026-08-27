@@ -1,15 +1,17 @@
 "use client";
 
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useRef, useState, useTransition } from "react";
 import { toast } from "sonner";
 
 import { submitCheckout } from "@/app/actions/checkout";
 import { quoteCartShipping, type CartQuote } from "@/app/actions/shipping-quote";
+import { TIENDA } from "@/config/tienda";
 import { FreeShippingBar } from "@/components/free-shipping-bar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { t } from "@/i18n";
+import { couponRejectionMessage } from "@/lib/coupon-messages";
 import { Label } from "@/components/ui/label";
 import { describeIssue } from "@/lib/cart-issues";
 import { cartSubtotal, useCart } from "@/lib/cart-store";
@@ -18,17 +20,31 @@ import { formatGs } from "@/lib/money";
 /**
  * Formulario de checkout.
  *
- * El único monto que manda es `expectedTotalPyg`, y va para **comparar**: es
- * lo que había en pantalla, para que el servidor pueda avisar si el total
- * cambió mientras ella completaba los datos. No se cobra. Lo que se cobra lo
- * calcula `createOrder` desde la DB, adentro de su transacción.
+ * Ojo con lo que NO manda: ningún monto. El total que se ve acá es
+ * informativo; el que se cobra lo calcula `createOrder` desde la DB.
  */
 export function CheckoutForm({
   cities,
   pagoparEnabled = false,
+  prefill,
+  hayCupones = false,
 }: {
   cities: string[];
   pagoparEnabled?: boolean;
+  /**
+   * ¿Esta tienda tiene algún cupón usable? Lo cuenta el servidor. Sin cupones
+   * cargados el campo no se dibuja: cero filas = invisible.
+   */
+  hayCupones?: boolean;
+  /**
+   * Datos de la cuenta, cuando hay sesión de cliente (PR E.5). Los arma el
+   * servidor desde la cookie; el checkout de invitado los recibe vacíos y se
+   * comporta exactamente igual que siempre.
+   *
+   * Es un prefill y nada más: los campos siguen siendo editables, y el
+   * servidor recalcula todo lo que importa igual que antes.
+   */
+  prefill?: { name?: string; phone?: string; email?: string };
 }) {
   const router = useRouter();
   const { lines, clear, freeShipping } = useCart();
@@ -51,6 +67,14 @@ export function CheckoutForm({
    * cambia la ciudad o el carrito: a partir de ahí manda la cotización nueva.
    */
   const [acceptedTotal, setAcceptedTotal] = useState<number | null>(null);
+  /**
+   * El código de descuento. Se guarda el texto tipeado y se manda al servidor
+   * con cada cotización: el descuento **nunca** se calcula acá (README
+   * §"Reglas no negociables"). Lo que vuelve es cuánto descontó o por qué no.
+   */
+  const [couponInput, setCouponInput] = useState("");
+  const [couponApplied, setCouponApplied] = useState("");
+  const [couponOpen, setCouponOpen] = useState(false);
 
   const subtotal = cartSubtotal(lines);
 
@@ -62,7 +86,7 @@ export function CheckoutForm({
    */
   const itemsKey = lines.map((line) => `${line.variantId}x${line.qty}`).join(",");
 
-  const requestQuote = (nextCity: string, delayMs = 400) => {
+  const requestQuote = (nextCity: string, delayMs = 400, code = couponApplied) => {
     if (quoteTimer.current) clearTimeout(quoteTimer.current);
 
     const target = nextCity.trim();
@@ -81,7 +105,7 @@ export function CheckoutForm({
     const ticket = ++quoteTicket.current;
     setIsQuoting(true);
     quoteTimer.current = setTimeout(() => {
-      void quoteCartShipping({ items, city: target })
+      void quoteCartShipping({ items, city: target, couponCode: code || undefined })
         .then((result) => {
           if (ticket !== quoteTicket.current) return;
           setQuote(result.shipping ? { ...result, itemsKey } : null);
@@ -105,9 +129,9 @@ export function CheckoutForm({
   if (lines.length === 0) {
     return (
       <div className="border-border rounded-xl border border-dashed p-10 text-center">
-        <p className="font-medium">Tu carrito está vacío</p>
+        <p className="font-medium">{t("checkout.carritoVacio")}</p>
         <Button className="mt-4" onClick={() => router.push("/")}>
-          Ver productos
+          {t("checkout.verProductos")}
         </Button>
       </div>
     );
@@ -135,6 +159,7 @@ export function CheckoutForm({
             shipAddress: String(data.get("shipAddress") ?? ""),
             shipReference: String(data.get("shipReference") ?? ""),
             paymentMethod,
+            couponCode: couponApplied || undefined,
             marketingOptIn,
             isGift,
             giftNote: String(data.get("giftNote") ?? ""),
@@ -180,25 +205,50 @@ export function CheckoutForm({
 
       <div className="grid gap-3 sm:grid-cols-2">
         <div className="grid gap-1.5">
-          <Label htmlFor="customerName">Nombre y apellido</Label>
-          <Input id="customerName" name="customerName" required minLength={3} autoComplete="name" />
+          <Label htmlFor="customerName">{t("checkout.nombre")}</Label>
+          <Input
+            id="customerName"
+            name="customerName"
+            required
+            minLength={3}
+            defaultValue={prefill?.name ?? ""}
+            autoComplete="name"
+          />
         </div>
         <div className="grid gap-1.5">
-          <Label htmlFor="customerPhone">WhatsApp</Label>
+          <Label htmlFor="customerPhone">{t("checkout.whatsapp")}</Label>
           <Input
             id="customerPhone"
             name="customerPhone"
             required
-            placeholder="0981 123 456"
+            defaultValue={prefill?.phone ?? ""}
+            placeholder={t("checkout.whatsapp.placeholder")}
             inputMode="tel"
             autoComplete="tel"
           />
         </div>
       </div>
 
+      <div className="grid gap-1.5">
+        <Label htmlFor="customerEmail">
+          {t("checkout.email")}{" "}
+          <span className="text-muted-foreground font-normal">{t("checkout.opcional")}</span>
+        </Label>
+        <Input
+          id="customerEmail"
+          name="customerEmail"
+          type="email"
+          inputMode="email"
+          defaultValue={prefill?.email ?? ""}
+          autoComplete="email"
+          placeholder={t("checkout.email.placeholder")}
+        />
+        <p className="text-muted-foreground text-xs">{t("checkout.email.ayuda")}</p>
+      </div>
+
       <div className="grid gap-3 sm:grid-cols-2">
         <div className="grid gap-1.5">
-          <Label htmlFor="docType">Documento</Label>
+          <Label htmlFor="docType">{t("checkout.documento")}</Label>
           <select
             id="docType"
             name="docType"
@@ -206,14 +256,16 @@ export function CheckoutForm({
             onChange={(event) => setDocType(event.target.value as typeof docType)}
             className="border-input bg-background h-9 rounded-md border px-3 text-sm"
           >
-            <option value="NINGUNO">Consumidor final</option>
-            <option value="CI">Cédula</option>
-            <option value="RUC">RUC</option>
+            <option value="NINGUNO">{t("checkout.documento.ninguno")}</option>
+            <option value="CI">{t("checkout.documento.ci")}</option>
+            <option value="RUC">{t("checkout.documento.ruc")}</option>
           </select>
         </div>
         {docType !== "NINGUNO" ? (
           <div className="grid gap-1.5">
-            <Label htmlFor="docNumber">{docType === "RUC" ? "RUC (con DV)" : "Nro. de cédula"}</Label>
+            <Label htmlFor="docNumber">
+              {docType === "RUC" ? t("checkout.documento.rucLabel") : t("checkout.documento.ciLabel")}
+            </Label>
             <Input id="docNumber" name="docNumber" required inputMode="numeric" />
           </div>
         ) : null}
@@ -221,7 +273,7 @@ export function CheckoutForm({
 
       <div className="grid gap-3 sm:grid-cols-2">
         <div className="grid gap-1.5">
-          <Label htmlFor="shipCity">Ciudad</Label>
+          <Label htmlFor="shipCity">{t("checkout.ciudad")}</Label>
           <Input
             id="shipCity"
             name="shipCity"
@@ -244,34 +296,38 @@ export function CheckoutForm({
           </datalist>
         </div>
         <div className="grid gap-1.5">
-          <Label htmlFor="shipBarrio">Barrio</Label>
+          <Label htmlFor="shipBarrio">{t("checkout.barrio")}</Label>
           <Input id="shipBarrio" name="shipBarrio" />
         </div>
       </div>
 
       <div className="grid gap-1.5">
-        <Label htmlFor="shipAddress">Dirección</Label>
+        <Label htmlFor="shipAddress">{t("checkout.direccion")}</Label>
         <Input id="shipAddress" name="shipAddress" required minLength={5} autoComplete="street-address" />
       </div>
 
       <div className="grid gap-1.5">
-        <Label htmlFor="shipReference">Referencia (opcional)</Label>
-        <Input id="shipReference" name="shipReference" placeholder="Casa de portón verde, entre X e Y" />
+        <Label htmlFor="shipReference">{t("checkout.referencia")}</Label>
+        <Input id="shipReference" name="shipReference" placeholder={t("checkout.referencia.placeholder")} />
       </div>
 
       <fieldset className="grid gap-2">
-        <legend className="mb-1 text-sm font-medium">¿Cómo querés pagar?</legend>
+        <legend className="mb-1 text-sm font-medium">{t("checkout.pago.pregunta")}</legend>
         {(
           [
-            ["transferencia", "Transferencia / QR (SPI)", "Te pasamos los datos y subís el comprobante."],
-            ["contra_entrega", "Contra entrega", "Pagás en efectivo cuando recibís el pedido."],
+            [
+              "transferencia",
+              t("checkout.pago.transferencia"),
+              t("checkout.pago.transferencia.ayuda"),
+            ],
+            [
+              "contra_entrega",
+              t("checkout.pago.contraEntrega"),
+              t("checkout.pago.contraEntrega.ayuda"),
+            ],
             ...(pagoparEnabled
               ? ([
-                  [
-                    "tarjeta",
-                    "Tarjeta / Pagopar",
-                    "Pagás online, ahora, con tarjeta u otros medios de Pagopar.",
-                  ],
+                  ["tarjeta", t("checkout.pago.tarjeta"), t("checkout.pago.tarjeta.ayuda")],
                 ] as const)
               : []),
           ] as const
@@ -306,23 +362,20 @@ export function CheckoutForm({
             className="mt-1"
           />
           <span>
-            <span className="font-medium">Es un regalo</span>
-            <span className="text-muted-foreground block text-xs">
-              Lo preparamos para regalar y le sumamos una tarjeta con tu mensaje. El empaque sigue
-              siendo discreto: quien lo recibe abre el regalo, no el pedido.
-            </span>
+            <span className="font-medium">{t("checkout.regalo")}</span>
+            <span className="text-muted-foreground block text-xs">{t("checkout.regalo.ayuda")}</span>
           </span>
         </label>
 
         {isGift ? (
           <div className="grid gap-1.5">
-            <Label htmlFor="giftNote">Mensaje para la tarjeta (opcional)</Label>
+            <Label htmlFor="giftNote">{t("checkout.regalo.mensaje")}</Label>
             <textarea
               id="giftNote"
               name="giftNote"
               rows={2}
               maxLength={300}
-              placeholder="¡Feliz cumple! Con todo mi cariño."
+              placeholder={t("checkout.regalo.mensaje.placeholder")}
               className="border-input bg-background rounded-md border px-3 py-2 text-sm"
             />
           </div>
@@ -341,11 +394,9 @@ export function CheckoutForm({
           className="mt-1"
         />
         <span>
-          <span className="font-medium">Quiero recibir novedades y promociones</span>
+          <span className="font-medium">{t("checkout.novedades")}</span>
           <span className="text-muted-foreground block text-xs">
-            Te escribimos al WhatsApp que pusiste arriba, sólo por ofertas y cosas nuevas. Nunca
-            por este pedido —eso te llega igual— y tu número no se lo pasamos a nadie. Pedinos que
-            te saquemos cuando quieras.
+            {t("checkout.novedades.ayuda", { tienda: TIENDA.nombre })}
           </span>
         </span>
       </label>
@@ -362,30 +413,124 @@ export function CheckoutForm({
         </ul>
       ) : null}
 
+      {/*
+        El campo de descuento, plegado. Sólo existe si la tienda tiene cupones
+        cargados: cero filas = nada visible (guardarraíl 1 del PLAN.md).
+      */}
+      {hayCupones ? (
+        <div className="border-border border-t pt-4 text-sm">
+          {couponOpen || couponApplied ? (
+            <div className="grid gap-2">
+              <Label htmlFor="couponCode">{t("checkout.cupon.label")}</Label>
+              <div className="flex gap-2">
+                <Input
+                  id="couponCode"
+                  value={couponInput}
+                  onChange={(event) => setCouponInput(event.target.value.toUpperCase())}
+                  placeholder={t("checkout.cupon.placeholder")}
+                  maxLength={40}
+                  autoComplete="off"
+                  className="uppercase"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  disabled={isQuoting || couponInput.trim() === ""}
+                  onClick={() => {
+                    const code = couponInput.trim().toUpperCase();
+                    setCouponApplied(code);
+                    // El total lo recalcula el servidor: se re-cotiza sin
+                    // esperar el debounce, con el código puesto.
+                    setAcceptedTotal(null);
+                    requestQuote(city, 0, code);
+                  }}
+                >
+                  {t("checkout.cupon.aplicar")}
+                </Button>
+              </div>
+
+              {currentQuote?.couponRejection ? (
+                <p role="alert" className="text-destructive text-xs">
+                  {couponRejectionMessage(currentQuote.couponRejection, {
+                    minOrderPyg: currentQuote.couponMinOrderPyg,
+                    subtotalPyg: currentQuote.subtotalPyg,
+                  })}
+                </p>
+              ) : null}
+
+              {currentQuote && currentQuote.discountPyg > 0 ? (
+                <p className="text-muted-foreground text-xs">
+                  {t("checkout.cupon.aplicado", {
+                    codigo: currentQuote.couponCode ?? "",
+                    monto: formatGs(currentQuote.discountPyg),
+                  })}{" "}
+                  <button
+                    type="button"
+                    className="underline"
+                    onClick={() => {
+                      setCouponInput("");
+                      setCouponApplied("");
+                      setAcceptedTotal(null);
+                      requestQuote(city, 0, "");
+                    }}
+                  >
+                    {t("checkout.cupon.quitar")}
+                  </button>
+                </p>
+              ) : null}
+
+              {city.trim().length < 2 ? (
+                <p className="text-muted-foreground text-xs">{t("checkout.cupon.faltaCiudad")}</p>
+              ) : null}
+            </div>
+          ) : (
+            <button
+              type="button"
+              className="text-muted-foreground underline"
+              onClick={() => setCouponOpen(true)}
+            >
+              {t("checkout.cupon.pregunta")}
+            </button>
+          )}
+        </div>
+      ) : null}
+
       <div className="border-border grid gap-1 border-t pt-4 text-sm">
         <div className="flex items-center justify-between">
-          <span className="text-muted-foreground">Subtotal (IVA incluido)</span>
+          <span className="text-muted-foreground">{t("checkout.subtotal")}</span>
           <span className="tabular-nums">{formatGs(currentQuote?.subtotalPyg ?? subtotal)}</span>
         </div>
+
+        {/* El descuento se muestra **arriba** del envío y con signo, porque es
+            lo que explica por qué el total no es la suma de lo de arriba. */}
+        {currentQuote && currentQuote.discountPyg > 0 ? (
+          <div className="flex items-center justify-between">
+            <span className="text-muted-foreground">
+              {currentQuote.couponCode
+                ? t("checkout.descuentoCon", { codigo: currentQuote.couponCode })
+                : t("checkout.descuento")}
+            </span>
+            <span className="tabular-nums">−{formatGs(currentQuote.discountPyg)}</span>
+          </div>
+        ) : null}
 
         {currentQuote?.shipping ? (
           <>
             <div className="flex items-center justify-between">
               <span className="text-muted-foreground">
-                Envío
                 {currentQuote.shipping.match === "exacta"
-                  ? ` — ${currentQuote.shipping.zoneName}`
-                  : ""}
+                  ? t("checkout.envioCon", { zona: currentQuote.shipping.zoneName })
+                  : t("checkout.envio")}
                 {isQuoting ? "…" : ""}
               </span>
               <span className="tabular-nums">
                 {currentQuote.shipping.isFree
-                  ? "Gratis"
+                  ? t("checkout.envioGratis")
                   : formatGs(currentQuote.shipping.shippingPyg)}
               </span>
             </div>
             <div className="flex items-center justify-between pt-1">
-              <span className="font-medium">Total</span>
+              <span className="font-medium">{t("checkout.total")}</span>
               <span className="text-base font-semibold tabular-nums">
                 {formatGs(currentQuote.totalPyg ?? 0)}
               </span>
@@ -399,13 +544,13 @@ export function CheckoutForm({
           es una nota al pie: es lo que pasa. */}
       <p className="text-muted-foreground -mt-3 text-xs">
         {!currentQuote?.shipping
-          ? "Poné tu ciudad y te calculamos el envío antes de que confirmes."
+          ? t("checkout.nota.faltaCiudad")
           : currentQuote.shipping.match === "mas_cara"
-            ? `No encontramos tu ciudad entre nuestras zonas, así que te cotizamos la tarifa más alta (${currentQuote.shipping.zoneName}). Escribinos por WhatsApp y lo vemos.`
+            ? t("checkout.nota.masCara", { zona: currentQuote.shipping.zoneName })
             : // `exacta` y `sin_zonas` comparten esta línea: en la segunda el
               // envío es ₲0 de verdad, así que no hay nada que aclararle a
               // quien compra (el que tiene que configurar zonas es el dueño).
-              "El total se confirma al crear tu pedido."}
+              t("checkout.nota.exacta")}
       </p>
 
       {/* Con la ciudad puesta el número es el de su zona; sin ella, el que
@@ -415,20 +560,8 @@ export function CheckoutForm({
         subtotalPyg={currentQuote?.subtotalPyg ?? subtotal}
       />
 
-      {/* La duda de "¿qué va a ver quien reciba el paquete?" aparece justo acá,
-          con el dedo sobre el botón de confirmar. Decirlo antes del click es lo
-          que convierte en este rubro. */}
-      <p className="border-border text-muted-foreground rounded-lg border border-dashed p-3 text-xs leading-relaxed">
-        <strong className="text-foreground">Tu pedido viaja en empaque discreto:</strong> bolsa
-        opaca sin logo, sin detalle del contenido por fuera y con el remito adentro, en sobre
-        cerrado.{" "}
-        <Link href="/envio-discreto" className="underline underline-offset-4">
-          Cómo lo enviamos
-        </Link>
-      </p>
-
       <Button type="submit" size="lg" disabled={isPending}>
-        {isPending ? "Creando tu pedido…" : "Confirmar pedido"}
+        {isPending ? t("checkout.confirmando") : t("checkout.confirmar")}
       </Button>
     </form>
   );

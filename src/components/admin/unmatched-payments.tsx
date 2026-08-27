@@ -9,6 +9,7 @@ import { markPaymentRefunded, retryPaymentRevival } from "@/app/actions/admin-pa
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { formatGs } from "@/lib/money";
+import { t } from "@/i18n";
 
 /**
  * "Pagos sin pedido vivo" con sus dos acciones (ARCH.md §4.1).
@@ -32,17 +33,39 @@ export type UnmatchedPaymentCard = {
   paidAt: string;
 };
 
-export function UnmatchedPayments({ payments }: { payments: UnmatchedPaymentCard[] }) {
+/**
+ * `puedeDevolver` lo decide la página con la matriz de roles: registrar una
+ * devolución es owner-only (ARCH.md §1). Esconder el botón es UX —el guard de
+ * `markPaymentRefunded` es lo que frena la escritura—, pero un botón que
+ * siempre contesta 403 es peor que no tenerlo.
+ */
+export function UnmatchedPayments({
+  payments,
+  puedeDevolver,
+}: {
+  payments: UnmatchedPaymentCard[];
+  puedeDevolver: boolean;
+}) {
   return (
     <ul className="divide-border mt-3 divide-y text-sm">
       {payments.map((payment) => (
-        <UnmatchedPaymentRow key={payment.paymentId} payment={payment} />
+        <UnmatchedPaymentRow
+          key={payment.paymentId}
+          payment={payment}
+          puedeDevolver={puedeDevolver}
+        />
       ))}
     </ul>
   );
 }
 
-function UnmatchedPaymentRow({ payment }: { payment: UnmatchedPaymentCard }) {
+function UnmatchedPaymentRow({
+  payment,
+  puedeDevolver,
+}: {
+  payment: UnmatchedPaymentCard;
+  puedeDevolver: boolean;
+}) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [refunding, setRefunding] = useState(false);
@@ -52,15 +75,17 @@ function UnmatchedPaymentRow({ payment }: { payment: UnmatchedPaymentCard }) {
   const retry = (): void => {
     setError(null);
     startTransition(async () => {
-      const result = await retryPaymentRevival({ paymentId: payment.paymentId });
+      const result = await retryPaymentRevival({
+        paymentId: payment.paymentId,
+      });
       if (!result.ok) {
         setError(result.error);
         return;
       }
       toast.success(
         result.changed
-          ? `${result.orderNumber} volvió a estar cobrado.`
-          : `${result.orderNumber} ya estaba cobrado.`,
+          ? t("panel.pagos.revivido", { numero: result.orderNumber })
+          : t("panel.pagos.yaCobrado", { numero: result.orderNumber })
       );
       router.refresh();
     });
@@ -69,14 +94,17 @@ function UnmatchedPaymentRow({ payment }: { payment: UnmatchedPaymentCard }) {
   const refund = (): void => {
     setError(null);
     startTransition(async () => {
-      const result = await markPaymentRefunded({ paymentId: payment.paymentId, reason });
+      const result = await markPaymentRefunded({
+        paymentId: payment.paymentId,
+        reason,
+      });
       if (!result.ok) {
         setError(result.error);
         return;
       }
       setRefunding(false);
       setReason("");
-      toast.success(`Devolución anotada en ${result.orderNumber}.`);
+      toast.success(t("panel.pagos.devolucionAnotada", { numero: result.orderNumber }));
       router.refresh();
     });
   };
@@ -90,7 +118,11 @@ function UnmatchedPaymentRow({ payment }: { payment: UnmatchedPaymentCard }) {
         <span className="font-semibold tabular-nums">{formatGs(payment.amountPyg)}</span>
       </div>
       <p className="text-muted-foreground mt-1 text-xs">
-        {payment.provider} · pedido en &quot;{payment.orderStatus}&quot; · {payment.paidAt}
+        {t("panel.pagos.detalle", {
+          proveedor: payment.provider,
+          estado: payment.orderStatus,
+          fecha: payment.paidAt,
+        })}
       </p>
 
       {error ? (
@@ -102,25 +134,22 @@ function UnmatchedPaymentRow({ payment }: { payment: UnmatchedPaymentCard }) {
         </p>
       ) : null}
 
-      {refunding ? (
+      {refunding && puedeDevolver ? (
         <div className="border-border mt-2 grid gap-2 rounded-lg border p-3">
           <label className="text-muted-foreground text-xs" htmlFor={`motivo-${payment.paymentId}`}>
-            Motivo de la devolución (queda en el historial del pedido)
+            {t("panel.pagos.motivo")}
           </label>
           <Input
             id={`motivo-${payment.paymentId}`}
             value={reason}
             onChange={(event) => setReason(event.target.value)}
-            placeholder="Ej: transferí de vuelta por SPI el 12/8"
+            placeholder={t("panel.pagos.motivo.placeholder")}
             maxLength={500}
           />
-          <p className="text-muted-foreground text-xs">
-            Esto no le transfiere la plata a nadie: anota que vos ya la devolviste, y cancela el
-            pedido.
-          </p>
+          <p className="text-muted-foreground text-xs">{t("panel.pagos.aclaracion")}</p>
           <div className="flex gap-2">
             <Button type="button" variant="destructive" disabled={isPending} onClick={refund}>
-              {isPending ? "Guardando…" : "Confirmar devolución"}
+              {isPending ? t("panel.acciones.guardando") : t("panel.pagos.confirmarDevolucion")}
             </Button>
             <Button
               type="button"
@@ -131,24 +160,26 @@ function UnmatchedPaymentRow({ payment }: { payment: UnmatchedPaymentCard }) {
                 setReason("");
               }}
             >
-              Volver
+              {t("panel.acciones.volver")}
             </Button>
           </div>
         </div>
       ) : (
         <div className="mt-2 flex flex-wrap gap-2">
           <Button type="button" size="sm" disabled={isPending} onClick={retry}>
-            Reintentar el pedido
+            {t("panel.pagos.reintentar")}
           </Button>
-          <Button
-            type="button"
-            size="sm"
-            variant="outline"
-            disabled={isPending}
-            onClick={() => setRefunding(true)}
-          >
-            Marcar como devuelto
-          </Button>
+          {puedeDevolver ? (
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              disabled={isPending}
+              onClick={() => setRefunding(true)}
+            >
+              {t("panel.pagos.marcarDevuelto")}
+            </Button>
+          ) : null}
         </div>
       )}
     </li>

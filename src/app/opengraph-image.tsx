@@ -31,18 +31,15 @@ export default async function OpenGraphImage() {
           justifyContent: "center",
           padding: "0 90px",
           // Sin tokens de `globals.css`: esto no corre en el navegador y no
-          // hay CSS custom properties acá, así que los colores van escritos.
-          // El template los deja en gris neutro; acá se usa el vino de
-          // `globals.css` porque esta tarjeta es lo primero que se ve de la
-          // tienda en un chat de WhatsApp, y llegar en gris cuando el sitio
-          // es vino se lee como que el link es de otro lado.
-          background: "#2a1116",
-          color: "#fbf7f2",
+          // hay CSS custom properties acá. Neutro a propósito — la piel de
+          // cada tienda se rediseña, este archivo no tendría por qué.
+          background: "#0b0b0c",
+          color: "#fafafa",
           fontSize: 64,
         }}
       >
         <div style={{ fontWeight: 700, letterSpacing: "-0.03em" }}>{TIENDA.nombre}</div>
-        <div style={{ marginTop: 24, fontSize: 32, color: "#dcb9c0", lineHeight: 1.35 }}>
+        <div style={{ marginTop: 24, fontSize: 32, color: "#a1a1aa", lineHeight: 1.35 }}>
           {TIENDA.tagline}
         </div>
       </div>

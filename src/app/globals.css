@@ -3,97 +3,49 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/* ==========================================================================
-   PALETA — lo único que se cambia para vestir otra tienda
-   ==========================================================================
-
-   Esta tienda (lenceria.com.py) usa neutros cálidos con un solo acento
-   vino. Si mañana este mismo código viste otra marca, se tocan **estos ocho
-   tokens y nada más** — el resto se deriva de ellos o es estructura:
-
-     1. --primary            acento de la marca. Botones, links, foco. UNO solo.
-     2. --primary-foreground el texto que va encima del acento.
-     3. --accent             la versión clarita del acento (hover, badges).
-     4. --accent-foreground  el texto que va encima de --accent.
-     5. --background         el papel. Acá es hueso cálido, no blanco puro.
-     6. --foreground         la tinta. Casi negro, con el mismo sesgo de tono.
-     7. --radius             0.375rem = editorial. Subilo a 1rem para algo
-                             más blando/juvenil.
-     8. --font-display       la serif de los títulos (se elige en layout.tsx).
-
-   Y sus ocho gemelos en el bloque `.dark` de más abajo. `--secondary`,
-   `--muted`, `--border`, `--input` y `--card` son neutros cálidos derivados de
-   --background: si cambiás el tono del papel, corréles el mismo tono para que
-   la paleta no se parta.
-
-   Cómo se derivó (procedimiento, no gusto — skill web-design-system):
-     · acento vino oklch(0.42 0.128 12) ≈ #84263a, tono HSL ≈ 347°.
-     · neutros = vecinos muy desaturados del acento (croma 0.005–0.018),
-       nunca gris de croma cero: eso es lo que hacía que esto pareciera un
-       panel de administración y no una marca.
-     · tinta = el acento llevado a L 0.20 y croma casi nulo.
-   Contraste verificado (WCAG AA, sRGB): tinta/papel 17.6:1, muted/papel
-   6.1:1, acento/papel 8.8:1, texto-sobre-acento 8.7:1. En oscuro: 17.4:1,
-   8.2:1, 8.0:1, 7.8:1. Si tocás un valor, volvé a medir: el croma en oklch
-   mueve la luminancia real más de lo que parece.
-
-   Regla que no se negocia: UN acento. Vino + verde de WhatsApp + un tercer
-   color fuerte son tres primarios peleándose y se lee barato.
-   ========================================================================== */
-
 :root {
-  --radius: 0.375rem;
-
-  /* --- los ocho de arriba ------------------------------------------------ */
-  --primary: oklch(0.42 0.128 12);
-  --primary-foreground: oklch(0.985 0.006 65);
-  --accent: oklch(0.935 0.028 15);
-  --accent-foreground: oklch(0.32 0.075 12);
-  --background: oklch(0.988 0.005 65);
-  --foreground: oklch(0.2 0.018 15);
-
-  /* --- neutros derivados del papel --------------------------------------- */
-  --card: oklch(0.998 0.003 70);
-  --card-foreground: oklch(0.2 0.018 15);
-  --popover: oklch(0.998 0.003 70);
-  --popover-foreground: oklch(0.2 0.018 15);
-  --secondary: oklch(0.955 0.012 60);
-  --secondary-foreground: oklch(0.26 0.02 15);
-  --muted: oklch(0.96 0.01 60);
-  --muted-foreground: oklch(0.49 0.022 25);
-  --border: oklch(0.89 0.012 40);
-  --input: oklch(0.9 0.012 40);
-  --ring: oklch(0.42 0.128 12);
-
-  /* Rojo de error. A propósito NO es el vino de la marca: si el acento y el
-     error son el mismo color, un precio tachado y un pedido rechazado se ven
-     igual. */
-  --destructive: oklch(0.55 0.2 27);
-  --destructive-foreground: oklch(0.985 0.006 65);
+  --radius: 0.625rem;
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.145 0 0);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.145 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.145 0 0);
+  --primary: oklch(0.205 0 0);
+  --primary-foreground: oklch(0.985 0 0);
+  --secondary: oklch(0.97 0 0);
+  --secondary-foreground: oklch(0.205 0 0);
+  --muted: oklch(0.97 0 0);
+  --muted-foreground: oklch(0.556 0 0);
+  --accent: oklch(0.97 0 0);
+  --accent-foreground: oklch(0.205 0 0);
+  --destructive: oklch(0.577 0.245 27.325);
+  --destructive-foreground: oklch(0.985 0 0);
+  --border: oklch(0.922 0 0);
+  --input: oklch(0.922 0 0);
+  --ring: oklch(0.708 0 0);
 }
 
 .dark {
-  --primary: oklch(0.74 0.115 10);
-  --primary-foreground: oklch(0.18 0.02 15);
-  --accent: oklch(0.31 0.04 12);
-  --accent-foreground: oklch(0.94 0.02 15);
-  --background: oklch(0.165 0.014 18);
-  --foreground: oklch(0.965 0.006 65);
-
-  --card: oklch(0.215 0.016 18);
-  --card-foreground: oklch(0.965 0.006 65);
-  --popover: oklch(0.215 0.016 18);
-  --popover-foreground: oklch(0.965 0.006 65);
-  --secondary: oklch(0.27 0.018 18);
-  --secondary-foreground: oklch(0.965 0.006 65);
-  --muted: oklch(0.27 0.018 18);
-  --muted-foreground: oklch(0.735 0.015 40);
-  --border: oklch(1 0 0 / 12%);
-  --input: oklch(1 0 0 / 16%);
-  --ring: oklch(0.74 0.115 10);
-
-  --destructive: oklch(0.7 0.19 22);
-  --destructive-foreground: oklch(0.985 0.006 65);
+  --background: oklch(0.145 0 0);
+  --foreground: oklch(0.985 0 0);
+  --card: oklch(0.205 0 0);
+  --card-foreground: oklch(0.985 0 0);
+  --popover: oklch(0.205 0 0);
+  --popover-foreground: oklch(0.985 0 0);
+  --primary: oklch(0.922 0 0);
+  --primary-foreground: oklch(0.205 0 0);
+  --secondary: oklch(0.269 0 0);
+  --secondary-foreground: oklch(0.985 0 0);
+  --muted: oklch(0.269 0 0);
+  --muted-foreground: oklch(0.708 0 0);
+  --accent: oklch(0.269 0 0);
+  --accent-foreground: oklch(0.985 0 0);
+  --destructive: oklch(0.704 0.191 22.216);
+  --destructive-foreground: oklch(0.985 0 0);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 15%);
+  --ring: oklch(0.556 0 0);
 }
 
 @theme inline {
@@ -101,8 +53,6 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-  /* Serif de titulares. Se carga en src/app/layout.tsx. */
-  --font-display: var(--font-display-serif);
   --color-card: var(--card);
   --color-card-foreground: var(--card-foreground);
   --color-popover: var(--popover);
@@ -120,10 +70,10 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
-  --radius-sm: calc(var(--radius) - 2px);
-  --radius-md: var(--radius);
-  --radius-lg: calc(var(--radius) + 6px);
-  --radius-xl: calc(var(--radius) + 14px);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
 }
 
 @layer base {
@@ -132,43 +82,5 @@
   }
   body {
     @apply bg-background text-foreground;
-  }
-
-  /* Titulares en serif, cuerpo en sans. Va acá y no clase por clase para que
-     una página nueva salga bien peinada sin que nadie se acuerde de ponerle
-     `font-display`. El peso se deja liviano a propósito: una serif en 700 se
-     lee a presupuesto, no a marca. Las utilidades de Tailwind (`font-sans`,
-     `font-semibold`) siguen ganando donde se las pone a mano. */
-  h1,
-  h2,
-  h3 {
-    font-family: var(--font-display), Georgia, "Times New Roman", serif;
-    font-weight: 500;
-    letter-spacing: -0.015em;
-  }
-  h1 {
-    line-height: 1.05;
-  }
-
-  /* El panel del dueño es una herramienta de trabajo, no la vidriera: ahí los
-     títulos van en la sans, que a 14–20px se lee más rápido. */
-  .admin-chrome h1,
-  .admin-chrome h2,
-  .admin-chrome h3 {
-    font-family: var(--font-sans), sans-serif;
-    letter-spacing: -0.01em;
-  }
-}
-
-@layer components {
-  /* Etiqueta chiquita sobre un título ("Novedades", "Guía de talles"). Barata
-     de poner y es la que hace que una sección parezca diseñada. */
-  .eyebrow {
-    font-family: var(--font-sans), sans-serif;
-    font-size: 0.75rem;
-    font-weight: 500;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--primary);
   }
 }

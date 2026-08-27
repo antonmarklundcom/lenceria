@@ -46,9 +46,7 @@ export async function reviewReceipt(input: {
   const note = input.note?.trim() ?? "";
 
   if (input.decision === "rejected" && note.length < REJECTION_MIN_REASON) {
-    throw new ReceiptError(
-      "Escribí el motivo del rechazo: el comprador lo ve y necesita saber qué corregir.",
-    );
+    throw new ReceiptError("error.comprobante.sinMotivo");
   }
 
   return getDb().transaction(async (tx) => {
@@ -62,13 +60,13 @@ export async function reviewReceipt(input: {
 
     const receipt = locked[0];
     if (!receipt) {
-      throw new ReceiptError("No encontramos ese comprobante.");
+      throw new ReceiptError("error.comprobante.noExiste");
     }
     if (receipt.review !== "pending") {
       throw new ReceiptError(
         receipt.review === "approved"
-          ? "Ese comprobante ya estaba aprobado."
-          : "Ese comprobante ya estaba rechazado.",
+          ? "error.comprobante.yaAprobado"
+          : "error.comprobante.yaRechazado",
       );
     }
 
@@ -88,7 +86,9 @@ export async function reviewReceipt(input: {
       target,
       input.actor,
       note === "" ? `comprobante ${input.decision === "approved" ? "aprobado" : "rechazado"}` : note,
-      { executor: tx },
+      // `reviewerId` ya es el `users.id` de quien decidió: la misma persona que
+      // queda en `receipts.reviewed_by` queda ahora en el evento del pedido.
+      { executor: tx, actorUserId: input.reviewerId },
     );
 
     return { orderId: receipt.orderId, status: target, changed: transition.changed };
@@ -120,7 +120,7 @@ export async function receiptPreview(
 
   const receipt = rows[0];
   if (!receipt) {
-    throw new ReceiptError("No encontramos ese comprobante.");
+    throw new ReceiptError("error.comprobante.noExiste");
   }
 
   return {

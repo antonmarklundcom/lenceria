@@ -8,6 +8,8 @@ import { saveProduct } from "@/app/actions/admin-products";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { slugify } from "@/lib/slug";
+import { t } from "@/i18n";
 
 export type ProductFormValues = {
   productId?: number;
@@ -20,16 +22,6 @@ export type ProductFormValues = {
   isActive: boolean;
   published: boolean;
 };
-
-/** `"Remera Azul"` → `"remera-azul"`, para no hacer tipear el slug a mano. */
-function slugify(value: string): string {
-  return value
-    .normalize("NFD")
-    .replace(/[̀-ͯ]/g, "")
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
-}
 
 export function ProductForm({
   defaults,
@@ -72,7 +64,7 @@ export function ProductForm({
             return;
           }
 
-          toast.success("Producto guardado.");
+          toast.success(t("panel.producto.guardado"));
           if (defaults.productId === undefined) {
             router.push(`/admin/productos/${result.productId}`);
             return;
@@ -91,7 +83,7 @@ export function ProductForm({
       ) : null}
 
       <div className="grid gap-1.5">
-        <Label htmlFor="name">Nombre</Label>
+        <Label htmlFor="name">{t("panel.producto.nombre")}</Label>
         <Input
           id="name"
           name="name"
@@ -104,7 +96,7 @@ export function ProductForm({
       </div>
 
       <div className="grid gap-1.5">
-        <Label htmlFor="slug">Slug (la URL del producto)</Label>
+        <Label htmlFor="slug">{t("panel.producto.slug")}</Label>
         <Input
           id="slug"
           name="slug"
@@ -118,7 +110,7 @@ export function ProductForm({
       </div>
 
       <div className="grid gap-1.5">
-        <Label htmlFor="description">Descripción</Label>
+        <Label htmlFor="description">{t("panel.producto.descripcion")}</Label>
         <textarea
           id="description"
           name="description"
@@ -130,7 +122,7 @@ export function ProductForm({
 
       <div className="grid gap-3 sm:grid-cols-2">
         <div className="grid gap-1.5">
-          <Label htmlFor="categoryId">Categoría</Label>
+          <Label htmlFor="categoryId">{t("panel.producto.categoria")}</Label>
           <select
             id="categoryId"
             name="categoryId"
@@ -139,7 +131,7 @@ export function ProductForm({
             className="border-input bg-background h-9 rounded-md border px-3 text-sm"
           >
             <option value="" disabled>
-              Elegí una
+              {t("panel.producto.elegiCategoria")}
             </option>
             {categories.map((category) => (
               <option key={category.id} value={category.id}>
@@ -150,21 +142,21 @@ export function ProductForm({
         </div>
 
         <div className="grid gap-1.5">
-          <Label htmlFor="brand">Marca</Label>
+          <Label htmlFor="brand">{t("panel.producto.marca")}</Label>
           <Input id="brand" name="brand" defaultValue={defaults.brand} />
         </div>
 
         <div className="grid gap-1.5">
-          <Label htmlFor="ivaRate">IVA</Label>
+          <Label htmlFor="ivaRate">{t("panel.producto.iva")}</Label>
           <select
             id="ivaRate"
             name="ivaRate"
             defaultValue={String(defaults.ivaRate)}
             className="border-input bg-background h-9 rounded-md border px-3 text-sm"
           >
-            <option value="10">10% (lo habitual)</option>
-            <option value="5">5% (canasta básica)</option>
-            <option value="0">Exento</option>
+            <option value="10">{t("panel.producto.iva10")}</option>
+            <option value="5">{t("panel.producto.iva5")}</option>
+            <option value="0">{t("panel.producto.iva0")}</option>
           </select>
         </div>
       </div>
@@ -172,19 +164,17 @@ export function ProductForm({
       <div className="grid gap-2">
         <label className="flex items-center gap-2 text-sm">
           <input type="checkbox" name="isActive" defaultChecked={defaults.isActive} />
-          Activo
+          {t("panel.producto.activo")}
         </label>
         <label className="flex items-center gap-2 text-sm">
           <input type="checkbox" name="published" defaultChecked={defaults.published} />
-          Publicado en la tienda
+          {t("panel.producto.publicado")}
         </label>
-        <p className="text-muted-foreground text-xs">
-          Un producto sin publicar no aparece en el catálogo ni en la búsqueda.
-        </p>
+        <p className="text-muted-foreground text-xs">{t("panel.producto.publicadoAyuda")}</p>
       </div>
 
       <Button type="submit" disabled={isPending}>
-        {isPending ? "Guardando…" : "Guardar producto"}
+        {isPending ? t("panel.acciones.guardando") : t("panel.producto.guardar")}
       </Button>
     </form>
   );

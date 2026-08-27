@@ -1,4 +1,4 @@
-import { TIENDA, TIENDA_TEMPLATE, type Tienda } from "@/config/tienda";
+import { MARCA_PLACEHOLDER, TIENDA } from "@/config/tienda";
 
 import { WEBHOOK_ENVELOPE_CONFIRMED } from "./pagopar/protocol";
 import { PAGOPAR_MOCK_MODE } from "./pagopar/mode";
@@ -61,17 +61,16 @@ const BANCO_VARS = [
   "BANCO_TIPO_CUENTA",
 ] as const;
 
-export function preflight(
-  env: PreflightEnv = process.env,
-  tienda: Tienda = TIENDA
-): PreflightReport {
+export function preflight(env: PreflightEnv = process.env): PreflightReport {
   const checks: PreflightCheck[] = [
-    checkMarca(tienda),
-    checkWebhookEnvelope(),
+    checkMarca(),
+    checkWebhookEnvelope(env),
     checkPagoparMode(env),
     checkBancoVars(env),
     checkCronSecret(env),
+    checkSetupSecret(env),
     checkSessionSecret(env),
+    checkCustomerSessionSecret(env),
     checkPagoparCredentials(env),
     checkCloudinary(env),
     checkWhatsApp(env),
@@ -86,36 +85,24 @@ export function preflight(
 }
 
 /**
- * La tienda todavía se llama como el template.
+ * La marca sigue siendo la del template.
  *
- * Es el único control de acá que no mira ni el entorno ni la plata: mira la
- * marca. Está porque publicar el dominio de un cliente con el header, el pie,
- * el `<title>` y el Open Graph con el nombre del template es un error que no avisa —
- * compila, pasa los tests, cobra bien— y que lo descubre el cliente.
- *
- * Bloquea en cualquier entorno, no sólo en producción: si alguien está
- * corriendo el preflight es porque está por deployar.
- *
- * Compara los cuatro campos que se ven, no sólo el nombre: cambiar `nombre` y
- * dejar la meta description del template es la mitad del mismo error, y la
- * mitad que se ve en Google.
+ * Ningún otro control mira `tienda.ts`, y éste existe porque el olvido es el
+ * más visible de todos: "TiendaPY" queda en el header, en el `<title>`, en el
+ * pie y en la imagen de Open Graph que se dibuja para **cada** link compartido
+ * por WhatsApp. La tienda cobra igual — por eso no lo frena ningún candado del
+ * código — pero cobrar con la marca del template es el papelón del primer
+ * deploy, y es exactamente el paso 2 de NEW-STORE.md.
  */
-function checkMarca(tienda: Tienda): PreflightCheck {
-  const sinCambiar = (
-    [
-      ["nombre", "el header, el pie y el siteName de Open Graph"],
-      ["titulo", "el <title> de la home"],
-      ["descripcion", "la meta description que sale en Google"],
-      ["tagline", "la línea del pie"],
-    ] as const
-  ).filter(([campo]) => tienda[campo].trim() === TIENDA_TEMPLATE[campo].trim());
+function checkMarca(): PreflightCheck {
+  const nombre = TIENDA.nombre.trim();
 
-  if (sinCambiar.length === 0) {
+  if (nombre.toLowerCase() !== MARCA_PLACEHOLDER.toLowerCase()) {
     return {
       id: "marca",
       severity: "ok",
       title: "Marca de la tienda",
-      detail: `"${tienda.nombre}" — distinta del template`,
+      detail: `"${nombre}"`,
     };
   }
 
@@ -124,28 +111,48 @@ function checkMarca(tienda: Tienda): PreflightCheck {
     severity: "bloquea",
     title: "Marca de la tienda",
     detail:
-      `src/config/tienda.ts sigue con ${sinCambiar.length} valor(es) del template ` +
-      `sin cambiar: ${sinCambiar.map(([campo]) => campo).join(", ")}. ` +
-      `Eso es ${sinCambiar.map(([, donde]) => donde).join(", ")} mostrando ` +
-      `"${TIENDA_TEMPLATE.nombre}" en el dominio del comercio`,
+      `src/config/tienda.ts sigue con el nombre del template ("${MARCA_PLACEHOLDER}"): header, ` +
+      "títulos del navegador y la imagen de Open Graph de cada link compartido van a decir eso. " +
+      "Editá TIENDA (NEW-STORE.md §2) — y de paso el favicon, que ningún control verifica",
   };
 }
 
 /**
  * El sobre de la respuesta del webhook, sin confirmar (TASKS.md §21).
  *
- * Es el único control que no mira el entorno: es un hecho sobre el código. Si
- * Pagopar espera otra forma, reintenta el aviso una y otra vez y termina
- * marcando el pago como no notificado, con la plata cobrada y el pedido sin
- * marcar. Bloquea siempre, en cualquier entorno.
+ * Es un hecho sobre el código, no sobre el entorno. Si Pagopar espera otra
+ * forma, reintenta el aviso una y otra vez y termina marcando el pago como no
+ * notificado, con la plata cobrada y el pedido sin marcar.
+ *
+ * Bloquea sólo si la tienda cargó credenciales de Pagopar: sin ellas el
+ * checkout no ofrece tarjeta y el webhook no existe para esta tienda —
+ * frenarle el deploy a una tienda de transferencia y contra entrega por un
+ * protocolo que no usa sería un falso positivo permanente. Queda en
+ * `advierte` para que el día que carguen las credenciales ya sepan qué falta.
  */
-function checkWebhookEnvelope(): PreflightCheck {
+function checkWebhookEnvelope(env: PreflightEnv): PreflightCheck {
   if (WEBHOOK_ENVELOPE_CONFIRMED) {
     return {
       id: "pagopar_webhook_envelope",
       severity: "ok",
       title: "Sobre de la respuesta del webhook de Pagopar",
       detail: "confirmado contra la doc v2 vigente",
+    };
+  }
+
+  const sinCredenciales = ["PAGOPAR_PUBLIC_KEY", "PAGOPAR_PRIVATE_KEY", "PAGOPAR_BASE_URL"].every(
+    (name) => value(env, name) === "",
+  );
+
+  if (sinCredenciales) {
+    return {
+      id: "pagopar_webhook_envelope",
+      severity: "advierte",
+      title: "Sobre de la respuesta del webhook de Pagopar",
+      detail:
+        "sin confirmar contra la doc v2 vigente — irrelevante mientras esta tienda no cargue " +
+        "credenciales de Pagopar (sin ellas no hay tarjeta ni webhook). Al cargarlas, esto pasa " +
+        "a bloquear hasta confirmarlo contra el sandbox",
     };
   }
 
@@ -210,7 +217,22 @@ function checkPagoparMode(env: PreflightEnv): PreflightCheck {
   };
 }
 
-/** Sin los cinco, la página SPI/QR no puede mostrar dónde transferir. */
+/**
+ * Los cinco `BANCO_*` del entorno.
+ *
+ * **Advierte y ya no bloquea** (PLAN.md FASE 2, PR T). Desde que los datos
+ * bancarios se editan desde `/admin/banco`, el entorno pasó a ser el fallback
+ * y no la única fuente: una tienda perfectamente configurada puede tener las
+ * cinco variables vacías y la tabla cargada, y frenarle el deploy por eso
+ * sería un falso positivo permanente.
+ *
+ * Este script **no toca la base a propósito** —se corre en el servidor de
+ * producción y no puede tener efectos ni depender de que la base esté arriba—
+ * así que desde acá no hay forma de saber si la tabla está cargada. Lo que
+ * queda es decir la verdad completa: faltan en el entorno, y hay otro lugar
+ * donde pueden estar. El aviso que sí sabe es el del panel, que lee la base y
+ * aparece en `/admin` cuando no hay datos en **ninguna** de las dos fuentes.
+ */
 function checkBancoVars(env: PreflightEnv): PreflightCheck {
   const missing = BANCO_VARS.filter((name) => value(env, name) === "");
 
@@ -219,17 +241,20 @@ function checkBancoVars(env: PreflightEnv): PreflightCheck {
       id: "banco",
       severity: "ok",
       title: "Datos bancarios (SPI/QR)",
-      detail: "los cinco configurados",
+      detail: "los cinco configurados en el entorno",
     };
   }
 
   return {
     id: "banco",
-    severity: "bloquea",
+    severity: "advierte",
     title: "Datos bancarios (SPI/QR)",
     detail:
-      `faltan ${missing.join(", ")}. Sin esto la página del pedido muestra un aviso en vez ` +
-      "de la cuenta, y la transferencia —el método principal del MVP— no se puede completar",
+      `faltan ${missing.join(", ")} en el entorno. Desde la FASE 2 esto es configurable desde ` +
+      "/admin/banco y lo que se cargue ahí manda sobre el entorno, así que puede estar bien. " +
+      "Si tampoco están cargados en el panel, la página del pedido muestra un aviso en vez de " +
+      "la cuenta y la transferencia —el método principal del MVP— no se puede completar: " +
+      "el resumen de /admin lo dice con la base a la vista",
   };
 }
 
@@ -263,6 +288,51 @@ function checkCronSecret(env: PreflightEnv): PreflightCheck {
   return { id: "cron_secret", severity: "ok", title: "Secreto del cron", detail: "configurado" };
 }
 
+/**
+ * `SETUP_SECRET` sobreviviendo al setup.
+ *
+ * `POST /api/setup/init` existe para inicializar la tienda una vez y después
+ * desaparecer: sacada la variable del hPanel, la ruta vuelve a 503. Dejarla
+ * puesta es dejar viva una ruta que corre migraciones, siembra el catálogo y
+ * puede cambiarle la contraseña al dueño — todo detrás de un solo secreto que
+ * ya circuló por un curl, por el historial de la terminal y por el panel.
+ *
+ * Advierte y no bloquea: la ruta igual pide `force` para volver a tocar datos,
+ * y frenar un deploy por esto sería frenar justo el deploy en el que se está
+ * usando. Lo que no puede pasar es que nadie lo mire.
+ */
+function checkSetupSecret(env: PreflightEnv): PreflightCheck {
+  const secret = value(env, "SETUP_SECRET");
+
+  if (secret === "") {
+    return {
+      id: "setup_secret",
+      severity: "ok",
+      title: "Secreto del setup",
+      detail: "SETUP_SECRET no está: /api/setup/init responde 503, que es como tiene que quedar",
+    };
+  }
+
+  if (isProduction(env)) {
+    return {
+      id: "setup_secret",
+      severity: "advierte",
+      title: "Secreto del setup",
+      detail:
+        "SETUP_SECRET sigue configurado con NODE_ENV=production: /api/setup/init está viva y " +
+        "corre migraciones, siembra y puede cambiar la contraseña del dueño. Terminado el " +
+        "setup, sacala del hPanel y apretá Redeploy (DEPLOY.md §4)",
+    };
+  }
+
+  return {
+    id: "setup_secret",
+    severity: "ok",
+    title: "Secreto del setup",
+    detail: "configurado fuera de producción",
+  };
+}
+
 /** iron-session revienta en runtime, no en build, si tiene menos de 32. */
 function checkSessionSecret(env: PreflightEnv): PreflightCheck {
   const secret = value(env, "SESSION_SECRET");
@@ -293,6 +363,75 @@ function checkSessionSecret(env: PreflightEnv): PreflightCheck {
   }
 
   return { id: "session_secret", severity: "ok", title: "Secreto de sesión", detail: "configurado" };
+}
+
+/**
+ * El secreto de la sesión de cliente (FASE 2, PR E).
+ *
+ * Sólo aplica si esta tienda prendió `cuentasClientes`. Con el flag apagado
+ * —el default— nadie lee esta variable y no tenerla es lo correcto.
+ *
+ * Con el flag prendido, en cambio, **bloquea**: sin el secreto las rutas de
+ * `/cuenta` tiran en runtime, y este script existe justamente para que eso se
+ * descubra antes del deploy y no con una compradora en la pantalla.
+ *
+ * El caso que más se chequea es el que más va a pasar: copiar el valor de
+ * `SESSION_SECRET`. Compartir el secreto entre las dos poblaciones —empleados
+ * del panel y compradoras— es lo que hace posible que una cookie de una sirva
+ * del otro lado.
+ */
+function checkCustomerSessionSecret(env: PreflightEnv): PreflightCheck {
+  const title = "Secreto de sesión de cliente";
+
+  if (!TIENDA.cuentasClientes) {
+    return {
+      id: "customer_session_secret",
+      severity: "ok",
+      title,
+      detail: "esta tienda no tiene cuentas de cliente: no hace falta",
+    };
+  }
+
+  const secret = value(env, "CUSTOMER_SESSION_SECRET");
+
+  if (secret === "") {
+    return {
+      id: "customer_session_secret",
+      severity: "bloquea",
+      title,
+      detail:
+        "cuentasClientes está prendido y CUSTOMER_SESSION_SECRET está vacío: /cuenta revienta en runtime",
+    };
+  }
+  if (secret.length < 32) {
+    return {
+      id: "customer_session_secret",
+      severity: "bloquea",
+      title,
+      detail: `CUSTOMER_SESSION_SECRET tiene ${secret.length} caracteres; iron-session exige 32 o más`,
+    };
+  }
+  if (secret === value(env, "SESSION_SECRET")) {
+    return {
+      id: "customer_session_secret",
+      severity: "bloquea",
+      title,
+      detail:
+        "CUSTOMER_SESSION_SECRET es una copia de SESSION_SECRET: las sesiones del panel y las de " +
+        "las compradoras tienen que ser criptográficamente independientes. Generá uno nuevo con " +
+        "openssl rand -base64 32",
+    };
+  }
+  if (/changeme|generate/i.test(secret)) {
+    return {
+      id: "customer_session_secret",
+      severity: "bloquea",
+      title,
+      detail: "CUSTOMER_SESSION_SECRET sigue siendo un placeholder",
+    };
+  }
+
+  return { id: "customer_session_secret", severity: "ok", title, detail: "configurado" };
 }
 
 /**

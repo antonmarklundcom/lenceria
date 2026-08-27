@@ -3,7 +3,12 @@
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
 
-import { exportOrdersCsv, exportProductsCsv } from "@/app/actions/admin-export";
+import {
+  exportMarketingOptInsCsv,
+  exportOrdersCsv,
+  exportProductsCsv,
+} from "@/app/actions/admin-export";
+import { t, tPlural } from "@/i18n";
 
 /**
  * Botón de "Descargar CSV".
@@ -17,13 +22,14 @@ import { exportOrdersCsv, exportProductsCsv } from "@/app/actions/admin-export";
 export function CsvDownloadButton({
   kind,
   params,
-  label = "Descargar CSV",
+  label,
 }: {
-  kind: "pedidos" | "productos";
+  kind: "pedidos" | "productos" | "clientes-opt-in";
   /** Los filtros de la URL, tal cual están en pantalla. */
   params: Record<string, string | undefined>;
   label?: string;
 }) {
+  const texto = label ?? t("panel.csv.descargar");
   const [isPending, startTransition] = useTransition();
   const [note, setNote] = useState<string | null>(null);
 
@@ -33,7 +39,11 @@ export function CsvDownloadButton({
         Object.entries(params).filter(([, value]) => value !== undefined && value !== ""),
       );
       const result =
-        kind === "pedidos" ? await exportOrdersCsv(clean) : await exportProductsCsv(clean);
+        kind === "pedidos"
+          ? await exportOrdersCsv(clean)
+          : kind === "productos"
+            ? await exportProductsCsv(clean)
+            : await exportMarketingOptInsCsv();
 
       if (!result.ok) {
         toast.error(result.error);
@@ -52,8 +62,8 @@ export function CsvDownloadButton({
 
       setNote(
         result.truncated
-          ? `Bajé las primeras ${result.rows} filas. Filtrá por fecha para llevarte el resto.`
-          : `${result.rows} ${result.rows === 1 ? "fila" : "filas"}.`,
+          ? t("panel.csv.truncado", { n: result.rows })
+          : tPlural("panel.csv.filas", result.rows),
       );
     });
   };
@@ -66,7 +76,7 @@ export function CsvDownloadButton({
         disabled={isPending}
         className="border-border hover:bg-muted rounded-lg border px-3 py-1.5 text-sm disabled:opacity-60"
       >
-        {isPending ? "Preparando…" : label}
+        {isPending ? t("panel.csv.preparando") : texto}
       </button>
       {note ? (
         <span className="text-muted-foreground text-xs" role="status">

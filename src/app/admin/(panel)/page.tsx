@@ -6,26 +6,52 @@ import { listOrders } from "@/domain/admin-orders";
 import { getDashboardSummary, salesTrend, topProducts } from "@/domain/admin-dashboard";
 import { lowStockVariants } from "@/domain/admin-products";
 import { findUnmatchedPayments } from "@/domain/payment-recovery";
+import { getDatosBancarios } from "@/lib/comercio";
 import { formatGs } from "@/lib/money";
 import { formatDatePY, formatDateTimePY } from "@/lib/py";
+import { requireCapabilityPage } from "@/lib/admin-guard";
+import { can } from "@/lib/permissions";
+import { t, tPlural } from "@/i18n";
 
-export const metadata: Metadata = { title: "Resumen" };
+export const metadata: Metadata = { title: t("panel.resumen.meta") };
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminDashboardPage() {
-  const [summary, awaiting, lowStock, unmatched, top, trend] = await Promise.all([
+  const actor = await requireCapabilityPage("dashboard");
+
+  const [summary, awaiting, lowStock, unmatched, top, trend, banco] = await Promise.all([
     getDashboardSummary(),
     listOrders({ status: "esperando_verificacion", perPage: 5 }),
     lowStockVariants(3, 8),
     findUnmatchedPayments({ limit: 10 }),
     topProducts(),
     salesTrend(),
+    getDatosBancarios(),
   ]);
 
   return (
     <div>
-      <h1 className="text-xl font-semibold tracking-tight">Resumen</h1>
+      <h1 className="text-xl font-semibold tracking-tight">{t("panel.resumen.titulo")}</h1>
+
+      {/*
+        Sin datos bancarios en ninguna de las dos fuentes (tabla ni entorno),
+        la página del pedido le dice a la compradora que faltan — ese aviso ya
+        existía. Lo que faltaba era el del otro lado: el dueño no mira la
+        página de un pedido ajeno, así que nunca se enteraba. `pnpm preflight`
+        tampoco alcanza: es env-only y no ve la tabla.
+      */}
+      {banco === null && can(actor.role, "banco") ? (
+        <section className="border-border bg-muted/40 mt-4 rounded-xl border p-4">
+          <h2 className="font-medium">{t("panel.resumen.sinBanco")}</h2>
+          <p className="text-muted-foreground mt-1 text-sm">
+            {t("panel.resumen.sinBanco.ayuda")}
+          </p>
+          <Link href="/admin/banco" className="mt-2 inline-block text-sm font-medium underline">
+            {t("panel.resumen.sinBanco.link")}
+          </Link>
+        </section>
+      ) : null}
 
       {/*
         Va arriba de todo y sólo aparece si hay algo: es plata de un comprador
@@ -34,13 +60,9 @@ export default async function AdminDashboardPage() {
       */}
       {unmatched.length > 0 && (
         <section className="border-destructive/40 bg-destructive/5 mt-4 rounded-xl border p-4">
-          <h2 className="text-destructive font-medium">Pagos sin pedido vivo</h2>
+          <h2 className="text-destructive font-medium">{t("panel.resumen.sinPedidoVivo")}</h2>
           <p className="text-muted-foreground mt-1 text-xs">
-            Entró la plata pero el pedido no está cobrado — normalmente el pago llegó justo
-            después de que el pedido venciera y la mercadería ya se había vendido.
-            <strong> Reintentar</strong> vuelve a probar si hoy hay stock; si no lo hay, no pasa
-            nada y podés volver a intentarlo. <strong>Marcar como devuelto</strong> es para
-            cuando ya le transferiste la plata de vuelta al comprador.
+            {t("panel.resumen.sinPedidoVivo.ayuda")}
           </p>
           <UnmatchedPayments
             payments={unmatched.map((payment) => ({
@@ -52,48 +74,46 @@ export default async function AdminDashboardPage() {
               amountPyg: payment.amountPyg,
               paidAt: formatDateTimePY(payment.paidAt),
             }))}
+            puedeDevolver={can(actor.role, "reembolsos")}
           />
         </section>
       )}
 
       <div className="mt-4 grid gap-3 sm:grid-cols-2">
         <Stat
-          label="Ventas de hoy"
+          label={t("panel.resumen.ventasHoy")}
           value={formatGs(summary.today.totalPyg)}
-          hint={`${summary.today.orders} ${summary.today.orders === 1 ? "pedido cobrado" : "pedidos cobrados"}`}
+          hint={tPlural("panel.resumen.cobrados", summary.today.orders)}
         />
         <Stat
-          label="Ventas del mes"
+          label={t("panel.resumen.ventasMes")}
           value={formatGs(summary.month.totalPyg)}
-          hint={`${summary.month.orders} ${summary.month.orders === 1 ? "pedido cobrado" : "pedidos cobrados"}`}
+          hint={tPlural("panel.resumen.cobrados", summary.month.orders)}
         />
       </div>
       <p className="text-muted-foreground mt-2 text-xs">
-        Sólo se cuentan los pedidos ya cobrados (pagado en adelante). Un pedido esperando pago
-        todavía puede vencer.
+        {t("panel.resumen.soloCobrados")}
       </p>
 
       <section className="mt-8">
-        <h2 className="font-medium">Últimos 7 días</h2>
+        <h2 className="font-medium">{t("panel.resumen.ultimos7")}</h2>
         <p className="text-muted-foreground mt-1 text-xs">
-          Cada día se corta a medianoche de Asunción y cuenta lo mismo que el cuadro de arriba.
+          {t("panel.resumen.ultimos7.ayuda")}
         </p>
         <SalesTrend days={trend} />
       </section>
 
       <section className="mt-8">
-        <h2 className="font-medium">Lo más vendido del mes</h2>
+        <h2 className="font-medium">{t("panel.resumen.masVendido")}</h2>
         {top.length === 0 ? (
           <p className="text-muted-foreground border-border mt-2 rounded-xl border border-dashed p-6 text-center text-sm">
-            Todavía no hay ventas cobradas este mes.
+            {t("panel.resumen.sinVentas")}
           </p>
         ) : (
           <ol className="divide-border mt-2 divide-y text-sm">
             {top.map((product, index) => (
               <li key={product.productId} className="flex items-baseline gap-3 py-2">
-                <span className="text-muted-foreground w-4 shrink-0 tabular-nums">
-                  {index + 1}
-                </span>
+                <span className="text-muted-foreground w-4 shrink-0 tabular-nums">{index + 1}</span>
                 <Link
                   href={`/admin/productos/${product.productId}`}
                   className="min-w-0 flex-1 truncate hover:underline"
@@ -101,7 +121,7 @@ export default async function AdminDashboardPage() {
                   {product.name}
                 </Link>
                 <span className="text-muted-foreground shrink-0 tabular-nums">
-                  {product.qty} u.
+                  {t("panel.resumen.unidades", { n: product.qty })}
                 </span>
                 <span className="shrink-0 font-medium tabular-nums">
                   {formatGs(product.totalPyg)}
@@ -114,15 +134,15 @@ export default async function AdminDashboardPage() {
 
       <section className="mt-8">
         <div className="flex items-baseline justify-between gap-2">
-          <h2 className="font-medium">Esperando verificación</h2>
+          <h2 className="font-medium">{t("panel.resumen.esperandoVerificacion")}</h2>
           <Link href="/admin/pedidos?estado=esperando_verificacion" className="text-sm underline">
-            Ver todos ({summary.awaitingVerification})
+            {t("panel.resumen.verTodos", { n: summary.awaitingVerification })}
           </Link>
         </div>
 
         {awaiting.rows.length === 0 ? (
           <p className="text-muted-foreground border-border mt-2 rounded-xl border border-dashed p-6 text-center text-sm">
-            No hay comprobantes esperando revisión. Todo al día.
+            {t("panel.resumen.sinComprobantes")}
           </p>
         ) : (
           <ul className="mt-2 grid gap-2">
@@ -147,13 +167,13 @@ export default async function AdminDashboardPage() {
       </section>
 
       <section className="mt-8">
-        <h2 className="font-medium">Stock bajo</h2>
+        <h2 className="font-medium">{t("panel.resumen.stockBajo")}</h2>
         <p className="text-muted-foreground mt-1 text-xs">
-          Disponible = lo que hay físicamente menos lo que ya está reservado por un pedido.
+          {t("panel.resumen.stockBajo.ayuda")}
         </p>
         {lowStock.length === 0 ? (
           <p className="text-muted-foreground border-border mt-2 rounded-xl border border-dashed p-6 text-center text-sm">
-            Ninguna variante con stock bajo.
+            {t("panel.resumen.sinStockBajo")}
           </p>
         ) : (
           <ul className="divide-border mt-2 divide-y text-sm">
@@ -176,17 +196,15 @@ export default async function AdminDashboardPage() {
       </section>
 
       <section className="mt-8">
-        <h2 className="font-medium">Pendientes de pago</h2>
+        <h2 className="font-medium">{t("panel.resumen.pendientes")}</h2>
         <p className="text-muted-foreground mt-1 text-sm">
-          {summary.pendingPayment}{" "}
-          {summary.pendingPayment === 1 ? "pedido espera" : "pedidos esperan"} el pago. Los que
-          pasen su fecha de reserva los vence el cron automáticamente.
+          {tPlural("panel.resumen.pendientes", summary.pendingPayment)}
         </p>
         <Link
           href="/admin/pedidos?estado=pendiente_pago"
           className="mt-2 inline-block text-sm underline"
         >
-          Ver pendientes
+          {t("panel.resumen.verPendientes")}
         </Link>
       </section>
     </div>

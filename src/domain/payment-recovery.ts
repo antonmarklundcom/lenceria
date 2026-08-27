@@ -1,4 +1,7 @@
 import { and, eq, sql } from "drizzle-orm";
+import type { MessageKey, Params } from "@/i18n";
+
+import { DomainError } from "./errors";
 
 import { getDb } from "@/db";
 import { orders, payments, type OrderStatus } from "@/db/schema";
@@ -114,9 +117,9 @@ export async function countUnmatchedPayments(executor?: Executor): Promise<numbe
  * ------------------------------------------------------------------------- */
 
 /** Algo del pedido o del pago impide la acción. El mensaje lo lee el dueño. */
-export class PaymentRecoveryError extends Error {
-  constructor(message: string) {
-    super(message);
+export class PaymentRecoveryError extends DomainError {
+  constructor(code: MessageKey, params?: Params) {
+    super(code, params);
     this.name = "PaymentRecoveryError";
   }
 }
@@ -148,17 +151,20 @@ export type RecoveryResult = {
 export async function retryOrderRevival(input: {
   paymentId: number;
   actor: string;
+  /**
+   * `users.id` de quien lo hizo (PR D). Opcional por el mismo motivo que en
+   * `TransitionOptions`: hay caminos legítimos sin persona detrás.
+   */
+  actorUserId?: number | null;
 }): Promise<RecoveryResult> {
   return getDb().transaction(async (tx) => {
     const { payment, order } = await lockPaymentAndOrder(tx, input.paymentId);
 
     if (payment.status === "refunded") {
-      throw new PaymentRecoveryError(
-        "Ese pago ya está marcado como devuelto: no corresponde revivir el pedido.",
-      );
+      throw new PaymentRecoveryError("adminError.pago.yaDevuelto");
     }
     if (payment.status !== "paid") {
-      throw new PaymentRecoveryError("Ese pago no está acreditado: no hay nada que recuperar.");
+      throw new PaymentRecoveryError("adminError.pago.noAcreditado");
     }
 
     // Otro dueño ya lo revivió desde la otra pestaña. No es un error: el
@@ -178,10 +184,7 @@ export async function retryOrderRevival(input: {
     // impide —`cancelado` no tiene aristas de salida— pero el mensaje que sale
     // de ahí habla de transiciones, y el que lee esto es el dueño.
     if (order.status === "cancelado") {
-      throw new PaymentRecoveryError(
-        "Ese pedido está cancelado y no se revive solo: si el comprador todavía lo quiere, " +
-          "armá uno nuevo. Si no, marcá el pago como devuelto.",
-      );
+      throw new PaymentRecoveryError("adminError.pago.pedidoCancelado");
     }
 
     const result = await transitionOrder(
@@ -189,7 +192,7 @@ export async function retryOrderRevival(input: {
       "pagado",
       input.actor,
       "reintento de recuperación del pago tardío desde el panel",
-      { executor: tx },
+      { executor: tx, actorUserId: input.actorUserId ?? null },
     );
 
     return {
@@ -222,13 +225,15 @@ export async function refundPayment(input: {
   paymentId: number;
   reason: string;
   actor: string;
+  /**
+   * `users.id` de quien lo hizo (PR D). Opcional por el mismo motivo que en
+   * `TransitionOptions`: hay caminos legítimos sin persona detrás.
+   */
+  actorUserId?: number | null;
 }): Promise<RecoveryResult> {
   const reason = input.reason.trim();
   if (reason.length < REFUND_MIN_REASON) {
-    throw new PaymentRecoveryError(
-      "Escribí por qué se devuelve: queda en el historial del pedido y es lo único que va a " +
-        "explicar esta plata dentro de seis meses.",
-    );
+    throw new PaymentRecoveryError("adminError.pago.sinMotivo");
   }
 
   return getDb().transaction(async (tx) => {
@@ -246,18 +251,15 @@ export async function refundPayment(input: {
       };
     }
     if (payment.status !== "paid") {
-      throw new PaymentRecoveryError(
-        "Ese pago no está acreditado: no hay nada que devolver todavía.",
-      );
+      throw new PaymentRecoveryError("adminError.pago.nadaQueDevolver");
     }
 
     // El pedido revivió mientras esta pantalla estaba abierta. Marcar la
     // devolución ahora cancelaría un pedido que alguien está por preparar.
     if (SETTLED_STATUSES.includes(order.status as (typeof SETTLED_STATUSES)[number])) {
-      throw new PaymentRecoveryError(
-        `Ese pedido volvió a estar vivo (${order.status}) desde que abriste esta pantalla. ` +
-          "Recargá y mirá el pedido antes de marcar una devolución.",
-      );
+      throw new PaymentRecoveryError("adminError.pago.pedidoRevivio", {
+        estado: order.status,
+      });
     }
 
     await tx
@@ -274,7 +276,7 @@ export async function refundPayment(input: {
       "cancelado",
       input.actor,
       `pago devuelto: ${reason}`.slice(0, 500),
-      { executor: tx },
+      { executor: tx, actorUserId: input.actorUserId ?? null },
     );
 
     return {
@@ -307,7 +309,7 @@ async function lockPaymentAndOrder(tx: Executor, paymentId: number) {
   )[0];
 
   if (!payment) {
-    throw new PaymentRecoveryError("No encontramos ese pago.");
+    throw new PaymentRecoveryError("adminError.pago.noEncontrado");
   }
 
   const order = (
@@ -319,7 +321,7 @@ async function lockPaymentAndOrder(tx: Executor, paymentId: number) {
   )[0];
 
   if (!order) {
-    throw new PaymentRecoveryError("El pedido de ese pago ya no existe.");
+    throw new PaymentRecoveryError("adminError.pago.pedidoNoExiste");
   }
 
   return { payment, order };
