@@ -95,11 +95,11 @@ export type Hero = {
 export const MARCA_PLACEHOLDER = "TiendaPY";
 
 export const TIENDA: Tienda = {
-  nombre: MARCA_PLACEHOLDER,
-  titulo: "TiendaPY — Comprá online en Paraguay",
+  nombre: "Lencería Íntima",
+  titulo: "Lencería Íntima — Comprá online en Paraguay",
   descripcion:
-    "Tienda online paraguaya. Precios en guaraníes, IVA incluido, envíos a todo el país y atención por WhatsApp.",
-  tagline: "Precios en guaraníes, IVA incluido. Enviamos a todo el país.",
+    "Lencería y ropa interior femenina en Paraguay. Precios en guaraníes, IVA incluido, envíos a todo el país y atención por WhatsApp.",
+  tagline: "Lencería seleccionada para vos. Envíos a todo el país.",
   lang: "es-PY",
   ogLocale: "es_PY",
   cuentasClientes: false,

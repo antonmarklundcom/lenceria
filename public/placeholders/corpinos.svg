@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" role="img" aria-label="Placeholder de corpiños">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="hsl(340 45% 93%)" />
+      <stop offset="100%" stop-color="hsl(340 45% 84%)" />
+    </linearGradient>
+  </defs>
+  <rect width="400" height="400" fill="url(#bg)" />
+  <g fill="none" stroke="hsl(340 30% 42%)" stroke-width="8" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M150 120 L128 90" />
+    <path d="M250 120 L272 90" />
+    <path d="M115 190 Q200 245 285 190" />
+    <circle cx="163" cy="175" r="42" />
+    <circle cx="237" cy="175" r="42" />
+  </g>
+  <text x="200" y="300" text-anchor="middle" font-family="system-ui, sans-serif" font-size="18" fill="hsl(340 20% 38%)">Foto próximamente</text>
+</svg>

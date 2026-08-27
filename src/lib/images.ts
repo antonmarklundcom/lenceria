@@ -67,10 +67,10 @@ export function productImageUrl(
  * foto", no un producto de mentira disfrazado de real.
  */
 const CATEGORY_PLACEHOLDERS = new Set([
-  "electronica",
-  "hogar-y-cocina",
-  "moda",
-  "deportes",
+  "corpinos",
+  "bombachas",
+  "conjuntos",
+  "pijamas",
 ]);
 
 /** `categoryPlaceholderSrc("moda")` → `/placeholders/moda.svg`. */

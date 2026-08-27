@@ -1,6 +1,3 @@
-import { readFileSync } from 'node:fs';
-import path from 'node:path';
-
 import { describe, expect, it } from 'vitest';
 
 import {
@@ -29,7 +26,48 @@ import {
  * panel y deja al cron de Hostinger llamando con la llave vieja.
  */
 
-const TIENDA_REAL = readFileSync(path.join('src', 'config', 'tienda.ts'), 'utf8');
+/**
+ * Una copia fiel de cómo sale `src/config/tienda.ts` recién clonado del
+ * template, y no una lectura del archivo real: esta suite tiene que seguir
+ * probando "reescribir el template" incluso después de que esta misma tienda
+ * corrió el wizard de verdad y `tienda.ts` en disco ya tiene su propia marca.
+ */
+const TIENDA_REAL = `export type Tienda = {
+  nombre: string;
+  titulo: string;
+  descripcion: string;
+  tagline: string;
+  lang: string;
+  ogLocale: string;
+  cuentasClientes: boolean;
+  hero: Hero | null;
+};
+
+export type Hero = {
+  imagen?: { cloudinaryId: string; alt: string } | null;
+  titulo: string;
+  texto?: string;
+  cta?: { label: string; href: string };
+};
+
+export const MARCA_PLACEHOLDER = "TiendaPY";
+
+export const TIENDA: Tienda = {
+  nombre: MARCA_PLACEHOLDER,
+  titulo: "TiendaPY — Comprá online en Paraguay",
+  descripcion:
+    "Tienda online paraguaya. Precios en guaraníes, IVA incluido, envíos a todo el país y atención por WhatsApp.",
+  tagline: "Precios en guaraníes, IVA incluido. Enviamos a todo el país.",
+  lang: "es-PY",
+  ogLocale: "es_PY",
+  cuentasClientes: false,
+  hero: null,
+};
+
+export function cuentasClientesHabilitadas(): boolean {
+  return TIENDA.cuentasClientes;
+}
+`;
 
 const DATOS: DatosTienda = {
   nombre: 'Lencería Guaraní',

@@ -38,20 +38,20 @@ describe.skipIf(!hasTestDb)("queries del catálogo", () => {
   it("lista las categorías activas en orden", async () => {
     const categories = await getCategories();
     expect(categories.map((category) => category.slug)).toEqual([
-      "electronica",
-      "hogar-y-cocina",
-      "moda",
-      "deportes",
+      "corpinos",
+      "bombachas",
+      "conjuntos",
+      "pijamas",
     ]);
   });
 
   it("pagina la categoría", async () => {
-    const first = await getCategoryProducts({ categorySlug: "moda", perPage: 4, page: 1 });
+    const first = await getCategoryProducts({ categorySlug: "conjuntos", perPage: 4, page: 1 });
     expect(first.products).toHaveLength(4);
     expect(first.total).toBe(6);
     expect(first.totalPages).toBe(2);
 
-    const second = await getCategoryProducts({ categorySlug: "moda", perPage: 4, page: 2 });
+    const second = await getCategoryProducts({ categorySlug: "conjuntos", perPage: 4, page: 2 });
     expect(second.products).toHaveLength(2);
 
     const overlap = first.products.filter((product) =>
@@ -62,7 +62,7 @@ describe.skipIf(!hasTestDb)("queries del catálogo", () => {
 
   it("ordena por precio mínimo de las variantes", async () => {
     const asc = await getCategoryProducts({
-      categorySlug: "deportes",
+      categorySlug: "pijamas",
       sort: "precio-asc",
       perPage: 60,
     });
@@ -72,16 +72,16 @@ describe.skipIf(!hasTestDb)("queries del catálogo", () => {
     expect([...prices]).toEqual([...prices].sort((a, b) => a - b));
 
     const desc = await getCategoryProducts({
-      categorySlug: "deportes",
+      categorySlug: "pijamas",
       sort: "precio-desc",
       perPage: 60,
     });
-    expect(desc.products[0]?.slug).toBe("bicicleta-rodado-29");
+    expect(desc.products[0]?.slug).toBe("bata-seda-larga");
   });
 
   it("filtra por rango de precio y por marca", async () => {
     const baratos = await getCategoryProducts({
-      categorySlug: "moda",
+      categorySlug: "conjuntos",
       maxPricePyg: 100000,
       perPage: 60,
     });
@@ -89,45 +89,47 @@ describe.skipIf(!hasTestDb)("queries del catálogo", () => {
       expect(Math.min(...product.variants.map((v) => v.pricePyg))).toBeLessThanOrEqual(100000);
     }
 
-    const brands = await getBrands("moda");
-    const basics = brands.find((facet) => facet.brand === "Basics PY");
+    const brands = await getBrands("conjuntos");
+    const basics = brands.find((facet) => facet.brand === "Básicos Íntimos");
     expect(basics).toBeDefined();
 
     const soloBasics = await getCategoryProducts({
-      categorySlug: "moda",
-      brand: "Basics PY",
+      categorySlug: "conjuntos",
+      brand: "Básicos Íntimos",
       perPage: 60,
     });
-    expect(soloBasics.products.every((product) => product.brand === "Basics PY")).toBe(true);
+    expect(soloBasics.products.every((product) => product.brand === "Básicos Íntimos")).toBe(
+      true
+    );
     expect(soloBasics.total).toBe(soloBasics.products.length);
 
     // El conteo del filtro tiene que ser el mismo número que va a aparecer al
-    // usarlo. Si se separan, "Basics PY (12)" lleva a una grilla de 3 y el
-    // filtro deja de ser confiable para siempre.
+    // usarlo. Si se separan, "Básicos Íntimos (12)" lleva a una grilla de 3 y
+    // el filtro deja de ser confiable para siempre.
     expect(basics?.total).toBe(soloBasics.total);
   });
 
   it("las marcas salen ordenadas y sin las de otras categorías", async () => {
-    const moda = await getBrands("moda");
-    const nombres = moda.map((facet) => facet.brand);
+    const conjuntos = await getBrands("conjuntos");
+    const nombres = conjuntos.map((facet) => facet.brand);
 
     // Con `localeCompare("es")` y no con el `.sort()` pelado: el orden lo hace
-    // MySQL con `utf8mb4_general_ci`, donde la Ñ vale lo mismo que la N, así
-    // que "Ñande Moda" va antes que "Totto". El `.sort()` de JS compara code
-    // points y la manda al final — no es que la consulta esté desordenada, es
-    // que son dos alfabetos distintos.
+    // MySQL con `utf8mb4_general_ci`, donde la Ñ vale lo mismo que la N. El
+    // `.sort()` de JS compara code points en cambio, y ahí "Ñandutí Íntima" se
+    // va al final — no es que la consulta esté desordenada, es que son dos
+    // alfabetos distintos.
     expect(nombres).toEqual([...nombres].sort((a, b) => a.localeCompare(b, "es")));
     expect(new Set(nombres).size).toBe(nombres.length);
-    expect(moda.every((facet) => facet.total > 0)).toBe(true);
+    expect(conjuntos.every((facet) => facet.total > 0)).toBe(true);
 
-    const electronica = (await getBrands("electronica")).map((facet) => facet.brand);
-    expect(electronica).not.toContain("Basics PY");
+    const corpinos = (await getBrands("corpinos")).map((facet) => facet.brand);
+    expect(corpinos).not.toContain("Básicos Íntimos");
   });
 
   it("trae la ficha del producto con sus variantes", async () => {
-    const product = await getProductBySlug("auriculares-bluetooth-tws");
+    const product = await getProductBySlug("corpino-clasico-realce");
     expect(product).not.toBeNull();
-    expect(product?.categorySlug).toBe("electronica");
+    expect(product?.categorySlug).toBe("corpinos");
     expect(product?.variants.map((variant) => variant.label).sort()).toEqual(["Blanco", "Negro"]);
     expect(product?.variants[0]?.available).toBeGreaterThan(0);
   });
@@ -138,7 +140,7 @@ describe.skipIf(!hasTestDb)("queries del catálogo", () => {
   });
 
   it("la disponibilidad del listado descuenta reservas vigentes", async () => {
-    const before = await getProductBySlug("power-bank-20000mah");
+    const before = await getProductBySlug("corpino-sin-aros-comfort");
     const variant = before?.variants[0];
     expect(variant).toBeDefined();
 
@@ -147,23 +149,23 @@ describe.skipIf(!hasTestDb)("queries del catálogo", () => {
       expiresAt: new Date(Date.now() + 3600_000),
     });
 
-    const after = await getProductBySlug("power-bank-20000mah");
+    const after = await getProductBySlug("corpino-sin-aros-comfort");
     expect(after?.variants[0]?.available).toBe(variant!.available - 4);
   });
 
   it("busca por FULLTEXT y por prefijo", async () => {
-    const exact = await searchProducts("auriculares");
-    expect(exact.map((product) => product.slug)).toContain("auriculares-bluetooth-tws");
+    const exact = await searchProducts("realce");
+    expect(exact.map((product) => product.slug)).toContain("corpino-clasico-realce");
 
-    const prefix = await searchProducts("auricu");
-    expect(prefix.map((product) => product.slug)).toContain("auriculares-bluetooth-tws");
+    const prefix = await searchProducts("real");
+    expect(prefix.map((product) => product.slug)).toContain("corpino-clasico-realce");
   });
 
   it("cae al LIKE con términos cortos que FULLTEXT ignora", async () => {
-    // "jean" tiene 4 caracteres: entra justo, pero el fallback es lo que
-    // salva a "gorra" y compañía si ft_min_word_len sube.
-    const jeans = await searchProducts("jean");
-    expect(jeans.map((product) => product.slug)).toContain("jean-slim-hombre");
+    // "seda" tiene 4 caracteres: entra justo, pero el fallback es lo que
+    // salva a los términos cortos si ft_min_word_len sube.
+    const seda = await searchProducts("seda");
+    expect(seda.map((product) => product.slug)).toContain("conjunto-encaje-seda");
   });
 
   it("no devuelve nada con términos vacíos o de una letra", async () => {
@@ -185,25 +187,27 @@ describe.skipIf(!hasTestDb)("queries del catálogo", () => {
   it("el sitemap lista sólo lo que la vidriera muestra", async () => {
     const antes = await getSitemapEntries();
     expect(antes.categories.map((category) => category.slug)).toEqual([
-      "electronica",
-      "hogar-y-cocina",
-      "moda",
-      "deportes",
+      "corpinos",
+      "bombachas",
+      "conjuntos",
+      "pijamas",
     ]);
-    expect(antes.products.map((product) => product.slug)).toContain("jean-slim-hombre");
+    expect(antes.products.map((product) => product.slug)).toContain("conjunto-encaje-seda");
 
     await getDb()
       .update(products)
       .set({ publishedAt: null })
-      .where(eq(products.slug, "jean-slim-hombre"));
+      .where(eq(products.slug, "conjunto-encaje-seda"));
 
     const despues = await getSitemapEntries();
-    expect(despues.products.map((product) => product.slug)).not.toContain("jean-slim-hombre");
+    expect(despues.products.map((product) => product.slug)).not.toContain(
+      "conjunto-encaje-seda"
+    );
     expect(despues.products).toHaveLength(antes.products.length - 1);
 
     await getDb()
       .update(products)
       .set({ publishedAt: new Date() })
-      .where(eq(products.slug, "jean-slim-hombre"));
+      .where(eq(products.slug, "conjunto-encaje-seda"));
   });
 });
