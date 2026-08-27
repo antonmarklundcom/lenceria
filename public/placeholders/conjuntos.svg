@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" role="img" aria-label="Placeholder de conjuntos">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="hsl(355 45% 93%)" />
+      <stop offset="100%" stop-color="hsl(355 45% 84%)" />
+    </linearGradient>
+  </defs>
+  <rect width="400" height="400" fill="url(#bg)" />
+  <g fill="none" stroke="hsl(355 30% 40%)" stroke-width="7" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M200 70 L200 95" />
+    <path d="M162 95 L200 70 L238 95" />
+    <path d="M128 108 L200 95 L272 108" />
+    <path d="M143 155 L128 130" />
+    <path d="M257 155 L272 130" />
+    <path d="M105 175 Q170 210 235 175" />
+    <circle cx="150" cy="163" r="34" />
+    <circle cx="216" cy="163" r="34" />
+    <path d="M158 260 Q158 250 168 250 L232 250 Q242 250 242 260 L232 305 Q200 332 168 305 Z" />
+    <path d="M158 260 L242 260" />
+  </g>
+  <text x="200" y="365" text-anchor="middle" font-family="system-ui, sans-serif" font-size="18" fill="hsl(355 20% 36%)">Foto próximamente</text>
+</svg>

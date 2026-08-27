@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" role="img" aria-label="Placeholder de pijamas y batas">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="hsl(275 35% 93%)" />
+      <stop offset="100%" stop-color="hsl(275 35% 84%)" />
+    </linearGradient>
+  </defs>
+  <rect width="400" height="400" fill="url(#bg)" />
+  <g fill="none" stroke="hsl(275 25% 42%)" stroke-width="8" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M200 78 L200 100" />
+    <path d="M160 130 L200 100 L240 130" />
+    <path d="M150 118 L120 150 L140 175 L165 155 V290 H235 V155 L260 175 L280 150 L250 118" />
+    <path d="M170 210 L230 225" />
+  </g>
+  <text x="200" y="335" text-anchor="middle" font-family="system-ui, sans-serif" font-size="18" fill="hsl(275 18% 38%)">Foto próximamente</text>
+</svg>
