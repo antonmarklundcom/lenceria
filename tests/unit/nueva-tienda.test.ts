@@ -32,7 +32,7 @@ import {
  * probando "reescribir el template" incluso después de que esta misma tienda
  * corrió el wizard de verdad y `tienda.ts` en disco ya tiene su propia marca.
  */
-const TIENDA_REAL = `export type Tienda = {
+const TIENDA_TEMPLATE = `export type Tienda = {
   nombre: string;
   titulo: string;
   descripcion: string;
@@ -80,8 +80,8 @@ const DATOS: DatosTienda = {
 
 describe('leer la marca de tienda.ts', () => {
   it('lee los campos que son strings', () => {
-    expect(leerCampoTienda(TIENDA_REAL, 'titulo')).toContain('TiendaPY');
-    expect(leerCampoTienda(TIENDA_REAL, 'tagline')).toBe(
+    expect(leerCampoTienda(TIENDA_TEMPLATE, 'titulo')).toContain('TiendaPY');
+    expect(leerCampoTienda(TIENDA_TEMPLATE, 'tagline')).toBe(
       'Precios en guaraníes, IVA incluido. Enviamos a todo el país.',
     );
   });
@@ -89,7 +89,7 @@ describe('leer la marca de tienda.ts', () => {
   it('lee una descripción partida en varias líneas por prettier', () => {
     // El archivo real la tiene partida: si el lector se quedara con el primer
     // pedazo, la segunda corrida del wizard propondría media meta description.
-    expect(leerCampoTienda(TIENDA_REAL, 'descripcion')).toBe(
+    expect(leerCampoTienda(TIENDA_TEMPLATE, 'descripcion')).toBe(
       'Tienda online paraguaya. Precios en guaraníes, IVA incluido, envíos a todo el país y atención por WhatsApp.',
     );
   });
@@ -97,13 +97,13 @@ describe('leer la marca de tienda.ts', () => {
   it('el nombre del template no se lee como un valor: es una constante', () => {
     // `nombre: MARCA_PLACEHOLDER`. Devolver "TiendaPY" haría imposible
     // distinguir "todavía no lo renombraron" de "la tienda se llama TiendaPY".
-    expect(leerCampoTienda(TIENDA_REAL, 'nombre')).toBeNull();
+    expect(leerCampoTienda(TIENDA_TEMPLATE, 'nombre')).toBeNull();
   });
 });
 
 describe('reescribir tienda.ts', () => {
   it('cambia los cuatro campos y deja el resto del archivo intacto', () => {
-    const salida = reescribirTienda(TIENDA_REAL, DATOS);
+    const salida = reescribirTienda(TIENDA_TEMPLATE, DATOS);
 
     expect(leerCampoTienda(salida, 'nombre')).toBe(DATOS.nombre);
     expect(leerCampoTienda(salida, 'titulo')).toBe(DATOS.titulo);
@@ -119,12 +119,12 @@ describe('reescribir tienda.ts', () => {
   });
 
   it('es idempotente: reescribir lo ya escrito no cambia nada', () => {
-    const una = reescribirTienda(TIENDA_REAL, DATOS);
+    const una = reescribirTienda(TIENDA_TEMPLATE, DATOS);
     expect(reescribirTienda(una, DATOS)).toBe(una);
   });
 
   it('escapa las comillas en vez de romper el archivo', () => {
-    const salida = reescribirTienda(TIENDA_REAL, { ...DATOS, tagline: 'La tienda "de barrio"' });
+    const salida = reescribirTienda(TIENDA_TEMPLATE, { ...DATOS, tagline: 'La tienda "de barrio"' });
     expect(salida).toContain('\\"de barrio\\"');
     expect(leerCampoTienda(salida, 'tagline')).toBe('La tienda "de barrio"');
   });
