@@ -29,6 +29,9 @@ export const esPY = {
   "header.buscar.label": "Buscar productos",
   "header.buscar.sugerencias": "Sugerencias",
   "header.buscar.verTodos": "Ver todos los resultados de “{termino}”",
+  "header.envioGratisDesde": "Envío gratis desde {monto}",
+  "header.menuAbrir": "Abrir menú",
+  "header.menuCerrar": "Cerrar menú",
 
   "footer.categorias": "Categorías",
   "footer.contacto": "Contacto",
@@ -42,12 +45,6 @@ export const esPY = {
   // -------------------------------------------------------------------------
   // Home
   // -------------------------------------------------------------------------
-  "home.hero.titulo": "Comprá fácil, pagá como quieras",
-  "home.hero.texto":
-    "Transferencia, QR o contra entrega. Precios en guaraníes con IVA incluido y envíos a todo el país. ¿Dudas? Escribinos por WhatsApp.",
-  "home.hero.cta": "Ver productos",
-  "home.categorias": "Categorías",
-  "home.categorias.verTodo": "Ver todo →",
   "home.destacados": "Destacados",
   "home.sinProductos":
     "Todavía no hay productos publicados. Sembrá el catálogo con pnpm db:seed.",

@@ -18,6 +18,7 @@ export function ProductImage({
   categorySlug,
   size = "card",
   className,
+  imgClassName,
   priority = false,
   sizes,
 }: {
@@ -26,11 +27,14 @@ export function ProductImage({
   categorySlug: string;
   size?: ImageSize;
   className?: string;
+  /** Clase para la `<Image>` en sí, no su marco — el hover-zoom de una card va acá. */
+  imgClassName?: string;
   priority?: boolean;
   sizes?: string;
 }) {
   const url = productImageUrl(image?.cloudinaryId, size);
   const wrapper = cn("bg-muted relative aspect-square overflow-hidden rounded-lg", className);
+  const img = cn("object-cover", imgClassName);
 
   if (!url) {
     return (
@@ -41,7 +45,7 @@ export function ProductImage({
           fill
           priority={priority}
           sizes={sizes ?? "(max-width: 640px) 50vw, 300px"}
-          className="object-cover"
+          className={img}
         />
       </div>
     );
@@ -56,7 +60,7 @@ export function ProductImage({
         unoptimized
         priority={priority}
         sizes={sizes ?? "(max-width: 640px) 50vw, 300px"}
-        className="object-cover"
+        className={img}
         placeholder={image?.blurDataUrl ? "blur" : "empty"}
         blurDataURL={image?.blurDataUrl ?? undefined}
       />

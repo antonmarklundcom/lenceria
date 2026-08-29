@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import type React from "react";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Jost, Playfair_Display } from "next/font/google";
 
 import { TIENDA } from "@/config/tienda";
 import { Analytics } from "@/components/analytics";
@@ -13,13 +13,15 @@ import { idiomaActivo } from "@/i18n";
 import { siteOrigin } from "@/lib/site-url";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const jost = Jost({
+  variable: "--font-jost",
+  weight: ["300", "400", "500", "600"],
   subsets: ["latin"],
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const playfair = Playfair_Display({
+  variable: "--font-playfair",
+  weight: ["400", "500", "600"],
   subsets: ["latin"],
 });
 
@@ -52,7 +54,7 @@ export default function RootLayout({
   return (
     <html
       lang={idiomaActivo()}
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${jost.variable} ${playfair.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col">
         <SiteHeader />

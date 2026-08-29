@@ -26,30 +26,27 @@ export function ProductCard({
   return (
     <Link
       href={`/producto/${product.slug}`}
-      className="group border-border hover:border-foreground/20 focus-visible:ring-ring flex flex-col rounded-xl border p-3 transition-colors focus-visible:ring-2 focus-visible:outline-none"
+      className="group border-border hover:border-primary/40 focus-visible:ring-ring flex flex-col rounded-lg border p-3 transition-colors focus-visible:ring-2 focus-visible:outline-none"
     >
+      <p className="text-muted-foreground mb-2 text-xs font-medium tracking-[0.12em] uppercase">
+        {product.brand ?? product.categoryName}
+      </p>
+
       <ProductImage
         image={product.image}
         alt={product.name}
         categorySlug={product.categorySlug}
         priority={priority}
+        className="aspect-[3/4]"
+        imgClassName="transition-transform duration-500 group-hover:scale-105"
       />
 
-      <div className="mt-3 flex flex-1 flex-col gap-1">
-        <p className="text-muted-foreground text-xs">{product.brand ?? product.categoryName}</p>
-        <h3 className="group-hover:text-foreground line-clamp-2 text-sm font-medium">
-          {product.name}
-        </h3>
+      <div className="mt-3 flex flex-1 flex-col gap-1 text-center">
+        <h3 className="line-clamp-2 text-sm">{product.name}</h3>
 
-        <div className="mt-auto pt-2">
-          {shown ? (
-            <PriceTag
-              pricePyg={shown.pricePyg}
-              compareAtPyg={shown.compareAtPyg}
-              size="sm"
-            />
-          ) : null}
-          <div className="mt-2 flex items-center gap-2">
+        <div className="mt-auto flex flex-col items-center gap-1.5 pt-2">
+          {shown ? <PriceTag pricePyg={shown.pricePyg} compareAtPyg={shown.compareAtPyg} size="sm" /> : null}
+          <div className="flex items-center gap-2">
             <StockBadge available={totalAvailable} />
             {hasVariantRange ? (
               <span className="text-muted-foreground text-xs">
@@ -65,12 +62,12 @@ export function ProductCard({
 
 export function ProductCardSkeleton() {
   return (
-    <div className="border-border rounded-xl border p-3">
-      <div className="bg-muted aspect-square animate-pulse rounded-lg" />
+    <div className="border-border rounded-lg border p-3">
+      <div className="bg-muted mb-2 h-3 w-1/3 animate-pulse rounded" />
+      <div className="bg-muted aspect-[3/4] animate-pulse rounded-lg" />
       <div className="mt-3 space-y-2">
-        <div className="bg-muted h-3 w-1/3 animate-pulse rounded" />
-        <div className="bg-muted h-4 w-4/5 animate-pulse rounded" />
-        <div className="bg-muted h-4 w-1/2 animate-pulse rounded" />
+        <div className="bg-muted mx-auto h-4 w-4/5 animate-pulse rounded" />
+        <div className="bg-muted mx-auto h-4 w-1/2 animate-pulse rounded" />
       </div>
     </div>
   );
