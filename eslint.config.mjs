@@ -12,6 +12,9 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Standalone Vite app with its own toolchain — not part of the
+    // Next.js template's lint/type program.
+    "stretch-landing/**",
   ]),
 ]);
 
