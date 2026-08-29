@@ -41,9 +41,9 @@ export function PriceTag({
             <span className="text-muted-foreground text-sm line-through tabular-nums">
               {formatGs(compareAtPyg)}
             </span>
-            <span className="text-xs font-medium text-emerald-700 dark:text-emerald-400">
-              −{discount}%
-            </span>
+            {/* Verde fijo, no `dark:` — esta tienda no tiene toggle de tema,
+                así que el texto siempre corre sobre el fondo carbón. */}
+            <span className="text-xs font-medium text-emerald-400">−{discount}%</span>
           </>
         ) : null}
       </div>

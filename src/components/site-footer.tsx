@@ -16,19 +16,21 @@ export async function SiteFooter() {
   const phone = comercioWhatsApp();
 
   return (
-    <footer className="border-border mt-16 border-t">
-      <div className="text-muted-foreground mx-auto grid w-full max-w-6xl gap-8 px-4 py-10 text-sm sm:grid-cols-3">
+    <footer className="border-border mt-16 border-t bg-secondary">
+      <div className="text-muted-foreground mx-auto grid w-full max-w-6xl gap-10 px-4 py-12 text-sm sm:grid-cols-3 sm:px-6">
         <div>
-          <p className="text-foreground font-semibold">{TIENDA.nombre}</p>
-          <p className="mt-2">{TIENDA.tagline}</p>
+          <p className="text-foreground font-serif text-xl">{TIENDA.nombre}</p>
+          <p className="mt-3 max-w-xs leading-relaxed">{TIENDA.tagline}</p>
         </div>
 
         <div>
-          <p className="text-foreground font-medium">{t("footer.categorias")}</p>
-          <ul className="mt-2 space-y-1">
+          <p className="text-foreground text-xs font-medium tracking-[0.16em] uppercase">
+            {t("footer.categorias")}
+          </p>
+          <ul className="mt-3 space-y-2">
             {categories.map((category) => (
               <li key={category.id}>
-                <Link href={`/categoria/${category.slug}`} className="hover:text-foreground">
+                <Link href={`/categoria/${category.slug}`} className="hover:text-primary">
                   {category.name}
                 </Link>
               </li>
@@ -37,11 +39,20 @@ export async function SiteFooter() {
         </div>
 
         <div>
-          <p className="text-foreground font-medium">{t("footer.contacto")}</p>
-          <ul className="mt-2 space-y-1">
-            {phone ? <li>{t("footer.whatsapp", { telefono: formatPhonePY(phone) })}</li> : null}
+          <p className="text-foreground text-xs font-medium tracking-[0.16em] uppercase">
+            {t("footer.contacto")}
+          </p>
+          <ul className="mt-3 space-y-2">
+            {phone ? (
+              <li className="border-border bg-background flex items-center gap-3 rounded-md border px-3 py-2.5">
+                <span className="border-primary text-accent-foreground flex size-6 shrink-0 items-center justify-center rounded-full border text-[10px] font-medium">
+                  W
+                </span>
+                {t("footer.whatsapp", { telefono: formatPhonePY(phone) })}
+              </li>
+            ) : null}
             <li>
-              <Link href="/pedido/buscar" className="hover:text-foreground">
+              <Link href="/pedido/buscar" className="hover:text-primary">
                 {t("footer.seguirPedido")}
               </Link>
             </li>
