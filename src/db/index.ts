@@ -9,6 +9,9 @@ import * as schema from './schema';
  */
 const POOL_OPTIONS = {
   connectionLimit: 8,
+  waitForConnections: true,
+  queueLimit: 24,
+  connectTimeout: 8_000,
   // Store and read everything in UTC; business logic converts to America/Asuncion.
   timezone: 'Z',
   supportBigNumbers: true,
