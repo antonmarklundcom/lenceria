@@ -6,9 +6,20 @@ import * as schema from './schema';
 /**
  * One pool per process. Hostinger caps concurrent connections per DB user —
  * a bigger pool buys nothing and produces random ER_CON_COUNT_ERROR under load.
+ *
+ * queueLimit and connectTimeout bound how long a request waits for a connection
+ * when MySQL is stuck or overloaded — without them a stuck request waits
+ * forever and keeps its Node process alive, which on shared Hostinger hosting
+ * can exhaust the account-wide process cap. 64 is deliberately above the 50-
+ * simultaneous checkouts order-number.test.ts proves this store must survive
+ * (they serialize behind a FOR UPDATE row lock, not actual DB overload) --
+ * don't lower it without re-proving that test still passes.
  */
 const POOL_OPTIONS = {
   connectionLimit: 8,
+  waitForConnections: true,
+  queueLimit: 64,
+  connectTimeout: 8_000,
   // Store and read everything in UTC; business logic converts to America/Asuncion.
   timezone: 'Z',
   supportBigNumbers: true,
