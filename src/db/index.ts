@@ -1,1 +1,81 @@
-aW1wb3J0IHsgZHJpenpsZSwgdHlwZSBNeVNxbDJEYXRhYmFzZSB9IGZyb20gJ2RyaXp6bGUtb3JtL215c3FsMic7CmltcG9ydCBteXNxbCBmcm9tICdteXNxbDIvcHJvbWlzZSc7CgppbXBvcnQgKiBhcyBzY2hlbWEgZnJvbSAnLi9zY2hlbWEnOwoKLyoqCiAqIE9uZSBwb29sIHBlciBwcm9jZXNzLiBIb3N0aW5nZXIgY2FwcyBjb25jdXJyZW50IGNvbm5lY3Rpb25zIHBlciBEQiB1c2VyIOKAlAogKiBhIGJpZ2dlciBwb29sIGJ1eXMgbm90aGluZyBhbmQgcHJvZHVjZXMgcmFuZG9tIEVSX0NPTl9DT1VOVF9FUlJPUiB1bmRlciBsb2FkLgogKgogKiBxdWV1ZUxpbWl0IGFuZCBjb25uZWN0VGltZW91dCBib3VuZCBob3cgbG9uZyBhIHJlcXVlc3Qgd2FpdHMgZm9yIGEgY29ubmVjdGlvbgogKiB3aGVuIE15U1FMIGlzIHN0dWNrIG9yIG92ZXJsb2FkZWQg4oCUIHdpdGhvdXQgdGhlbSBhIHN0dWNrIHJlcXVlc3Qgd2FpdHMKICogZm9yZXZlciBhbmQga2VlcHMgaXRzIE5vZGUgcHJvY2VzcyBhbGl2ZSwgd2hpY2ggb24gc2hhcmVkIEhvc3RpbmdlciBob3N0aW5nCiAqIGNhbiBleGhhdXN0IHRoZSBhY2NvdW50LXdpZGUgcHJvY2VzcyBjYXAuIDY0IGlzIGRlbGliZXJhdGVseSBhYm92ZSB0aGUgNTAtCiAqIHNpbXVsdGFuZW91cyBjaGVja291dHMgb3JkZXItbnVtYmVyLnRlc3QudHMgcHJvdmVzIHRoaXMgc3RvcmUgbXVzdCBzdXJ2aXZlCiAqICh0aGV5IHNlcmlhbGl6ZSBiZWhpbmQgYSBGT1IgVVBEQVRFIHJvdyBsb2NrLCBub3QgYWN0dWFsIERCIG92ZXJsb2FkKSAtLQogKiBkb24ndCBsb3dlciBpdCB3aXRob3V0IHJlLXByb3ZpbmcgdGhhdCB0ZXN0IHN0aWxsIHBhc3Nlcy4KICovCmNvbnN0IFBPT0xfT1BUSU9OUyA9IHsKICBjb25uZWN0aW9uTGltaXQ6IDgsCiAgd2FpdEZvckNvbm5lY3Rpb25zOiB0cnVlLAogIHF1ZXVlTGltaXQ6IDY0LAogIGNvbm5lY3RUaW1lb3V0OiA4XzAwMCwKICAvLyBTdG9yZSBhbmQgcmVhZCBldmVyeXRoaW5nIGluIFVUQzsgYnVzaW5lc3MgbG9naWMgY29udmVydHMgdG8gQW1lcmljYS9Bc3VuY2lvbi4KICB0aW1lem9uZTogJ1onLAogIHN1cHBvcnRCaWdOdW1iZXJzOiB0cnVlLAogIGJpZ051bWJlclN0cmluZ3M6IGZhbHNlLAogIGNoYXJzZXQ6ICd1dGY4bWI0X2dlbmVyYWxfY2knLAp9IGFzIGNvbnN0OwoKZXhwb3J0IHR5cGUgRGF0YWJhc2UgPSBNeVNxbDJEYXRhYmFzZTx0eXBlb2Ygc2NoZW1hPjsKCmRlY2xhcmUgZ2xvYmFsIHsKICAvLyBOZXh0LmpzIGRldiByZWxvYWRzIHRoZSBtb2R1bGUgZ3JhcGggb24gZXZlcnkgZWRpdDsgd2l0aG91dCB0aGlzIHRoZSBwb29sCiAgLy8gY291bnQgZ3Jvd3MgdW50aWwgTXlTUUwgcmVmdXNlcyBuZXcgY29ubmVjdGlvbnMuCiAgdmFyIF9fZWNvbVBvb2w6IG15c3FsLlBvb2wgfCB1bmRlZmluZWQ7Cn0KCmZ1bmN0aW9uIGNvbm5lY3Rpb25TdHJpbmcoKTogc3RyaW5nIHsKICBjb25zdCB1cmwgPSBwcm9jZXNzLmVudi5EQVRBQkFTRV9VUkw7CiAgaWYgKCF1cmwpIHsKICAgIHRocm93IG5ldyBFcnJvcigKICAgICAgJ0RBVEFCQVNFX1VSTCBubyBlc3TDoSBkZWZpbmlkYS4gQ29waWEgLmVudi5leGFtcGxlIGEgLmVudi5sb2NhbCB5IGNvbXBsZXRhbGEuICcgKwogICAgICAgICcodHN4IG5vIGNhcmdhIC5lbnYgc29sbzogdXPDoSBgaW1wb3J0ICJkb3RlbnYvY29uZmlnImAgYWwgaW5pY2lvIGRlIGNhZGEgc2NyaXB0LiknLAogICAgKTsKICB9CiAgcmV0dXJuIHVybDsKfQoKZXhwb3J0IGZ1bmN0aW9uIGdldFBvb2woKTogbXlzcWwuUG9vbCB7CiAgaWYgKCFnbG9iYWxUaGlzLl9fZWNvbVBvb2wpIHsKICAgIGdsb2JhbFRoaXMuX19lY29tUG9vbCA9IG15c3FsLmNyZWF0ZVBvb2woeyB1cmk6IGNvbm5lY3Rpb25TdHJpbmcoKSwgLi4uUE9PTF9PUFRJT05TIH0pOwogIH0KICByZXR1cm4gZ2xvYmFsVGhpcy5fX2Vjb21Qb29sOwp9CgpsZXQgY2FjaGVkRGI6IERhdGFiYXNlIHwgdW5kZWZpbmVkOwoKLyoqIExhemlseSBidWlsdCBzbyBpbXBvcnRpbmcgdGhpcyBtb2R1bGUgbmV2ZXIgcmVxdWlyZXMgREFUQUJBU0VfVVJMLiAqLwpleHBvcnQgZnVuY3Rpb24gZ2V0RGIoKTogRGF0YWJhc2UgewogIGlmICghY2FjaGVkRGIpIHsKICAgIGNhY2hlZERiID0gZHJpenpsZShnZXRQb29sKCksIHsgc2NoZW1hLCBtb2RlOiAnZGVmYXVsdCcgfSk7CiAgfQogIHJldHVybiBjYWNoZWREYjsKfQoKLyoqIEFtYmllbnQgaGFuZGxlIGZvciBhcHAgY29kZTogYGRiLnNlbGVjdCgpLi4uYC4gU2NyaXB0cy90ZXN0cyBjYW4gdXNlIGdldERiKCkuICovCmV4cG9ydCBjb25zdCBkYjogRGF0YWJhc2UgPSBuZXcgUHJveHkoe30gYXMgRGF0YWJhc2UsIHsKICBnZXQoX3RhcmdldCwgcHJvcCwgcmVjZWl2ZXIpIHsKICAgIHJldHVybiBSZWZsZWN0LmdldChnZXREYigpIGFzIG9iamVjdCwgcHJvcCwgcmVjZWl2ZXIpOwogIH0sCn0pOwoKZXhwb3J0IGFzeW5jIGZ1bmN0aW9uIGNsb3NlUG9vbCgpOiBQcm9taXNlPHZvaWQ+IHsKICBpZiAoZ2xvYmFsVGhpcy5fX2Vjb21Qb29sKSB7CiAgICBhd2FpdCBnbG9iYWxUaGlzLl9fZWNvbVBvb2wuZW5kKCk7CiAgICBnbG9iYWxUaGlzLl9fZWNvbVBvb2wgPSB1bmRlZmluZWQ7CiAgICBjYWNoZWREYiA9IHVuZGVmaW5lZDsKICB9Cn0KCmV4cG9ydCB7IHNjaGVtYSB9Owo=
+import { drizzle, type MySql2Database } from 'drizzle-orm/mysql2';
+import mysql from 'mysql2/promise';
+
+import * as schema from './schema';
+
+/**
+ * One pool per process. Hostinger caps concurrent connections per DB user —
+ * a bigger pool buys nothing and produces random ER_CON_COUNT_ERROR under load.
+ *
+ * queueLimit and connectTimeout bound how long a request waits for a connection
+ * when MySQL is stuck or overloaded — without them a stuck request waits
+ * forever and keeps its Node process alive, which on shared Hostinger hosting
+ * can exhaust the account-wide process cap. 64 is deliberately above the 50-
+ * simultaneous checkouts order-number.test.ts proves this store must survive
+ * (they serialize behind a FOR UPDATE row lock, not actual DB overload) --
+ * don't lower it without re-proving that test still passes.
+ */
+const POOL_OPTIONS = {
+  connectionLimit: 8,
+  waitForConnections: true,
+  queueLimit: 64,
+  connectTimeout: 8_000,
+  // Store and read everything in UTC; business logic converts to America/Asuncion.
+  timezone: 'Z',
+  supportBigNumbers: true,
+  bigNumberStrings: false,
+  charset: 'utf8mb4_general_ci',
+} as const;
+
+export type Database = MySql2Database<typeof schema>;
+
+declare global {
+  // Next.js dev reloads the module graph on every edit; without this the pool
+  // count grows until MySQL refuses new connections.
+  var __ecomPool: mysql.Pool | undefined;
+}
+
+function connectionString(): string {
+  const url = process.env.DATABASE_URL;
+  if (!url) {
+    throw new Error(
+      'DATABASE_URL no está definida. Copiá .env.example a .env.local y completala. ' +
+        '(tsx no carga .env solo: usá `import "dotenv/config"` al inicio de cada script.)',
+    );
+  }
+  return url;
+}
+
+export function getPool(): mysql.Pool {
+  if (!globalThis.__ecomPool) {
+    globalThis.__ecomPool = mysql.createPool({ uri: connectionString(), ...POOL_OPTIONS });
+  }
+  return globalThis.__ecomPool;
+}
+
+let cachedDb: Database | undefined;
+
+/** Lazily built so importing this module never requires DATABASE_URL. */
+export function getDb(): Database {
+  if (!cachedDb) {
+    cachedDb = drizzle(getPool(), { schema, mode: 'default' });
+  }
+  return cachedDb;
+}
+
+/** Ambient handle for app code: `db.select()...`. Scripts/tests can use getDb(). */
+export const db: Database = new Proxy({} as Database, {
+  get(_target, prop, receiver) {
+    return Reflect.get(getDb() as object, prop, receiver);
+  },
+});
+
+export async function closePool(): Promise<void> {
+  if (globalThis.__ecomPool) {
+    await globalThis.__ecomPool.end();
+    globalThis.__ecomPool = undefined;
+    cachedDb = undefined;
+  }
+}
+
+export { schema };
