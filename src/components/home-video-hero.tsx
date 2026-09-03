@@ -9,19 +9,18 @@ import { useInView } from "@/hooks/use-in-view";
 
 const SLIDE_MS = 5000;
 
-// Reemplazar por fotografía real de producto una vez elegida la dirección
-// (ver conversación de diseño) — estos son los placeholders originales del
-// layout de referencia.
-const HERO_IMAGE =
-  "https://images.higgs.ai/?default=1&output=webp&url=https%3A%2F%2Fd8j0ntlcm91z4.cloudfront.net%2Fuser_38xzZboKViGWJOttwIXH07lWA1P%2Fhf_20260516_101925_8e509c31-4e75-4ae1-b164-2605265b2d47.png&w=1280&q=85";
+// Placeholders autohospedados (public/placeholders/) a reemplazar por
+// fotografía propia una vez elegida la dirección (ver conversación de
+// diseño).
+const HERO_IMAGE = "/placeholders/generico.svg";
 
-const HERO_VIDEOS = [
-  "https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260516_112022_cddf2487-4ffe-45b6-ba4c-99ab79003cc5.mp4",
-  "https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260518_175400_b46d1cd2-2050-45e2-9d13-b9c0bacb16b3.mp4",
-  "https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260518_182440_671605c8-2ed8-4507-a4cb-a62a8f61316f.mp4",
+const HERO_SLIDES = [
+  "/placeholders/corpinos.svg",
+  "/placeholders/conjuntos.svg",
+  "/placeholders/pijamas.svg",
 ];
 
-function VideoSlideshow() {
+function HeroSlideshow() {
   const [slide, setSlide] = useState(0);
   const [playing, setPlaying] = useState(true);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -32,7 +31,7 @@ function VideoSlideshow() {
       return;
     }
     intervalRef.current = setInterval(() => {
-      setSlide((current) => (current + 1) % HERO_VIDEOS.length);
+      setSlide((current) => (current + 1) % HERO_SLIDES.length);
     }, SLIDE_MS);
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
@@ -41,15 +40,14 @@ function VideoSlideshow() {
 
   return (
     <div className="relative min-h-[40vh] w-full overflow-hidden bg-black lg:min-h-0 lg:w-1/2">
-      {HERO_VIDEOS.map((src, index) => (
-        <video
+      {HERO_SLIDES.map((src, index) => (
+        <Image
           key={src}
           src={src}
-          autoPlay
-          loop
-          muted
-          playsInline
-          className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-700 ${
+          alt=""
+          fill
+          sizes="(max-width: 1024px) 100vw, 50vw"
+          className={`object-cover transition-opacity duration-700 ${
             index === slide ? "opacity-100" : "opacity-0"
           }`}
         />
@@ -57,7 +55,7 @@ function VideoSlideshow() {
 
       <div className="absolute right-6 bottom-6 z-20 flex items-center gap-3">
         <div className="flex items-center gap-2">
-          {HERO_VIDEOS.map((_, index) => (
+          {HERO_SLIDES.map((_, index) => (
             <button
               key={index}
               type="button"
@@ -88,7 +86,7 @@ export function HomeVideoHero({ ctaHref }: { ctaHref: string | null }) {
   return (
     <section className="relative flex min-h-screen flex-col lg:flex-row">
       <div className="relative min-h-[60vh] w-full overflow-hidden lg:min-h-0 lg:w-1/2">
-        <Image src={HERO_IMAGE} alt="" fill unoptimized priority sizes="(max-width: 1024px) 100vw, 50vw" className="object-cover" />
+        <Image src={HERO_IMAGE} alt="" fill priority sizes="(max-width: 1024px) 100vw, 50vw" className="object-cover" />
         <div className="absolute inset-0 bg-black/25" aria-hidden />
 
         <div
@@ -131,7 +129,7 @@ export function HomeVideoHero({ ctaHref }: { ctaHref: string | null }) {
         </div>
       </div>
 
-      <VideoSlideshow />
+      <HeroSlideshow />
     </section>
   );
 }
