@@ -11,6 +11,7 @@ import { getCategories } from "@/db/queries";
 import { freeShippingWithoutZone } from "@/domain/free-shipping";
 import { listShippingZones } from "@/domain/shipping";
 import { t } from "@/i18n";
+import { TESTIDS } from "@/lib/testids";
 import { formatGs } from "@/lib/money";
 
 /**
@@ -62,6 +63,8 @@ export async function SiteHeader() {
             <Link
               key={category.id}
               href={`/categoria/${category.slug}`}
+              data-testid={TESTIDS.headerCategoryLink}
+              data-slug={category.slug}
               className="text-muted-foreground hover:text-foreground group relative text-sm tracking-wide transition-colors"
             >
               {category.name}
