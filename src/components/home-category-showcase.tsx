@@ -1,30 +1,25 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 
 import { useInView } from "@/hooks/use-in-view";
+import { categoryPlaceholderSrc } from "@/lib/images";
 
-// Reemplazar por video real de cada categoría una vez elegida la dirección —
-// estos son los placeholders originales del layout de referencia, uno por
-// posición (no por categoría: se ciclan si hay menos de tres).
-const SHOWCASE_VIDEOS = [
-  "https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260518_203023_87a26602-2898-4acc-a396-c7a2b5ad84fd.mp4",
-  "https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260518_203415_b86e3f19-2aec-46cd-9a86-b64c40118e38.mp4",
-  "https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260518_203051_85fee398-ea01-4aa0-972b-137a74213be5.mp4",
-];
+// Placeholder autohospedado (public/placeholders/) a reemplazar por video
+// real de cada categoría una vez elegida la dirección.
 
-function CategoryTile({ name, slug, video }: { name: string; slug: string; video: string }) {
+function CategoryTile({ name, slug }: { name: string; slug: string }) {
   return (
     <div className="group relative min-h-[400px] overflow-hidden p-6 sm:min-h-[500px] sm:p-8 md:min-h-[750px] md:p-12">
-      <video
-        src={video}
-        autoPlay
-        loop
-        muted
-        playsInline
-        className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+      <Image
+        src={categoryPlaceholderSrc(slug)}
+        alt=""
+        fill
+        sizes="(max-width: 768px) 100vw, 33vw"
+        className="object-cover transition-transform duration-700 group-hover:scale-105"
       />
-      <div className="absolute inset-0 bg-black/10 transition-colors duration-500 group-hover:bg-black/20" />
+      <div className="absolute inset-0 bg-black/30 transition-colors duration-500 group-hover:bg-black/40" />
 
       <div className="relative flex h-full flex-col items-start justify-between">
         <span
@@ -58,13 +53,8 @@ export function HomeCategoryShowcase({
         isVisible ? "translate-y-0 opacity-100" : "translate-y-12 opacity-0"
       }`}
     >
-      {categories.map((category, index) => (
-        <CategoryTile
-          key={category.id}
-          name={category.name}
-          slug={category.slug}
-          video={SHOWCASE_VIDEOS[index % SHOWCASE_VIDEOS.length]!}
-        />
+      {categories.map((category) => (
+        <CategoryTile key={category.id} name={category.name} slug={category.slug} />
       ))}
     </section>
   );
