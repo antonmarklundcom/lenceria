@@ -48,7 +48,7 @@ function paginas(dir = APP, ruta = ''): { ruta: string; source: string }[] {
   return salida;
 }
 
-/** `/categoria/[slug]` → `/categoria/alimentos`: un path como el que llega. */
+/** `/categoria/[slug]` → `/categoria/x`: un path como el que llega. */
 function rutaConcreta(ruta: string): string {
   return ruta.replace(/\[(?:\.\.\.)?([^\]]+)\]/g, 'x');
 }
@@ -94,7 +94,7 @@ describe('CSP y las páginas cacheadas', () => {
 
   it('la home y las categorías sí', () => {
     expect(esRutaCacheada('/')).toBe(true);
-    expect(esRutaCacheada('/categoria/alimentos')).toBe(true);
+    expect(esRutaCacheada('/categoria/electronica')).toBe(true);
   });
 
   it('no confunde una ruta que sólo empieza igual', () => {
@@ -104,13 +104,13 @@ describe('CSP y las páginas cacheadas', () => {
 
 describe('jsonLdScript', () => {
   it('no deja cerrar la etiqueta desde adentro', () => {
-    const salida = jsonLdScript({ name: 'Pelota</script><script>alert(1)</script>' });
+    const salida = jsonLdScript({ name: 'Camiseta</script><script>alert(1)</script>' });
     expect(salida).not.toContain('</script>');
     expect(salida).not.toContain('<');
   });
 
   it('sigue siendo el mismo dato después de parsearlo', () => {
-    const valor = { name: 'Cama & Casita <chica>', price: 185000 };
+    const valor = { name: 'Silla & Mesa <chica>', price: 185000 };
     expect(JSON.parse(jsonLdScript(valor))).toEqual(valor);
   });
 });

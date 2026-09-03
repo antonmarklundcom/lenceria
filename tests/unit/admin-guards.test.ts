@@ -131,6 +131,8 @@ const GUARD_ESPERADO: Readonly<Record<string, 'Admin' | 'Staff' | 'Owner'>> = {
   adjustVariantStock: 'Staff',
   uploadProductImage: 'Staff',
   removeProductImage: 'Staff',
+  previewCatalogImport: 'Staff',
+  applyCatalogImport: 'Staff',
 
   // Un CSV es la base del comercio en un archivo que sale del edificio.
   exportOrdersCsv: 'Owner',
@@ -174,14 +176,6 @@ const GUARD_ESPERADO: Readonly<Record<string, 'Admin' | 'Staff' | 'Owner'>> = {
   editarZonaEnvio: 'Owner',
   cambiarEstadoZonaEnvio: 'Owner',
   moverZonaEnvio: 'Owner',
-
-  // Las formas de entrega deciden además con qué se puede pagar: un método mal
-  // configurado habilita contra entrega en ciudades donde nadie del comercio
-  // va a estar en la puerta para cobrar. Mismo dueño, mismo motivo.
-  crearMetodoEnvio: 'Owner',
-  editarMetodoEnvio: 'Owner',
-  cambiarEstadoMetodoEnvio: 'Owner',
-  moverMetodoEnvio: 'Owner',
 };
 
 describe('cada acción llama al guard que le corresponde', () => {

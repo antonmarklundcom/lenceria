@@ -1346,4 +1346,29 @@ export const esPY = {
   // También lo usa `/admin/productos/nuevo`, que lo dibuja arriba del
   // formulario para poder volver sin perder el filtro.
   "panel.productoNuevo.volver": "← Productos",
+
+  // Carga masiva por planilla (template, importar catálogo).
+  "adminError.elegiArchivo": "Elegí un archivo CSV o Excel.",
+  "adminError.archivoGrande": "El archivo pesa demasiado (máximo 10 MB).",
+
+  "panel.productos.importar.titulo": "Cargar planilla",
+  "panel.productos.importar.ayuda":
+    "CSV o Excel, una fila por variante — el mismo formato que baja el botón de arriba. Primero se revisa; recién se escribe cuando confirmás.",
+  "panel.productos.importar.revisar": "Revisar",
+  "panel.productos.importar.confirmar": "Confirmar e importar",
+  "panel.productos.importar.aplicando": "Importando…",
+  "panel.productos.importar.pisarStock":
+    "Pisar el stock de las variantes que ya existen (si no, su stock actual no se toca)",
+  "panel.productos.importar.pisandoStock": "se va a pisar su stock",
+  "panel.productos.importar.stockIntacto": "su stock no se toca",
+  "panel.productos.importar.productosNuevos.uno": "{n} producto nuevo",
+  "panel.productos.importar.productosNuevos.varios": "{n} productos nuevos",
+  "panel.productos.importar.productosActualizar.uno": "{n} producto a actualizar",
+  "panel.productos.importar.productosActualizar.varios": "{n} productos a actualizar",
+  "panel.productos.importar.variantesNuevas.uno": "{n} variante nueva",
+  "panel.productos.importar.variantesNuevas.varios": "{n} variantes nuevas",
+  "panel.productos.importar.variantesActualizar.uno": "{n} variante a actualizar",
+  "panel.productos.importar.variantesActualizar.varios": "{n} variantes a actualizar",
+  "panel.productos.importar.categoriasNuevas": "Categorías a crear: {categorias}.",
+  "panel.productos.importar.listo": "Listo: {productos} productos, {variantes} variantes escritas.",
 } as const satisfies Record<string, string>;

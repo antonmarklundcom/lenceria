@@ -1,3 +1,6 @@
+import { readFileSync } from 'node:fs';
+import path from 'node:path';
+
 import { describe, expect, it } from 'vitest';
 
 import {
@@ -27,27 +30,19 @@ import {
  */
 
 /**
- * Una copia fiel de cómo sale `src/config/tienda.ts` recién clonado del
- * template, y no una lectura del archivo real: esta suite tiene que seguir
- * probando "reescribir el template" incluso después de que esta misma tienda
- * corrió el wizard de verdad y `tienda.ts` en disco ya tiene su propia marca.
+ * El `tienda.ts` **del template**, tal como sale de "Use this template".
+ *
+ * Es una copia y no el archivo real a propósito. Lo que se prueba acá es el
+ * lector y el reescritor —que sepan sacar un string partido por prettier, y
+ * que `nombre: MARCA_PLACEHOLDER` no se lea como un valor—, no cómo se llama
+ * esta tienda. Leyendo `src/config/tienda.ts` de verdad, estos tres tests
+ * pasaban sólo mientras nadie corriera `pnpm nueva-tienda`: la primera tienda
+ * que se pone su marca los rompe, y el bug estaría en el test, no en el
+ * wizard.
  */
 const TIENDA_TEMPLATE = `export type Tienda = {
   nombre: string;
   titulo: string;
-  descripcion: string;
-  tagline: string;
-  lang: string;
-  ogLocale: string;
-  cuentasClientes: boolean;
-  hero: Hero | null;
-};
-
-export type Hero = {
-  imagen?: { cloudinaryId: string; alt: string } | null;
-  titulo: string;
-  texto?: string;
-  cta?: { label: string; href: string };
 };
 
 export const MARCA_PLACEHOLDER = "TiendaPY";
@@ -56,7 +51,8 @@ export const TIENDA: Tienda = {
   nombre: MARCA_PLACEHOLDER,
   titulo: "TiendaPY — Comprá online en Paraguay",
   descripcion:
-    "Tienda online paraguaya. Precios en guaraníes, IVA incluido, envíos a todo el país y atención por WhatsApp.",
+    "Tienda online paraguaya. Precios en guaraníes, IVA incluido, envíos a todo el país " +
+    "y atención por WhatsApp.",
   tagline: "Precios en guaraníes, IVA incluido. Enviamos a todo el país.",
   lang: "es-PY",
   ogLocale: "es_PY",
@@ -98,6 +94,21 @@ describe('leer la marca de tienda.ts', () => {
     // `nombre: MARCA_PLACEHOLDER`. Devolver "TiendaPY" haría imposible
     // distinguir "todavía no lo renombraron" de "la tienda se llama TiendaPY".
     expect(leerCampoTienda(TIENDA_TEMPLATE, 'nombre')).toBeNull();
+  });
+
+  it('el tienda.ts de verdad sigue siendo legible, se llame como se llame', () => {
+    // El contrapeso de usar una copia: si el archivo real cambia de forma
+    // —otro formato de string, otro nombre de campo— la copia no se entera y
+    // los tests de arriba pasarían contra un archivo que ya no existe. Esto
+    // mira el real, pero **sin** mirar los valores: una tienda que ya corrió
+    // el wizard tiene su marca acá, y eso no es una falla.
+    const real = readFileSync(path.join('src', 'config', 'tienda.ts'), 'utf8');
+
+    for (const campo of ['titulo', 'descripcion', 'tagline'] as const) {
+      expect(leerCampoTienda(real, campo), `no pude leer "${campo}" del tienda.ts real`).toEqual(
+        expect.any(String),
+      );
+    }
   });
 });
 
