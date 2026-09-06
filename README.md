@@ -18,6 +18,8 @@ Guaraníes enteros, español (voseo), WhatsApp-first, mobile-first.
 | [NEW-STORE.md](./NEW-STORE.md) | Checklist para arrancar una tienda nueva desde este template |
 | [DEPLOY.md](./DEPLOY.md) | Runbook del deploy a Hostinger: git deploy, variables, base, cron, prueba de humo |
 | [.env.example](./.env.example) | Todas las variables de entorno con sus trampas documentadas |
+| [fable/plan-operacion.md](./fable/plan-operacion.md) | Plan de la tienda después del lanzamiento (tracking, notas, remito, resumen diario, backups, acciones masivas, vidriera, CI, distribución a las tiendas). Nueve fases O5–S13, todas mergeadas — **historial**, igual que `fable/plan.md`. La próxima revisión arranca desde `fable/PROMPT.md` |
+| [fable/plan.md](./fable/plan.md) | Plan de endurecimiento anterior (revisión en `fable/REVIEW.md`), mergeado completo — historial |
 
 ## Estado
 
@@ -47,7 +49,7 @@ reemplaza los pasos `db:seed` de arriba — ver la sección de abajo.
 |---|---|
 | `pnpm typecheck` / `pnpm lint` / `pnpm test` | lo que corre CI |
 | `pnpm test` | unitarios siempre; los de integración necesitan `TEST_DATABASE_URL` (esa base se borra y se recrea en cada corrida) |
-| `pnpm test:e2e` | Playwright contra un `next build` de verdad (`tests/e2e/`): compra de invitado, la puerta de `/admin`, el CSP, el presupuesto de JS por página (bloquea, `presupuesto.spec.ts`) y las capturas por PR (`capturas.spec.ts`, sólo al artifact de CI). Necesita `DATABASE_URL` con el catálogo sembrado (`pnpm db:push && pnpm db:seed`) y `OWNER_EMAIL`/`OWNER_PASSWORD` (`pnpm create-owner`) — fable/plan.md §6.1, plan-operacion §6.4 |
+| `pnpm test:e2e` | Playwright contra un `next build` de verdad (`tests/e2e/`): compra de invitado (`compra.spec.ts`), la puerta de `/admin`, el CSP (`csp.spec.ts`), el panel de pedidos —tracking, notas, remito— (`panel.spec.ts`), el panel de productos —markdown, destacado, duplicar, acciones masivas— (`productos.spec.ts`), el presupuesto de JS por página (bloquea, `presupuesto.spec.ts`) y las capturas por PR (`capturas.spec.ts`, sólo al artifact de CI). Necesita `DATABASE_URL` con el catálogo sembrado (`pnpm db:push && pnpm db:seed`) y `OWNER_EMAIL`/`OWNER_PASSWORD` (`pnpm create-owner`) — fable/plan.md §6.1, plan-operacion (historial) §6.4 |
 | `pnpm db:studio` | Drizzle Studio |
 | `pnpm db:check` | prueba la `DATABASE_URL`: imprime con qué usuario, base, host y puerto conecta (nunca la contraseña) y traduce el error si falla. Primer paso de debugging del deploy (DEPLOY.md §3) |
 | `pnpm db:seed -- --reset-stock` | re-siembra pisando `on_hand` |
@@ -55,8 +57,11 @@ reemplaza los pasos `db:seed` de arriba — ver la sección de abajo.
 | `pnpm reconcile` | control de caja: los totales de cada pedido (incluido el descuento de cupones) más nueve invariantes entre tablas —desde O7, también que el ledger de devoluciones cuadre con `payments.refunded_pyg`—; sale con código 1 si algo no cuadra |
 | `pnpm backfill:pagos-manuales` | completa la fila de `payments` de los pedidos cobrados por transferencia o contra entrega **antes** de que eso se registrara solo (ARCH.md §5.1). Ensayo por defecto: agregá `--apply` para escribir |
 | `pnpm backup` | copia comprimida de la base en `backups/` (`--retener N` para la limpieza por antigüedad). Se corre desde tu máquina, no desde Hostinger — DEPLOY.md §7 |
+| `pnpm restore -- <archivo.jsonl.gz>` | restaura una copia de `/api/cron/backup`. **Sólo** contra una base cuyo nombre tenga `restore` o `test`: el candado no tiene flag para saltearlo (DEPLOY.md §5) |
 | `pnpm nueva-tienda` | wizard de tienda nueva: marca, secretos, `.env.local` y el bloque de variables del hPanel. Idempotente; `--dry-run` no escribe nada — NEW-STORE.md §2 |
 | `pnpm importar:productos lista.csv` | el catálogo del comercio desde su planilla (formato del export del panel + columnas opcionales). Ensayo por defecto; `--aplicar` escribe, `--pisar-stock` pisa `on_hand` — NEW-STORE.md §4 |
+| `pnpm bootstrap:repo --destino ../tienda` | mete el template en un repo que **ya existe y ya tiene algo adentro** (excluye `.git`, no borra nada, se puede correr de nuevo). `--dry-run` primero — NEW-STORE.md §1b |
+| `pnpm setup:doctor` | ¿esta máquina puede correr `pnpm nueva-tienda`? Node, pnpm, Docker, los remotos, y si `main` se quedó atrás de otras ramas. `--skip-docker` en un contenedor o sesión en la nube — NEW-STORE.md §1 |
 | `pnpm template:diff` | qué arreglos del template le faltan a esta tienda (`--marcar` para fijar el punto de partida) — NEW-STORE.md |
 | `pnpm preflight` | qué falta para cobrar plata de verdad (webhook sin confirmar, `CRON_SECRET`, `PAGOPAR_MODE` en producción); sale con código 1 si algo es inseguro |
 
