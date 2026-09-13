@@ -1595,7 +1595,6 @@ export const esPY = {
   // Fallback de la home sin destacados elegidos a mano — misma lista de
   // productos que "home.destacados", pero el título dice lo que es: lo más
   // nuevo, no una selección del comercio.
-  "home.novedades": "Novedades",
 
   "producto.vistosRecientemente": "Vistos recientemente",
 
