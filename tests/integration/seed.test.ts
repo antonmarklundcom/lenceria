@@ -84,7 +84,7 @@ describe.skipIf(!hasTestDb)('scripts/seed.ts', () => {
     expect(first.categoryName).toBeTruthy();
     expect(first.variants[0]!.available).toBeGreaterThan(0);
 
-    const electronica = await getCatalog({ categorySlug: 'electronica' });
-    expect(electronica).toHaveLength(6);
+    const corpinos = await getCatalog({ categorySlug: 'corpinos' });
+    expect(corpinos).toHaveLength(6);
   });
 });
