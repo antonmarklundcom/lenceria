@@ -1,0 +1,437 @@
+{
+  "generated_at": "2026-09-13T22:10:41.716Z",
+  "images": [
+    {
+      "filename_base": "hero-conjunto-nanduti",
+      "source": "../lenceria-images/01.png",
+      "prompt": "Conjunto de lencería marfil con encaje ñandutí bordado a mano, sobre lino crudo",
+      "alt_text": "Conjunto de lencería marfil con encaje ñandutí bordado a mano, sobre lino crudo",
+      "naming_source": "fallback",
+      "aspect_ratio": "4:5",
+      "files": [
+        {
+          "file": "hero-conjunto-nanduti-640.avif",
+          "format": "avif",
+          "width": 640,
+          "height": 800,
+          "kb": 36
+        },
+        {
+          "file": "hero-conjunto-nanduti-640.webp",
+          "format": "webp",
+          "width": 640,
+          "height": 800,
+          "kb": 57.3
+        },
+        {
+          "file": "hero-conjunto-nanduti-1280.avif",
+          "format": "avif",
+          "width": 1280,
+          "height": 1600,
+          "kb": 86.6
+        },
+        {
+          "file": "hero-conjunto-nanduti-1280.webp",
+          "format": "webp",
+          "width": 1280,
+          "height": 1600,
+          "kb": 147.8
+        },
+        {
+          "file": "hero-conjunto-nanduti-1920.avif",
+          "format": "avif",
+          "width": 1920,
+          "height": 2400,
+          "kb": 134.3
+        },
+        {
+          "file": "hero-conjunto-nanduti-1920.webp",
+          "format": "webp",
+          "width": 1920,
+          "height": 2400,
+          "kb": 241.1
+        }
+      ],
+      "html_snippet": "<picture>\n  <source type=\"image/avif\" srcset=\"C:/Claude 1/lenceria/public/img/hero-conjunto-nanduti-640.avif 640w, C:/Claude 1/lenceria/public/img/hero-conjunto-nanduti-1280.avif 1280w, C:/Claude 1/lenceria/public/img/hero-conjunto-nanduti-1920.avif 1920w\">\n  <source type=\"image/webp\" srcset=\"C:/Claude 1/lenceria/public/img/hero-conjunto-nanduti-640.webp 640w, C:/Claude 1/lenceria/public/img/hero-conjunto-nanduti-1280.webp 1280w, C:/Claude 1/lenceria/public/img/hero-conjunto-nanduti-1920.webp 1920w\">\n  <img src=\"C:/Claude 1/lenceria/public/img/hero-conjunto-nanduti-1280.webp\" alt=\"Conjunto de lencería marfil con encaje ñandutí bordado a mano, sobre lino crudo\" width=\"1280\" height=\"1600\" loading=\"lazy\" decoding=\"async\">\n</picture>"
+    },
+    {
+      "filename_base": "hero-kimono-mburucuya",
+      "source": "../lenceria-images/07.png",
+      "prompt": "Kimono corto de gasa marfil con flores de mburucuyá bordadas a mano",
+      "alt_text": "Kimono corto de gasa marfil con flores de mburucuyá bordadas a mano",
+      "naming_source": "fallback",
+      "aspect_ratio": "4:5",
+      "files": [
+        {
+          "file": "hero-kimono-mburucuya-640.avif",
+          "format": "avif",
+          "width": 640,
+          "height": 800,
+          "kb": 23.2
+        },
+        {
+          "file": "hero-kimono-mburucuya-640.webp",
+          "format": "webp",
+          "width": 640,
+          "height": 800,
+          "kb": 36.9
+        },
+        {
+          "file": "hero-kimono-mburucuya-1280.avif",
+          "format": "avif",
+          "width": 1280,
+          "height": 1600,
+          "kb": 55
+        },
+        {
+          "file": "hero-kimono-mburucuya-1280.webp",
+          "format": "webp",
+          "width": 1280,
+          "height": 1600,
+          "kb": 95.7
+        },
+        {
+          "file": "hero-kimono-mburucuya-1920.avif",
+          "format": "avif",
+          "width": 1920,
+          "height": 2400,
+          "kb": 87.5
+        },
+        {
+          "file": "hero-kimono-mburucuya-1920.webp",
+          "format": "webp",
+          "width": 1920,
+          "height": 2400,
+          "kb": 157.6
+        }
+      ],
+      "html_snippet": "<picture>\n  <source type=\"image/avif\" srcset=\"C:/Claude 1/lenceria/public/img/hero-kimono-mburucuya-640.avif 640w, C:/Claude 1/lenceria/public/img/hero-kimono-mburucuya-1280.avif 1280w, C:/Claude 1/lenceria/public/img/hero-kimono-mburucuya-1920.avif 1920w\">\n  <source type=\"image/webp\" srcset=\"C:/Claude 1/lenceria/public/img/hero-kimono-mburucuya-640.webp 640w, C:/Claude 1/lenceria/public/img/hero-kimono-mburucuya-1280.webp 1280w, C:/Claude 1/lenceria/public/img/hero-kimono-mburucuya-1920.webp 1920w\">\n  <img src=\"C:/Claude 1/lenceria/public/img/hero-kimono-mburucuya-1280.webp\" alt=\"Kimono corto de gasa marfil con flores de mburucuyá bordadas a mano\" width=\"1280\" height=\"1600\" loading=\"lazy\" decoding=\"async\">\n</picture>"
+    },
+    {
+      "filename_base": "hero-camison-luna",
+      "source": "../lenceria-images/05.png",
+      "prompt": "Camisón de satén rosa viejo con escote de encaje, hecho a mano",
+      "alt_text": "Camisón de satén rosa viejo con escote de encaje, hecho a mano",
+      "naming_source": "fallback",
+      "aspect_ratio": "4:5",
+      "files": [
+        {
+          "file": "hero-camison-luna-640.avif",
+          "format": "avif",
+          "width": 640,
+          "height": 800,
+          "kb": 24
+        },
+        {
+          "file": "hero-camison-luna-640.webp",
+          "format": "webp",
+          "width": 640,
+          "height": 800,
+          "kb": 36.9
+        },
+        {
+          "file": "hero-camison-luna-1280.avif",
+          "format": "avif",
+          "width": 1280,
+          "height": 1600,
+          "kb": 55.5
+        },
+        {
+          "file": "hero-camison-luna-1280.webp",
+          "format": "webp",
+          "width": 1280,
+          "height": 1600,
+          "kb": 98.8
+        },
+        {
+          "file": "hero-camison-luna-1920.avif",
+          "format": "avif",
+          "width": 1920,
+          "height": 2400,
+          "kb": 88.2
+        },
+        {
+          "file": "hero-camison-luna-1920.webp",
+          "format": "webp",
+          "width": 1920,
+          "height": 2400,
+          "kb": 168
+        }
+      ],
+      "html_snippet": "<picture>\n  <source type=\"image/avif\" srcset=\"C:/Claude 1/lenceria/public/img/hero-camison-luna-640.avif 640w, C:/Claude 1/lenceria/public/img/hero-camison-luna-1280.avif 1280w, C:/Claude 1/lenceria/public/img/hero-camison-luna-1920.avif 1920w\">\n  <source type=\"image/webp\" srcset=\"C:/Claude 1/lenceria/public/img/hero-camison-luna-640.webp 640w, C:/Claude 1/lenceria/public/img/hero-camison-luna-1280.webp 1280w, C:/Claude 1/lenceria/public/img/hero-camison-luna-1920.webp 1920w\">\n  <img src=\"C:/Claude 1/lenceria/public/img/hero-camison-luna-1280.webp\" alt=\"Camisón de satén rosa viejo con escote de encaje, hecho a mano\" width=\"1280\" height=\"1600\" loading=\"lazy\" decoding=\"async\">\n</picture>"
+    },
+    {
+      "filename_base": "categoria-conjuntos",
+      "source": "../lenceria-images/06.png",
+      "prompt": "Conjunto de bralette y culotte de encaje coral hecho a mano",
+      "alt_text": "Conjunto de bralette y culotte de encaje coral hecho a mano",
+      "naming_source": "fallback",
+      "aspect_ratio": "3:4",
+      "files": [
+        {
+          "file": "categoria-conjuntos-640.avif",
+          "format": "avif",
+          "width": 640,
+          "height": 853,
+          "kb": 52.4
+        },
+        {
+          "file": "categoria-conjuntos-640.webp",
+          "format": "webp",
+          "width": 640,
+          "height": 853,
+          "kb": 74.5
+        },
+        {
+          "file": "categoria-conjuntos-1280.avif",
+          "format": "avif",
+          "width": 1280,
+          "height": 1707,
+          "kb": 119.2
+        },
+        {
+          "file": "categoria-conjuntos-1280.webp",
+          "format": "webp",
+          "width": 1280,
+          "height": 1707,
+          "kb": 186.6
+        }
+      ],
+      "html_snippet": "<picture>\n  <source type=\"image/avif\" srcset=\"C:/Claude 1/lenceria/public/img/categoria-conjuntos-640.avif 640w, C:/Claude 1/lenceria/public/img/categoria-conjuntos-1280.avif 1280w\">\n  <source type=\"image/webp\" srcset=\"C:/Claude 1/lenceria/public/img/categoria-conjuntos-640.webp 640w, C:/Claude 1/lenceria/public/img/categoria-conjuntos-1280.webp 1280w\">\n  <img src=\"C:/Claude 1/lenceria/public/img/categoria-conjuntos-640.webp\" alt=\"Conjunto de bralette y culotte de encaje coral hecho a mano\" width=\"640\" height=\"853\" loading=\"lazy\" decoding=\"async\">\n</picture>"
+    },
+    {
+      "filename_base": "categoria-corpinos",
+      "source": "../lenceria-images/08.png",
+      "prompt": "Bralette tejido a crochet en algodón terracota",
+      "alt_text": "Bralette tejido a crochet en algodón terracota",
+      "naming_source": "fallback",
+      "aspect_ratio": "3:4",
+      "files": [
+        {
+          "file": "categoria-corpinos-640.avif",
+          "format": "avif",
+          "width": 640,
+          "height": 853,
+          "kb": 52.1
+        },
+        {
+          "file": "categoria-corpinos-640.webp",
+          "format": "webp",
+          "width": 640,
+          "height": 853,
+          "kb": 84.4
+        },
+        {
+          "file": "categoria-corpinos-1280.avif",
+          "format": "avif",
+          "width": 1280,
+          "height": 1707,
+          "kb": 127.3
+        },
+        {
+          "file": "categoria-corpinos-1280.webp",
+          "format": "webp",
+          "width": 1280,
+          "height": 1707,
+          "kb": 208.1
+        }
+      ],
+      "html_snippet": "<picture>\n  <source type=\"image/avif\" srcset=\"C:/Claude 1/lenceria/public/img/categoria-corpinos-640.avif 640w, C:/Claude 1/lenceria/public/img/categoria-corpinos-1280.avif 1280w\">\n  <source type=\"image/webp\" srcset=\"C:/Claude 1/lenceria/public/img/categoria-corpinos-640.webp 640w, C:/Claude 1/lenceria/public/img/categoria-corpinos-1280.webp 1280w\">\n  <img src=\"C:/Claude 1/lenceria/public/img/categoria-corpinos-640.webp\" alt=\"Bralette tejido a crochet en algodón terracota\" width=\"640\" height=\"853\" loading=\"lazy\" decoding=\"async\">\n</picture>"
+    },
+    {
+      "filename_base": "categoria-bombachas",
+      "source": "../lenceria-images/03.png",
+      "prompt": "Bombacha clásica de algodón ao po'i beige con puntilla",
+      "alt_text": "Bombacha clásica de algodón ao po'i beige con puntilla",
+      "naming_source": "fallback",
+      "aspect_ratio": "3:4",
+      "files": [
+        {
+          "file": "categoria-bombachas-640.avif",
+          "format": "avif",
+          "width": 640,
+          "height": 853,
+          "kb": 38.7
+        },
+        {
+          "file": "categoria-bombachas-640.webp",
+          "format": "webp",
+          "width": 640,
+          "height": 853,
+          "kb": 75.6
+        },
+        {
+          "file": "categoria-bombachas-1280.avif",
+          "format": "avif",
+          "width": 1280,
+          "height": 1707,
+          "kb": 117.2
+        },
+        {
+          "file": "categoria-bombachas-1280.webp",
+          "format": "webp",
+          "width": 1280,
+          "height": 1707,
+          "kb": 235.7
+        }
+      ],
+      "html_snippet": "<picture>\n  <source type=\"image/avif\" srcset=\"C:/Claude 1/lenceria/public/img/categoria-bombachas-640.avif 640w, C:/Claude 1/lenceria/public/img/categoria-bombachas-1280.avif 1280w\">\n  <source type=\"image/webp\" srcset=\"C:/Claude 1/lenceria/public/img/categoria-bombachas-640.webp 640w, C:/Claude 1/lenceria/public/img/categoria-bombachas-1280.webp 1280w\">\n  <img src=\"C:/Claude 1/lenceria/public/img/categoria-bombachas-640.webp\" alt=\"Bombacha clásica de algodón ao po'i beige con puntilla\" width=\"640\" height=\"853\" loading=\"lazy\" decoding=\"async\">\n</picture>"
+    },
+    {
+      "filename_base": "categoria-camisones-y-pijamas",
+      "source": "../lenceria-images/09.png",
+      "prompt": "Pijama de algodón lila con borde de puntilla",
+      "alt_text": "Pijama de algodón lila con borde de puntilla",
+      "naming_source": "fallback",
+      "aspect_ratio": "3:4",
+      "files": [
+        {
+          "file": "categoria-camisones-y-pijamas-640.avif",
+          "format": "avif",
+          "width": 640,
+          "height": 853,
+          "kb": 26.2
+        },
+        {
+          "file": "categoria-camisones-y-pijamas-640.webp",
+          "format": "webp",
+          "width": 640,
+          "height": 853,
+          "kb": 43.5
+        },
+        {
+          "file": "categoria-camisones-y-pijamas-1280.avif",
+          "format": "avif",
+          "width": 1280,
+          "height": 1707,
+          "kb": 64.5
+        },
+        {
+          "file": "categoria-camisones-y-pijamas-1280.webp",
+          "format": "webp",
+          "width": 1280,
+          "height": 1707,
+          "kb": 109.2
+        }
+      ],
+      "html_snippet": "<picture>\n  <source type=\"image/avif\" srcset=\"C:/Claude 1/lenceria/public/img/categoria-camisones-y-pijamas-640.avif 640w, C:/Claude 1/lenceria/public/img/categoria-camisones-y-pijamas-1280.avif 1280w\">\n  <source type=\"image/webp\" srcset=\"C:/Claude 1/lenceria/public/img/categoria-camisones-y-pijamas-640.webp 640w, C:/Claude 1/lenceria/public/img/categoria-camisones-y-pijamas-1280.webp 1280w\">\n  <img src=\"C:/Claude 1/lenceria/public/img/categoria-camisones-y-pijamas-640.webp\" alt=\"Pijama de algodón lila con borde de puntilla\" width=\"640\" height=\"853\" loading=\"lazy\" decoding=\"async\">\n</picture>"
+    },
+    {
+      "filename_base": "categoria-bodies",
+      "source": "../lenceria-images/04.png",
+      "prompt": "Body de encaje negro con transparencias",
+      "alt_text": "Body de encaje negro con transparencias",
+      "naming_source": "fallback",
+      "aspect_ratio": "3:4",
+      "files": [
+        {
+          "file": "categoria-bodies-640.avif",
+          "format": "avif",
+          "width": 640,
+          "height": 853,
+          "kb": 29.6
+        },
+        {
+          "file": "categoria-bodies-640.webp",
+          "format": "webp",
+          "width": 640,
+          "height": 853,
+          "kb": 44.8
+        },
+        {
+          "file": "categoria-bodies-1280.avif",
+          "format": "avif",
+          "width": 1280,
+          "height": 1707,
+          "kb": 75.6
+        },
+        {
+          "file": "categoria-bodies-1280.webp",
+          "format": "webp",
+          "width": 1280,
+          "height": 1707,
+          "kb": 124.2
+        }
+      ],
+      "html_snippet": "<picture>\n  <source type=\"image/avif\" srcset=\"C:/Claude 1/lenceria/public/img/categoria-bodies-640.avif 640w, C:/Claude 1/lenceria/public/img/categoria-bodies-1280.avif 1280w\">\n  <source type=\"image/webp\" srcset=\"C:/Claude 1/lenceria/public/img/categoria-bodies-640.webp 640w, C:/Claude 1/lenceria/public/img/categoria-bodies-1280.webp 1280w\">\n  <img src=\"C:/Claude 1/lenceria/public/img/categoria-bodies-640.webp\" alt=\"Body de encaje negro con transparencias\" width=\"640\" height=\"853\" loading=\"lazy\" decoding=\"async\">\n</picture>"
+    },
+    {
+      "filename_base": "categoria-accesorios",
+      "source": "../lenceria-images/10.png",
+      "prompt": "Liga nupcial marfil con encaje ñandutí",
+      "alt_text": "Liga nupcial marfil con encaje ñandutí",
+      "naming_source": "fallback",
+      "aspect_ratio": "3:4",
+      "files": [
+        {
+          "file": "categoria-accesorios-640.avif",
+          "format": "avif",
+          "width": 640,
+          "height": 853,
+          "kb": 27.6
+        },
+        {
+          "file": "categoria-accesorios-640.webp",
+          "format": "webp",
+          "width": 640,
+          "height": 853,
+          "kb": 51.1
+        },
+        {
+          "file": "categoria-accesorios-1280.avif",
+          "format": "avif",
+          "width": 1280,
+          "height": 1707,
+          "kb": 77.9
+        },
+        {
+          "file": "categoria-accesorios-1280.webp",
+          "format": "webp",
+          "width": 1280,
+          "height": 1707,
+          "kb": 143.8
+        }
+      ],
+      "html_snippet": "<picture>\n  <source type=\"image/avif\" srcset=\"C:/Claude 1/lenceria/public/img/categoria-accesorios-640.avif 640w, C:/Claude 1/lenceria/public/img/categoria-accesorios-1280.avif 1280w\">\n  <source type=\"image/webp\" srcset=\"C:/Claude 1/lenceria/public/img/categoria-accesorios-640.webp 640w, C:/Claude 1/lenceria/public/img/categoria-accesorios-1280.webp 1280w\">\n  <img src=\"C:/Claude 1/lenceria/public/img/categoria-accesorios-640.webp\" alt=\"Liga nupcial marfil con encaje ñandutí\" width=\"640\" height=\"853\" loading=\"lazy\" decoding=\"async\">\n</picture>"
+    },
+    {
+      "filename_base": "categoria-batas-y-kimonos",
+      "source": "../lenceria-images/07.png",
+      "prompt": "Kimono corto de gasa marfil bordado a mano",
+      "alt_text": "Kimono corto de gasa marfil bordado a mano",
+      "naming_source": "fallback",
+      "aspect_ratio": "3:4",
+      "files": [
+        {
+          "file": "categoria-batas-y-kimonos-640.avif",
+          "format": "avif",
+          "width": 640,
+          "height": 853,
+          "kb": 24.2
+        },
+        {
+          "file": "categoria-batas-y-kimonos-640.webp",
+          "format": "webp",
+          "width": 640,
+          "height": 853,
+          "kb": 38.3
+        },
+        {
+          "file": "categoria-batas-y-kimonos-1280.avif",
+          "format": "avif",
+          "width": 1280,
+          "height": 1707,
+          "kb": 54.7
+        },
+        {
+          "file": "categoria-batas-y-kimonos-1280.webp",
+          "format": "webp",
+          "width": 1280,
+          "height": 1707,
+          "kb": 92.8
+        }
+      ],
+      "html_snippet": "<picture>\n  <source type=\"image/avif\" srcset=\"C:/Claude 1/lenceria/public/img/categoria-batas-y-kimonos-640.avif 640w, C:/Claude 1/lenceria/public/img/categoria-batas-y-kimonos-1280.avif 1280w\">\n  <source type=\"image/webp\" srcset=\"C:/Claude 1/lenceria/public/img/categoria-batas-y-kimonos-640.webp 640w, C:/Claude 1/lenceria/public/img/categoria-batas-y-kimonos-1280.webp 1280w\">\n  <img src=\"C:/Claude 1/lenceria/public/img/categoria-batas-y-kimonos-640.webp\" alt=\"Kimono corto de gasa marfil bordado a mano\" width=\"640\" height=\"853\" loading=\"lazy\" decoding=\"async\">\n</picture>"
+    }
+  ]
+}
