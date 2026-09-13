@@ -4,17 +4,16 @@ import Image from "next/image";
 import Link from "next/link";
 
 import { useInView } from "@/hooks/use-in-view";
-import { categoryPlaceholderSrc } from "@/lib/images";
+import { categoryTileSrc, categoryTileAlt } from "@/lib/images";
 
-// Placeholder autohospedado (public/placeholders/) a reemplazar por video
-// real de cada categoría una vez elegida la dirección.
+// Fotografías en public/img, generadas por el pipeline webimg.
 
 function CategoryTile({ name, slug }: { name: string; slug: string }) {
   return (
     <div className="group relative min-h-[400px] overflow-hidden p-6 sm:min-h-[500px] sm:p-8 md:min-h-[750px] md:p-12">
       <Image
-        src={categoryPlaceholderSrc(slug)}
-        alt=""
+        src={categoryTileSrc(slug)}
+        alt={categoryTileAlt(slug)}
         fill
         sizes="(max-width: 768px) 100vw, 33vw"
         className="object-cover transition-transform duration-700 group-hover:scale-105"

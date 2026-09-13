@@ -89,3 +89,23 @@ export function categoryPlaceholderSrc(categorySlug: string): string {
 export function bankQrUrl(cloudinaryId: string | null | undefined): string | null {
   return productImageUrl(cloudinaryId, "qr");
 }
+
+const CATEGORY_TILE_ALTS = new Map<string, string>([
+  ["conjuntos", "Conjunto de bralette y culotte de encaje coral hecho a mano"],
+  ["corpinos", "Bralette tejido a crochet en algodón terracota"],
+  ["bombachas", "Bombacha clásica de algodón ao po'i beige con puntilla"],
+  ["camisones-y-pijamas", "Pijama de algodón lila con borde de puntilla"],
+  ["bodies", "Body de encaje negro con transparencias"],
+  ["accesorios", "Liga nupcial marfil con encaje ñandutí"],
+  ["batas-y-kimonos", "Kimono corto de gasa marfil bordado a mano"],
+]);
+
+export function categoryTileSrc(slug: string): string {
+  return CATEGORY_TILE_ALTS.has(slug)
+    ? `/img/categoria-${slug}-1280.webp`
+    : categoryPlaceholderSrc(slug);
+}
+
+export function categoryTileAlt(slug: string): string {
+  return CATEGORY_TILE_ALTS.get(slug) ?? "";
+}
