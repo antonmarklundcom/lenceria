@@ -110,7 +110,7 @@ jobs:
       # sobre ese working tree. El checkout del template no necesita sus
       # propias dependencias instaladas — sólo se copian dos `.ts` sueltos
       # (ver el paso de abajo) y un `.mjs` sin dependencias externas.
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v6
 
       - uses: actions/setup-node@v4
         with:
