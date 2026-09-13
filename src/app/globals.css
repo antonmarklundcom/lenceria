@@ -1,58 +1,9 @@
 @import "tailwindcss";
 @import "tw-animate-css";
+@import "../styles/temas/oscuro-vivo.css";
+@import "../styles/marca.css";
 
 @custom-variant dark (&:is(.dark *));
-
-/*
- * Lencería Íntima — "Dark Luxe": charcoal + champagne gold, Playfair Display
- * para títulos y Jost para todo lo demás. Es piel (NEW-STORE.md §5): otra
- * tienda clonada de este template pisa este archivo entero sin tocar nada
- * del dominio.
- */
-:root {
-  --radius: 0.375rem;
-  --background: #100f0e;
-  --foreground: #f2ede6;
-  --card: #191716;
-  --card-foreground: #f2ede6;
-  --popover: #191716;
-  --popover-foreground: #f2ede6;
-  --primary: #c6a667;
-  --primary-foreground: #1a1510;
-  --secondary: #2e2a26;
-  --secondary-foreground: #f2ede6;
-  --muted: #211d1a;
-  --muted-foreground: #9a9088;
-  --accent: #2e2a26;
-  --accent-foreground: #e4d2a8;
-  --destructive: oklch(0.704 0.191 22.216);
-  --destructive-foreground: oklch(0.985 0 0);
-  --border: #2e2a26;
-  --input: #2e2a26;
-  --ring: #c6a667;
-}
-
-.dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --destructive-foreground: oklch(0.985 0 0);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-}
 
 @theme inline {
   --color-background: var(--background);
@@ -139,5 +90,59 @@
   }
   .animate-scale-in {
     animation: scale-in 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+}
+
+/* == S11 == */
+/*
+ * Prosa de `product-description.tsx` (descripción de producto y de
+ * categoría, plan-operacion §6.3). La salida de `renderMarkdown` no lleva
+ * `class` ni `style` a propósito (ver el comentario de `src/lib/markdown.ts`):
+ * la piel la estila desde acá, y cada tienda puede rediseñar este bloque sin
+ * tocar el parser. El subconjunto de markdown es chico (párrafos, negrita,
+ * cursiva, listas, links) y estos son sus únicos selectores.
+ */
+.prose {
+  @apply text-muted-foreground text-sm leading-relaxed;
+}
+.prose p + p {
+  @apply mt-3;
+}
+.prose ul {
+  @apply mt-3 list-disc space-y-1 pl-5;
+}
+.prose strong {
+  @apply text-foreground font-medium;
+}
+.prose a {
+  @apply text-foreground underline underline-offset-2;
+}
+
+/* == S9 ==
+   CSS de impresión del remito (plan-operacion §6.1). Nada inline: el CSP de
+   `src/proxy.ts` no permite `'unsafe-inline'` en `style-src` para las rutas
+   con nonce, y `/admin` es justamente una de ésas.
+
+   `header` es el único <header> que existe bajo `/admin` — el del layout del
+   panel (`src/app/admin/(panel)/layout.tsx`) — así que ocultarlo acá alcanza
+   para sacar el nav de cualquier página del panel que se imprima, sin tocar
+   ese layout (fuera de los Owns de esta fase). `.s9-no-print` es para lo que
+   la fase sí dibuja: el botón "Imprimir" y el link "Volver al pedido" del
+   remito. */
+@media print {
+  header {
+    display: none !important;
+  }
+  .s9-no-print {
+    display: none !important;
+  }
+  .s9-print-page {
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  @page {
+    size: A4;
+    margin: 12mm;
   }
 }

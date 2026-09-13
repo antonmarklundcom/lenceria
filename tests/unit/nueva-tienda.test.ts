@@ -1,18 +1,25 @@
+import { readFileSync } from 'node:fs';
+import path from 'node:path';
+
 import { describe, expect, it } from 'vitest';
 
 import {
   bloqueHPanel,
   completarEnv,
   esPlaceholder,
+  esTema,
+  escribirTema,
   fijarEnv,
   generarSecreto,
   leerCampoTienda,
+  leerTemaActual,
   leerValorEnv,
   normalizarDominio,
   normalizarWhatsApp,
   parseFlags,
   reescribirTienda,
   sugerirTitulo,
+  TEMAS,
   type DatosTienda,
 } from '../../scripts/nueva-tienda';
 
@@ -27,27 +34,19 @@ import {
  */
 
 /**
- * Una copia fiel de cómo sale `src/config/tienda.ts` recién clonado del
- * template, y no una lectura del archivo real: esta suite tiene que seguir
- * probando "reescribir el template" incluso después de que esta misma tienda
- * corrió el wizard de verdad y `tienda.ts` en disco ya tiene su propia marca.
+ * El `tienda.ts` **del template**, tal como sale de "Use this template".
+ *
+ * Es una copia y no el archivo real a propósito. Lo que se prueba acá es el
+ * lector y el reescritor —que sepan sacar un string partido por prettier, y
+ * que `nombre: MARCA_PLACEHOLDER` no se lea como un valor—, no cómo se llama
+ * esta tienda. Leyendo `src/config/tienda.ts` de verdad, estos tres tests
+ * pasaban sólo mientras nadie corriera `pnpm nueva-tienda`: la primera tienda
+ * que se pone su marca los rompe, y el bug estaría en el test, no en el
+ * wizard.
  */
 const TIENDA_TEMPLATE = `export type Tienda = {
   nombre: string;
   titulo: string;
-  descripcion: string;
-  tagline: string;
-  lang: string;
-  ogLocale: string;
-  cuentasClientes: boolean;
-  hero: Hero | null;
-};
-
-export type Hero = {
-  imagen?: { cloudinaryId: string; alt: string } | null;
-  titulo: string;
-  texto?: string;
-  cta?: { label: string; href: string };
 };
 
 export const MARCA_PLACEHOLDER = "TiendaPY";
@@ -56,7 +55,8 @@ export const TIENDA: Tienda = {
   nombre: MARCA_PLACEHOLDER,
   titulo: "TiendaPY — Comprá online en Paraguay",
   descripcion:
-    "Tienda online paraguaya. Precios en guaraníes, IVA incluido, envíos a todo el país y atención por WhatsApp.",
+    "Tienda online paraguaya. Precios en guaraníes, IVA incluido, envíos a todo el país " +
+    "y atención por WhatsApp.",
   tagline: "Precios en guaraníes, IVA incluido. Enviamos a todo el país.",
   lang: "es-PY",
   ogLocale: "es_PY",
@@ -98,6 +98,21 @@ describe('leer la marca de tienda.ts', () => {
     // `nombre: MARCA_PLACEHOLDER`. Devolver "TiendaPY" haría imposible
     // distinguir "todavía no lo renombraron" de "la tienda se llama TiendaPY".
     expect(leerCampoTienda(TIENDA_TEMPLATE, 'nombre')).toBeNull();
+  });
+
+  it('el tienda.ts de verdad sigue siendo legible, se llame como se llame', () => {
+    // El contrapeso de usar una copia: si el archivo real cambia de forma
+    // —otro formato de string, otro nombre de campo— la copia no se entera y
+    // los tests de arriba pasarían contra un archivo que ya no existe. Esto
+    // mira el real, pero **sin** mirar los valores: una tienda que ya corrió
+    // el wizard tiene su marca acá, y eso no es una falla.
+    const real = readFileSync(path.join('src', 'config', 'tienda.ts'), 'utf8');
+
+    for (const campo of ['titulo', 'descripcion', 'tagline'] as const) {
+      expect(leerCampoTienda(real, campo), `no pude leer "${campo}" del tienda.ts real`).toEqual(
+        expect.any(String),
+      );
+    }
   });
 });
 
@@ -234,6 +249,13 @@ describe('las banderas', () => {
     ).toEqual({ nombre: 'Lencería', dominio: 'lenceria.com.py' });
   });
 
+  it('lee --tema junto con el resto', () => {
+    expect(parseFlags(['--nombre', 'Lencería', '--tema', 'calido'])).toEqual({
+      nombre: 'Lencería',
+      tema: 'calido',
+    });
+  });
+
   it('una bandera desconocida es un error, no algo que se ignora', () => {
     // `--nombr` mal tipeado tiene que doler ahora y no cuando el header diga
     // "TiendaPY".
@@ -285,6 +307,67 @@ describe('fijar lo que la persona acaba de contestar', () => {
       WHATSAPP_NUMBER: '+595981123456',
     });
     expect(escritas).toEqual([]);
+  });
+});
+
+/**
+ * `globals.css` **del template**, tal como queda después de S18: sólo el
+ * `@import` del tema, no todo el archivo (no hace falta para probar el
+ * lector/escritor del tema, y así el test no se rompe si `globals.css`
+ * gana una regla nueva más abajo).
+ */
+const GLOBALS_TEMPLATE = `@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@import "../styles/temas/neutro.css";
+`;
+
+describe('el tema del kit de piel (--tema)', () => {
+  it('conoce los tres temas del plan', () => {
+    expect(TEMAS).toEqual(['neutro', 'calido', 'oscuro-vivo']);
+  });
+
+  it('esTema distingue lo conocido de lo inventado', () => {
+    expect(esTema('neutro')).toBe(true);
+    expect(esTema('calido')).toBe(true);
+    expect(esTema('oscuro-vivo')).toBe(true);
+    expect(esTema('minimalista')).toBe(false);
+  });
+
+  it('lee el tema que globals.css importa hoy', () => {
+    expect(leerTemaActual(GLOBALS_TEMPLATE)).toBe('neutro');
+    expect(leerTemaActual(GLOBALS_TEMPLATE.replace('neutro', 'calido'))).toBe('calido');
+  });
+
+  it('sin @import reconocible, asume neutro en vez de romper', () => {
+    expect(leerTemaActual('@import "tailwindcss";\n')).toBe('neutro');
+  });
+
+  it('escribe el tema pedido', () => {
+    const salida = escribirTema(GLOBALS_TEMPLATE, 'oscuro-vivo');
+    expect(salida).toContain('@import "../styles/temas/oscuro-vivo.css";');
+    expect(leerTemaActual(salida)).toBe('oscuro-vivo');
+  });
+
+  it('es idempotente: escribir el mismo tema no cambia el archivo', () => {
+    const una = escribirTema(GLOBALS_TEMPLATE, 'calido');
+    expect(escribirTema(una, 'calido')).toBe(una);
+  });
+
+  it('un tema que no existe es un error explícito, no un archivo roto', () => {
+    // @ts-expect-error -- justo lo que se prueba: un nombre inventado.
+    expect(() => escribirTema(GLOBALS_TEMPLATE, 'minimalista')).toThrow(/minimalista/);
+  });
+
+  it('avisa en vez de escribir cualquier cosa si no encuentra el @import', () => {
+    expect(() => escribirTema('body { color: red; }\n', 'calido')).toThrow(/globals\.css/);
+  });
+
+  it('el globals.css real importa uno de los tres temas', () => {
+    const real = readFileSync(path.join('src', 'app', 'globals.css'), 'utf8');
+    expect(TEMAS as readonly string[]).toContain(leerTemaActual(real));
   });
 });
 

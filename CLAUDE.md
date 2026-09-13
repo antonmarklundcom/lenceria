@@ -6,8 +6,19 @@ leé:
 
 - **NEW-STORE.md** — el camino completo para levantar una tienda nueva:
   `pnpm nueva-tienda`, entorno, base de datos, catálogo, diseño, preflight.
+  §1b es el caso del repo que ya existe con algo adentro (`pnpm bootstrap:repo`);
+  §5 mapea qué archivo toca cada parte de un mockup.
 - **ARCH.md** — arquitectura: dominio, estados del pedido, plata, Pagopar.
 - **PLAN.md** / **TASKS.md** — qué falta y en qué fase está.
+- **fable/plan-operacion.md** — la tienda después del lanzamiento (tracking, notas,
+  remito, resumen diario, backups, panel, vidriera, CI, distribución a las tiendas).
+  Nueve fases (O5–S13), **todas mergeadas — hoy es historial**, igual que
+  `fable/plan.md` (revisión en `fable/REVIEW.md`, fases en `fable/prompts/`).
+  `fable/PROMPT.md` es el prompt que genera la próxima revisión.
+- Operación diaria del panel, backups/restore y la distribución automática a las
+  tiendas (`.github/workflows/distribuir.yml` + `tiendas.json`): NEW-STORE.md §4f y
+  § "La distribución automática del template". Cron consolidado (las tres entradas,
+  hora Asunción y UTC): DEPLOY.md §5.
 - **DEPLOY.md** — el runbook de Hostinger.
 
 ## La regla que más importa: maquinaria vs. piel
@@ -22,6 +33,9 @@ leé:
 Regla práctica: si el archivo toca plata, stock o estados de pedido, no se
 toca por tienda. Si sólo dibuja, es libre. Ver NEW-STORE.md §5 para el
 detalle completo y las excepciones (`checkout-form.tsx`, `src/app/admin`).
+Al rediseñar piel, no le saques el `data-testid` a un elemento que ya lo
+tiene — es el contrato que usan los specs de `tests/e2e/**`, ver
+NEW-STORE.md §5 y `src/lib/testids.ts`.
 
 ## Antes de cualquier cambio
 
@@ -41,4 +55,8 @@ detalle completo y las excepciones (`checkout-form.tsx`, `src/app/admin`).
 
 Corré `pnpm template:diff` de vez en cuando para ver qué arreglos de
 `antonmarklundcom/ecom` le faltan a esta tienda (requiere el remoto
-`template`, ver NEW-STORE.md). No cherry-pickees piel que ya rediseñaste.
+`template`, ver NEW-STORE.md). Para traerlos, `pnpm template:sync` —en una
+rama, nunca en `main`— automatiza el cherry-pick de la maquinaria y los
+conflictos de siempre (`fable/`, el lockfile, los workflows de CI); para en
+seco ante cualquier otro conflicto. Ver NEW-STORE.md § "Arreglos que aparecen
+después". No cherry-pickees piel que ya rediseñaste.
