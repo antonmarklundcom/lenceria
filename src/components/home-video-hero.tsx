@@ -9,15 +9,13 @@ import { useInView } from "@/hooks/use-in-view";
 
 const SLIDE_MS = 5000;
 
-// Placeholders autohospedados (public/placeholders/) a reemplazar por
-// fotografía propia una vez elegida la dirección (ver conversación de
-// diseño).
-const HERO_IMAGE = "/placeholders/generico.svg";
+// Fotografías en public/img, generadas por el pipeline webimg.
+const HERO_IMAGE = "/img/hero-conjunto-nanduti-1280.webp";
 
 const HERO_SLIDES = [
-  "/placeholders/corpinos.svg",
-  "/placeholders/conjuntos.svg",
-  "/placeholders/pijamas.svg",
+  { src: "/img/hero-conjunto-nanduti-1280.webp", alt: "Conjunto de lencería marfil con encaje ñandutí bordado a mano, sobre lino crudo" },
+  { src: "/img/hero-kimono-mburucuya-1280.webp", alt: "Kimono corto de gasa marfil con flores de mburucuyá bordadas a mano" },
+  { src: "/img/hero-camison-luna-1280.webp", alt: "Camisón de satén rosa viejo con escote de encaje, hecho a mano" },
 ];
 
 function HeroSlideshow() {
@@ -40,11 +38,11 @@ function HeroSlideshow() {
 
   return (
     <div className="relative min-h-[40vh] w-full overflow-hidden bg-black lg:min-h-0 lg:w-1/2">
-      {HERO_SLIDES.map((src, index) => (
+      {HERO_SLIDES.map(({ src, alt }, index) => (
         <Image
           key={src}
           src={src}
-          alt=""
+          alt={alt}
           fill
           sizes="(max-width: 1024px) 100vw, 50vw"
           className={`object-cover transition-opacity duration-700 ${
