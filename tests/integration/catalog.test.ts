@@ -1,6 +1,3 @@
-import { execFile } from "node:child_process";
-import { promisify } from "node:util";
-
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 import {
@@ -22,12 +19,12 @@ import { TIENDA } from "@/config/tienda";
 import { TEST_DATABASE_URL, closeTestDb, hasTestDb, resetTables } from "../helpers/db";
 import { createOrder } from "../helpers/factories";
 
-const run = promisify(execFile);
+import { runScript } from "../helpers/run-script";
 
 describe.skipIf(!hasTestDb)("queries del catálogo", () => {
   beforeAll(async () => {
     await resetTables();
-    await run("pnpm", ["exec", "tsx", "scripts/seed.ts"], {
+    await runScript("scripts/seed.ts", [], {
       // Que no quede colgado para siempre si la DB no responde.
       timeout: 90_000,
       cwd: process.cwd(),

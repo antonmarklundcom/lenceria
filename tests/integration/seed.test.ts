@@ -1,6 +1,3 @@
-import { execFile } from 'node:child_process';
-import { promisify } from 'node:util';
-
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import { getCatalog } from '@/db/queries';
@@ -10,10 +7,10 @@ import { assertGs } from '@/lib/money';
 import { TEST_DATABASE_URL, closeTestDb, getTestDb, hasTestDb, resetTables } from '../helpers/db';
 import { SEED_PRODUCTS } from '../../scripts/seed-data';
 
-const run = promisify(execFile);
+import { runScript } from '../helpers/run-script';
 
 async function seed(): Promise<void> {
-  await run('pnpm', ['exec', 'tsx', 'scripts/seed.ts'], {
+  await runScript('scripts/seed.ts', [], {
     cwd: process.cwd(),
     env: { ...process.env, DATABASE_URL: TEST_DATABASE_URL },
     // Que no quede colgado para siempre si la DB no responde.
