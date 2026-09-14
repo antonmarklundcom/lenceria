@@ -17,6 +17,7 @@ import { products } from "@/db/schema";
 import { eq } from "drizzle-orm";
 
 import { reserveStock } from "@/domain/stock";
+import { TIENDA } from "@/config/tienda";
 
 import { TEST_DATABASE_URL, closeTestDb, hasTestDb, resetTables } from "../helpers/db";
 import { createOrder } from "../helpers/factories";
@@ -38,21 +39,24 @@ describe.skipIf(!hasTestDb)("queries del catálogo", () => {
   it("lista las categorías activas en orden", async () => {
     const categories = await getCategories();
     expect(categories.map((category) => category.slug)).toEqual([
+      "conjuntos",
       "corpinos",
       "bombachas",
-      "conjuntos",
-      "pijamas",
+      "camisones-y-pijamas",
+      "bodies",
+      "batas-y-kimonos",
+      "accesorios",
     ]);
   });
 
   it("pagina la categoría", async () => {
-    const first = await getCategoryProducts({ categorySlug: "conjuntos", perPage: 4, page: 1 });
-    expect(first.products).toHaveLength(4);
-    expect(first.total).toBe(6);
+    const first = await getCategoryProducts({ categorySlug: "conjuntos", perPage: 1, page: 1 });
+    expect(first.products).toHaveLength(1);
+    expect(first.total).toBe(2);
     expect(first.totalPages).toBe(2);
 
-    const second = await getCategoryProducts({ categorySlug: "conjuntos", perPage: 4, page: 2 });
-    expect(second.products).toHaveLength(2);
+    const second = await getCategoryProducts({ categorySlug: "conjuntos", perPage: 1, page: 2 });
+    expect(second.products).toHaveLength(1);
 
     const overlap = first.products.filter((product) =>
       second.products.some((other) => other.id === product.id)
@@ -62,7 +66,7 @@ describe.skipIf(!hasTestDb)("queries del catálogo", () => {
 
   it("ordena por precio mínimo de las variantes", async () => {
     const asc = await getCategoryProducts({
-      categorySlug: "pijamas",
+      categorySlug: "camisones-y-pijamas",
       sort: "precio-asc",
       perPage: 60,
     });
@@ -72,65 +76,62 @@ describe.skipIf(!hasTestDb)("queries del catálogo", () => {
     expect([...prices]).toEqual([...prices].sort((a, b) => a - b));
 
     const desc = await getCategoryProducts({
-      categorySlug: "pijamas",
+      categorySlug: "camisones-y-pijamas",
       sort: "precio-desc",
       perPage: 60,
     });
-    expect(desc.products[0]?.slug).toBe("bata-seda-larga");
+    expect(desc.products[0]?.slug).toBe("camison-luna");
   });
 
   it("filtra por rango de precio y por marca", async () => {
     const baratos = await getCategoryProducts({
       categorySlug: "conjuntos",
-      maxPricePyg: 100000,
+      maxPricePyg: 180000,
       perPage: 60,
     });
     for (const product of baratos.products) {
-      expect(Math.min(...product.variants.map((v) => v.pricePyg))).toBeLessThanOrEqual(100000);
+      expect(Math.min(...product.variants.map((v) => v.pricePyg))).toBeLessThanOrEqual(180000);
     }
 
     const brands = await getBrands("conjuntos");
-    const basics = brands.find((facet) => facet.brand === "Básicos Íntimos");
-    expect(basics).toBeDefined();
+    const marca = brands.find((facet) => facet.brand === TIENDA.nombre);
+    expect(marca).toBeDefined();
 
-    const soloBasics = await getCategoryProducts({
+    const soloMarca = await getCategoryProducts({
       categorySlug: "conjuntos",
-      brand: "Básicos Íntimos",
+      brand: TIENDA.nombre,
       perPage: 60,
     });
-    expect(soloBasics.products.every((product) => product.brand === "Básicos Íntimos")).toBe(
-      true
-    );
-    expect(soloBasics.total).toBe(soloBasics.products.length);
+    expect(soloMarca.products.every((product) => product.brand === TIENDA.nombre)).toBe(true);
+    expect(soloMarca.total).toBe(soloMarca.products.length);
 
     // El conteo del filtro tiene que ser el mismo número que va a aparecer al
-    // usarlo. Si se separan, "Básicos Íntimos (12)" lleva a una grilla de 3 y
-    // el filtro deja de ser confiable para siempre.
-    expect(basics?.total).toBe(soloBasics.total);
+    // usarlo. Si se separan, el filtro deja de ser confiable para siempre.
+    expect(marca?.total).toBe(soloMarca.total);
   });
 
   it("las marcas salen ordenadas y sin las de otras categorías", async () => {
     const conjuntos = await getBrands("conjuntos");
     const nombres = conjuntos.map((facet) => facet.brand);
 
-    // Con `localeCompare("es")` y no con el `.sort()` pelado: el orden lo hace
-    // MySQL con `utf8mb4_general_ci`, donde la Ñ vale lo mismo que la N. El
-    // `.sort()` de JS compara code points en cambio, y ahí "Ñandutí Íntima" se
-    // va al final — no es que la consulta esté desordenada, es que son dos
-    // alfabetos distintos.
     expect(nombres).toEqual([...nombres].sort((a, b) => a.localeCompare(b, "es")));
     expect(new Set(nombres).size).toBe(nombres.length);
     expect(conjuntos.every((facet) => facet.total > 0)).toBe(true);
+    expect(nombres).toEqual([TIENDA.nombre]);
 
-    const corpinos = (await getBrands("corpinos")).map((facet) => facet.brand);
-    expect(corpinos).not.toContain("Básicos Íntimos");
+    const corpinosBrandFacets = await getBrands("corpinos");
+    expect(corpinosBrandFacets.map((facet) => facet.brand)).toEqual([TIENDA.nombre]);
   });
 
   it("trae la ficha del producto con sus variantes", async () => {
-    const product = await getProductBySlug("corpino-clasico-realce");
+    const product = await getProductBySlug("corpino-yvoty");
     expect(product).not.toBeNull();
     expect(product?.categorySlug).toBe("corpinos");
-    expect(product?.variants.map((variant) => variant.label).sort()).toEqual(["Blanco", "Negro"]);
+    expect(product?.variants.map((variant) => variant.label).sort()).toEqual([
+      "Talle L",
+      "Talle M",
+      "Talle S",
+    ]);
     expect(product?.variants[0]?.available).toBeGreaterThan(0);
   });
 
@@ -140,32 +141,32 @@ describe.skipIf(!hasTestDb)("queries del catálogo", () => {
   });
 
   it("la disponibilidad del listado descuenta reservas vigentes", async () => {
-    const before = await getProductBySlug("corpino-sin-aros-comfort");
+    const before = await getProductBySlug("bralette-tacuru");
     const variant = before?.variants[0];
     expect(variant).toBeDefined();
 
     const orderId = await createOrder();
-    await reserveStock(orderId, [{ variantId: variant!.id, qty: 4 }], {
+    await reserveStock(orderId, [{ variantId: variant!.id, qty: 1 }], {
       expiresAt: new Date(Date.now() + 3600_000),
     });
 
-    const after = await getProductBySlug("corpino-sin-aros-comfort");
-    expect(after?.variants[0]?.available).toBe(variant!.available - 4);
+    const after = await getProductBySlug("bralette-tacuru");
+    expect(after?.variants[0]?.available).toBe(variant!.available - 1);
   });
 
   it("busca por FULLTEXT y por prefijo", async () => {
-    const exact = await searchProducts("realce");
-    expect(exact.map((product) => product.slug)).toContain("corpino-clasico-realce");
+    const exact = await searchProducts("yvoty");
+    expect(exact.map((product) => product.slug)).toContain("corpino-yvoty");
 
-    const prefix = await searchProducts("real");
-    expect(prefix.map((product) => product.slug)).toContain("corpino-clasico-realce");
+    const prefix = await searchProducts("yvot");
+    expect(prefix.map((product) => product.slug)).toContain("corpino-yvoty");
   });
 
   it("cae al LIKE con términos cortos que FULLTEXT ignora", async () => {
-    // "seda" tiene 4 caracteres: entra justo, pero el fallback es lo que
+    // "luna" tiene 4 caracteres: entra justo, pero el fallback es lo que
     // salva a los términos cortos si ft_min_word_len sube.
-    const seda = await searchProducts("seda");
-    expect(seda.map((product) => product.slug)).toContain("conjunto-encaje-seda");
+    const luna = await searchProducts("luna");
+    expect(luna.map((product) => product.slug)).toContain("camison-luna");
   });
 
   it("no devuelve nada con términos vacíos o de una letra", async () => {
@@ -187,27 +188,28 @@ describe.skipIf(!hasTestDb)("queries del catálogo", () => {
   it("el sitemap lista sólo lo que la vidriera muestra", async () => {
     const antes = await getSitemapEntries();
     expect(antes.categories.map((category) => category.slug)).toEqual([
+      "conjuntos",
       "corpinos",
       "bombachas",
-      "conjuntos",
-      "pijamas",
+      "camisones-y-pijamas",
+      "bodies",
+      "batas-y-kimonos",
+      "accesorios",
     ]);
-    expect(antes.products.map((product) => product.slug)).toContain("conjunto-encaje-seda");
+    expect(antes.products.map((product) => product.slug)).toContain("conjunto-nanduti");
 
     await getDb()
       .update(products)
       .set({ publishedAt: null })
-      .where(eq(products.slug, "conjunto-encaje-seda"));
+      .where(eq(products.slug, "conjunto-nanduti"));
 
     const despues = await getSitemapEntries();
-    expect(despues.products.map((product) => product.slug)).not.toContain(
-      "conjunto-encaje-seda"
-    );
+    expect(despues.products.map((product) => product.slug)).not.toContain("conjunto-nanduti");
     expect(despues.products).toHaveLength(antes.products.length - 1);
 
     await getDb()
       .update(products)
       .set({ publishedAt: new Date() })
-      .where(eq(products.slug, "conjunto-encaje-seda"));
+      .where(eq(products.slug, "conjunto-nanduti"));
   });
 });

@@ -28,11 +28,11 @@ describe.skipIf(!hasTestDb)('scripts/seed.ts', () => {
   }, 120_000);
   afterAll(closeTestDb);
 
-  it('siembra 4 categorías, 24 productos y sus variantes', async () => {
+  it('siembra 7 categorías, 10 productos y sus variantes', async () => {
     const db = getTestDb();
-    expect(await db.select().from(categories)).toHaveLength(4);
+    expect(await db.select().from(categories)).toHaveLength(7);
     expect(await db.select().from(products)).toHaveLength(SEED_PRODUCTS.length);
-    expect(SEED_PRODUCTS.length).toBe(24);
+    expect(SEED_PRODUCTS.length).toBe(10);
 
     const variantRows = await db.select().from(variants);
     expect(variantRows.length).toBeGreaterThanOrEqual(SEED_PRODUCTS.length);
@@ -77,7 +77,7 @@ describe.skipIf(!hasTestDb)('scripts/seed.ts', () => {
 
   it('el catálogo se lee como lo haría el Server Component', async () => {
     const catalog = await getCatalog({ limit: 100 });
-    expect(catalog).toHaveLength(24);
+    expect(catalog).toHaveLength(10);
 
     const first = catalog[0]!;
     expect(first.variants.length).toBeGreaterThan(0);
@@ -85,6 +85,6 @@ describe.skipIf(!hasTestDb)('scripts/seed.ts', () => {
     expect(first.variants[0]!.available).toBeGreaterThan(0);
 
     const corpinos = await getCatalog({ categorySlug: 'corpinos' });
-    expect(corpinos).toHaveLength(6);
+    expect(corpinos).toHaveLength(2);
   });
 });
