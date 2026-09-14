@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-13T22:10:41.716Z",
+  "generated_at": "2026-09-14T23:31:11.510Z",
   "images": [
     {
       "filename_base": "hero-conjunto-nanduti",
@@ -432,6 +432,271 @@
         }
       ],
       "html_snippet": "<picture>\n  <source type=\"image/avif\" srcset=\"C:/Claude 1/lenceria/public/img/categoria-batas-y-kimonos-640.avif 640w, C:/Claude 1/lenceria/public/img/categoria-batas-y-kimonos-1280.avif 1280w\">\n  <source type=\"image/webp\" srcset=\"C:/Claude 1/lenceria/public/img/categoria-batas-y-kimonos-640.webp 640w, C:/Claude 1/lenceria/public/img/categoria-batas-y-kimonos-1280.webp 1280w\">\n  <img src=\"C:/Claude 1/lenceria/public/img/categoria-batas-y-kimonos-640.webp\" alt=\"Kimono corto de gasa marfil bordado a mano\" width=\"640\" height=\"853\" loading=\"lazy\" decoding=\"async\">\n</picture>"
+    },
+    {
+      "filename_base": "lenceria-conjunto-nanduti-encaje-marfil-asuncion",
+      "source": "https://d8j0ntlcm91z4.cloudfront.net/user_349VrHjTFIpx9q71lpfpAXcLXvR/hf_20260914_232307_91ae2cb4-8ed1-435d-a07e-0b6a2a12e782.png",
+      "prompt": "hero slide 1",
+      "alt_text": "Modelo junto a la ventana con conjunto de lencería marfil de encaje ñandutí bordado a mano en Paraguay",
+      "naming_source": "fallback",
+      "aspect_ratio": "4:5",
+      "files": [
+        {
+          "file": "lenceria-conjunto-nanduti-encaje-marfil-asuncion-640.avif",
+          "format": "avif",
+          "width": 640,
+          "height": 800,
+          "kb": 15.4
+        },
+        {
+          "file": "lenceria-conjunto-nanduti-encaje-marfil-asuncion-640.webp",
+          "format": "webp",
+          "width": 640,
+          "height": 800,
+          "kb": 27.8
+        },
+        {
+          "file": "lenceria-conjunto-nanduti-encaje-marfil-asuncion-1280.avif",
+          "format": "avif",
+          "width": 1280,
+          "height": 1600,
+          "kb": 69.9
+        },
+        {
+          "file": "lenceria-conjunto-nanduti-encaje-marfil-asuncion-1280.webp",
+          "format": "webp",
+          "width": 1280,
+          "height": 1600,
+          "kb": 143.6
+        },
+        {
+          "file": "lenceria-conjunto-nanduti-encaje-marfil-asuncion-1920.avif",
+          "format": "avif",
+          "width": 1920,
+          "height": 2400,
+          "kb": 145.9
+        },
+        {
+          "file": "lenceria-conjunto-nanduti-encaje-marfil-asuncion-1920.webp",
+          "format": "webp",
+          "width": 1920,
+          "height": 2400,
+          "kb": 259.4
+        }
+      ],
+      "html_snippet": "<picture>\n  <source type=\"image/avif\" srcset=\"public/img/lenceria-conjunto-nanduti-encaje-marfil-asuncion-640.avif 640w, public/img/lenceria-conjunto-nanduti-encaje-marfil-asuncion-1280.avif 1280w, public/img/lenceria-conjunto-nanduti-encaje-marfil-asuncion-1920.avif 1920w\">\n  <source type=\"image/webp\" srcset=\"public/img/lenceria-conjunto-nanduti-encaje-marfil-asuncion-640.webp 640w, public/img/lenceria-conjunto-nanduti-encaje-marfil-asuncion-1280.webp 1280w, public/img/lenceria-conjunto-nanduti-encaje-marfil-asuncion-1920.webp 1920w\">\n  <img src=\"public/img/lenceria-conjunto-nanduti-encaje-marfil-asuncion-1280.webp\" alt=\"Modelo junto a la ventana con conjunto de lencería marfil de encaje ñandutí bordado a mano en Paraguay\" width=\"1280\" height=\"1600\" loading=\"lazy\" decoding=\"async\">\n</picture>"
+    },
+    {
+      "filename_base": "camison-saten-rosa-viejo-hecho-a-mano-paraguay",
+      "source": "https://d8j0ntlcm91z4.cloudfront.net/user_349VrHjTFIpx9q71lpfpAXcLXvR/hf_20260914_232402_b7a63ce3-1988-473b-8c77-74994fbb7ad8.png",
+      "prompt": "hero slide 2",
+      "alt_text": "Modelo junto a la ventana con camisón de satén rosa viejo y escote de encaje hecho a mano",
+      "naming_source": "fallback",
+      "aspect_ratio": "4:5",
+      "files": [
+        {
+          "file": "camison-saten-rosa-viejo-hecho-a-mano-paraguay-640.avif",
+          "format": "avif",
+          "width": 640,
+          "height": 800,
+          "kb": 11.1
+        },
+        {
+          "file": "camison-saten-rosa-viejo-hecho-a-mano-paraguay-640.webp",
+          "format": "webp",
+          "width": 640,
+          "height": 800,
+          "kb": 18.3
+        },
+        {
+          "file": "camison-saten-rosa-viejo-hecho-a-mano-paraguay-1280.avif",
+          "format": "avif",
+          "width": 1280,
+          "height": 1600,
+          "kb": 27
+        },
+        {
+          "file": "camison-saten-rosa-viejo-hecho-a-mano-paraguay-1280.webp",
+          "format": "webp",
+          "width": 1280,
+          "height": 1600,
+          "kb": 66.1
+        },
+        {
+          "file": "camison-saten-rosa-viejo-hecho-a-mano-paraguay-1920.avif",
+          "format": "avif",
+          "width": 1920,
+          "height": 2400,
+          "kb": 55.9
+        },
+        {
+          "file": "camison-saten-rosa-viejo-hecho-a-mano-paraguay-1920.webp",
+          "format": "webp",
+          "width": 1920,
+          "height": 2400,
+          "kb": 137.1
+        }
+      ],
+      "html_snippet": "<picture>\n  <source type=\"image/avif\" srcset=\"public/img/camison-saten-rosa-viejo-hecho-a-mano-paraguay-640.avif 640w, public/img/camison-saten-rosa-viejo-hecho-a-mano-paraguay-1280.avif 1280w, public/img/camison-saten-rosa-viejo-hecho-a-mano-paraguay-1920.avif 1920w\">\n  <source type=\"image/webp\" srcset=\"public/img/camison-saten-rosa-viejo-hecho-a-mano-paraguay-640.webp 640w, public/img/camison-saten-rosa-viejo-hecho-a-mano-paraguay-1280.webp 1280w, public/img/camison-saten-rosa-viejo-hecho-a-mano-paraguay-1920.webp 1920w\">\n  <img src=\"public/img/camison-saten-rosa-viejo-hecho-a-mano-paraguay-1280.webp\" alt=\"Modelo junto a la ventana con camisón de satén rosa viejo y escote de encaje hecho a mano\" width=\"1280\" height=\"1600\" loading=\"lazy\" decoding=\"async\">\n</picture>"
+    },
+    {
+      "filename_base": "kimono-gasa-marfil-flores-mburucuya-bordadas",
+      "source": "https://d8j0ntlcm91z4.cloudfront.net/user_349VrHjTFIpx9q71lpfpAXcLXvR/hf_20260914_232402_c203e1c4-f095-4003-9146-c03ee4681f15.png",
+      "prompt": "hero slide 3",
+      "alt_text": "Modelo con kimono corto de gasa marfil y flores de mburucuyá bordadas a mano en las mangas",
+      "naming_source": "fallback",
+      "aspect_ratio": "4:5",
+      "files": [
+        {
+          "file": "kimono-gasa-marfil-flores-mburucuya-bordadas-640.avif",
+          "format": "avif",
+          "width": 640,
+          "height": 800,
+          "kb": 21.9
+        },
+        {
+          "file": "kimono-gasa-marfil-flores-mburucuya-bordadas-640.webp",
+          "format": "webp",
+          "width": 640,
+          "height": 800,
+          "kb": 32.3
+        },
+        {
+          "file": "kimono-gasa-marfil-flores-mburucuya-bordadas-1280.avif",
+          "format": "avif",
+          "width": 1280,
+          "height": 1600,
+          "kb": 46
+        },
+        {
+          "file": "kimono-gasa-marfil-flores-mburucuya-bordadas-1280.webp",
+          "format": "webp",
+          "width": 1280,
+          "height": 1600,
+          "kb": 104.2
+        },
+        {
+          "file": "kimono-gasa-marfil-flores-mburucuya-bordadas-1920.avif",
+          "format": "avif",
+          "width": 1920,
+          "height": 2400,
+          "kb": 92.3
+        },
+        {
+          "file": "kimono-gasa-marfil-flores-mburucuya-bordadas-1920.webp",
+          "format": "webp",
+          "width": 1920,
+          "height": 2400,
+          "kb": 196.7
+        }
+      ],
+      "html_snippet": "<picture>\n  <source type=\"image/avif\" srcset=\"public/img/kimono-gasa-marfil-flores-mburucuya-bordadas-640.avif 640w, public/img/kimono-gasa-marfil-flores-mburucuya-bordadas-1280.avif 1280w, public/img/kimono-gasa-marfil-flores-mburucuya-bordadas-1920.avif 1920w\">\n  <source type=\"image/webp\" srcset=\"public/img/kimono-gasa-marfil-flores-mburucuya-bordadas-640.webp 640w, public/img/kimono-gasa-marfil-flores-mburucuya-bordadas-1280.webp 1280w, public/img/kimono-gasa-marfil-flores-mburucuya-bordadas-1920.webp 1920w\">\n  <img src=\"public/img/kimono-gasa-marfil-flores-mburucuya-bordadas-1280.webp\" alt=\"Modelo con kimono corto de gasa marfil y flores de mburucuyá bordadas a mano en las mangas\" width=\"1280\" height=\"1600\" loading=\"lazy\" decoding=\"async\">\n</picture>"
+    },
+    {
+      "filename_base": "bralette-crochet-terracota-tejido-a-mano-itaugua",
+      "source": "https://d8j0ntlcm91z4.cloudfront.net/user_349VrHjTFIpx9q71lpfpAXcLXvR/hf_20260914_232307_4c7e840e-ed2a-4bc9-b9b7-800261211a8c.png",
+      "prompt": "story band crochet",
+      "alt_text": "Detalle de un bralette tejido a crochet en algodón terracota con tiras para anudar",
+      "naming_source": "fallback",
+      "aspect_ratio": "3:2",
+      "files": [
+        {
+          "file": "bralette-crochet-terracota-tejido-a-mano-itaugua-640.avif",
+          "format": "avif",
+          "width": 640,
+          "height": 427,
+          "kb": 10.5
+        },
+        {
+          "file": "bralette-crochet-terracota-tejido-a-mano-itaugua-640.webp",
+          "format": "webp",
+          "width": 640,
+          "height": 427,
+          "kb": 20.2
+        },
+        {
+          "file": "bralette-crochet-terracota-tejido-a-mano-itaugua-1280.avif",
+          "format": "avif",
+          "width": 1280,
+          "height": 853,
+          "kb": 40.4
+        },
+        {
+          "file": "bralette-crochet-terracota-tejido-a-mano-itaugua-1280.webp",
+          "format": "webp",
+          "width": 1280,
+          "height": 853,
+          "kb": 92.3
+        },
+        {
+          "file": "bralette-crochet-terracota-tejido-a-mano-itaugua-1920.avif",
+          "format": "avif",
+          "width": 1920,
+          "height": 1280,
+          "kb": 86.8
+        },
+        {
+          "file": "bralette-crochet-terracota-tejido-a-mano-itaugua-1920.webp",
+          "format": "webp",
+          "width": 1920,
+          "height": 1280,
+          "kb": 158.7
+        }
+      ],
+      "html_snippet": "<picture>\n  <source type=\"image/avif\" srcset=\"public/img/bralette-crochet-terracota-tejido-a-mano-itaugua-640.avif 640w, public/img/bralette-crochet-terracota-tejido-a-mano-itaugua-1280.avif 1280w, public/img/bralette-crochet-terracota-tejido-a-mano-itaugua-1920.avif 1920w\">\n  <source type=\"image/webp\" srcset=\"public/img/bralette-crochet-terracota-tejido-a-mano-itaugua-640.webp 640w, public/img/bralette-crochet-terracota-tejido-a-mano-itaugua-1280.webp 1280w, public/img/bralette-crochet-terracota-tejido-a-mano-itaugua-1920.webp 1920w\">\n  <img src=\"public/img/bralette-crochet-terracota-tejido-a-mano-itaugua-1280.webp\" alt=\"Detalle de un bralette tejido a crochet en algodón terracota con tiras para anudar\" width=\"1280\" height=\"853\" loading=\"lazy\" decoding=\"async\">\n</picture>"
+    },
+    {
+      "filename_base": "lenceria-coral-balcon-asuncion-envios-paraguay",
+      "source": "https://d8j0ntlcm91z4.cloudfront.net/user_349VrHjTFIpx9q71lpfpAXcLXvR/hf_20260914_232307_82b92cbb-fa66-4c7c-a91b-3fbd6ab2faec.png",
+      "prompt": "cta band",
+      "alt_text": "Modelo riendo en un balcón de Asunción con conjunto de encaje coral y camisa de lino",
+      "naming_source": "fallback",
+      "aspect_ratio": "3:2",
+      "files": [
+        {
+          "file": "lenceria-coral-balcon-asuncion-envios-paraguay-640.avif",
+          "format": "avif",
+          "width": 640,
+          "height": 427,
+          "kb": 14
+        },
+        {
+          "file": "lenceria-coral-balcon-asuncion-envios-paraguay-640.webp",
+          "format": "webp",
+          "width": 640,
+          "height": 427,
+          "kb": 19.8
+        },
+        {
+          "file": "lenceria-coral-balcon-asuncion-envios-paraguay-1280.avif",
+          "format": "avif",
+          "width": 1280,
+          "height": 853,
+          "kb": 31.7
+        },
+        {
+          "file": "lenceria-coral-balcon-asuncion-envios-paraguay-1280.webp",
+          "format": "webp",
+          "width": 1280,
+          "height": 853,
+          "kb": 59.9
+        },
+        {
+          "file": "lenceria-coral-balcon-asuncion-envios-paraguay-1920.avif",
+          "format": "avif",
+          "width": 1920,
+          "height": 1280,
+          "kb": 57
+        },
+        {
+          "file": "lenceria-coral-balcon-asuncion-envios-paraguay-1920.webp",
+          "format": "webp",
+          "width": 1920,
+          "height": 1280,
+          "kb": 105.2
+        }
+      ],
+      "html_snippet": "<picture>\n  <source type=\"image/avif\" srcset=\"public/img/lenceria-coral-balcon-asuncion-envios-paraguay-640.avif 640w, public/img/lenceria-coral-balcon-asuncion-envios-paraguay-1280.avif 1280w, public/img/lenceria-coral-balcon-asuncion-envios-paraguay-1920.avif 1920w\">\n  <source type=\"image/webp\" srcset=\"public/img/lenceria-coral-balcon-asuncion-envios-paraguay-640.webp 640w, public/img/lenceria-coral-balcon-asuncion-envios-paraguay-1280.webp 1280w, public/img/lenceria-coral-balcon-asuncion-envios-paraguay-1920.webp 1920w\">\n  <img src=\"public/img/lenceria-coral-balcon-asuncion-envios-paraguay-1280.webp\" alt=\"Modelo riendo en un balcón de Asunción con conjunto de encaje coral y camisa de lino\" width=\"1280\" height=\"853\" loading=\"lazy\" decoding=\"async\">\n</picture>"
     }
   ]
 }
