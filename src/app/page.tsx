@@ -26,6 +26,7 @@ export default async function HomePage() {
       getCatalog({ categorySlug: CATEGORIA_CONJUNTOS, limit: 8 }),
     ]);
   } catch (cause) {
+    console.error(cause);
     error = cause instanceof Error ? cause.message : String(cause);
   }
 
@@ -40,8 +41,14 @@ export default async function HomePage() {
       {error ? (
         <div className="border-l-primary bg-background mx-auto max-w-3xl border-l-2 p-6">
           <p className="text-sm">{t("home.errorCatalogo")}</p>
-          <p className="mt-1 font-mono text-xs break-all">{error}</p>
-          <p className="text-muted-foreground mt-2 text-sm">{t("home.errorCatalogo.ayuda")}</p>
+          {process.env.NODE_ENV === "production" ? (
+            <p className="text-muted-foreground mt-2 text-sm">{t("home.errorCatalogo.publico")}</p>
+          ) : (
+            <>
+              <p className="mt-1 font-mono text-xs break-all">{error}</p>
+              <p className="text-muted-foreground mt-2 text-sm">{t("home.errorCatalogo.ayuda")}</p>
+            </>
+          )}
         </div>
       ) : (
         <>

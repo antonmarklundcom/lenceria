@@ -1,8 +1,6 @@
-import { execFile } from 'node:child_process';
 import { mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { promisify } from 'node:util';
 
 import { eq } from 'drizzle-orm';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
@@ -11,7 +9,7 @@ import { categories, products, variants } from '@/db/schema';
 
 import { TEST_DATABASE_URL, closeTestDb, getTestDb, hasTestDb, resetTables } from '../helpers/db';
 
-const run = promisify(execFile);
+import { runScript } from '../helpers/run-script';
 
 /**
  * `pnpm importar:productos` contra MySQL de verdad: ensayo que no escribe,
@@ -30,9 +28,9 @@ async function importar(
   const archivo = join(dir, 'planilla.csv');
   writeFileSync(archivo, csv, 'utf8');
   try {
-    const { stdout, stderr } = await run(
-      'pnpm',
-      ['exec', 'tsx', 'scripts/importar-productos.ts', archivo, ...flags],
+    const { stdout, stderr } = await runScript(
+      'scripts/importar-productos.ts',
+      [archivo, ...flags],
       {
         cwd: process.cwd(),
         env: { ...process.env, DATABASE_URL: TEST_DATABASE_URL },

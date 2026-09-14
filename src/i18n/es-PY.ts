@@ -49,6 +49,8 @@ export const esPY = {
   "home.sinProductos":
     "Todavía no hay productos publicados. Sembrá el catálogo con pnpm db:seed.",
   "home.errorCatalogo": "No pude leer el catálogo:",
+  "home.errorCatalogo.publico":
+    "Estamos acomodando el catálogo. Volvé en unos minutos o escribinos por WhatsApp.",
   "home.errorCatalogo.ayuda":
     "Levantá la base con docker compose up -d, después pnpm db:push && pnpm db:seed.",
 

@@ -188,6 +188,9 @@ Los productos reales entran por dos caminos:
   stock** de variantes existentes (`--pisar-stock` si de verdad querés eso).
   Las categorías que no existan se crean al final del menú. Las fotos no van
   por acá: se cargan después en `/admin/productos`.
+- Las fotos también se pueden cargar masivamente desde URLs remotas, una sola
+  vez, con `pnpm fotos:catalogo scripts/fotos-catalogo.json --aplicar` (ver
+  el script para el formato del JSON y `--pisar`).
 
 El seed deja un punto de partida que **se termina de ajustar desde el panel**,
 sin volver a tocar código:
