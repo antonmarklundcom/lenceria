@@ -33,8 +33,10 @@ describe('scripts/fotos-catalogo.json', () => {
     }
   });
 
-  it('los slugs son únicos', () => {
-    const slugs = items.map((item) => item.slug);
-    expect(new Set(slugs).size).toBe(slugs.length);
+  // Un mismo producto puede llevar varias fotos (una fila por foto): lo que no
+  // se repite es el par slug + url.
+  it('no hay pares slug + url repetidos', () => {
+    const claves = items.map((item) => `${item.slug} ${item.url}`);
+    expect(new Set(claves).size).toBe(claves.length);
   });
 });

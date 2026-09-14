@@ -17,7 +17,7 @@ export function MobileMenu({
     <>
       <button
         type="button"
-        className="md:hidden"
+        className="relative z-50 rounded-full p-2 md:hidden"
         aria-label={open ? t("header.menuCerrar") : t("header.menuAbrir")}
         aria-expanded={open}
         onClick={() => setOpen((value) => !value)}
@@ -26,7 +26,7 @@ export function MobileMenu({
       </button>
 
       <div
-        className={`fixed inset-0 z-40 flex items-center justify-center bg-black/95 backdrop-blur-sm transition-opacity duration-500 md:hidden ${
+        className={`fixed inset-0 z-40 flex items-center justify-center bg-background/95 backdrop-blur-sm transition-opacity duration-500 md:hidden ${
           open ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-0"
         }`}
       >
@@ -36,7 +36,7 @@ export function MobileMenu({
               key={category.id}
               href={`/categoria/${category.slug}`}
               onClick={() => setOpen(false)}
-              className="text-foreground font-serif text-3xl font-light"
+              className="text-foreground font-serif text-3xl font-medium"
             >
               {category.name}
             </Link>

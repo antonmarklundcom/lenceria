@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Image from "next/image";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense, cache } from "react";
@@ -135,7 +136,7 @@ export default async function CategoryPage({
         dangerouslySetInnerHTML={{ __html: jsonLdScript(jsonLd) }}
       />
 
-      <nav className="text-muted-foreground text-sm">
+      <nav className="text-muted-foreground text-[10px] tracking-[0.08em]">
         <Link href="/" className="hover:text-foreground">
           {t("nav.inicio")}
         </Link>
@@ -143,8 +144,8 @@ export default async function CategoryPage({
         <span className="text-foreground">{category.name}</span>
       </nav>
 
-      <h1 className="mt-2 text-2xl font-semibold tracking-tight">{category.name}</h1>
-      <p className="text-muted-foreground mt-1 text-sm">
+      <h1 className="mt-2 font-serif text-[30px] font-medium">{category.name}</h1>
+      <p className="text-muted-foreground mt-1 text-xs">
         {tPlural("catalogo.productos", result.total)} · {t("catalogo.ivaIncluidoNota")}
       </p>
 
@@ -183,7 +184,7 @@ export default async function CategoryPage({
       {result.products.length === 0 ? (
         <div className="border-border mt-8 rounded-xl border border-dashed p-10 text-center">
           <p className="font-medium">{t("categoria.sinResultados")}</p>
-          <p className="text-muted-foreground mt-1 text-sm">{t("categoria.sinResultados.ayuda")}</p>
+          <p className="text-muted-foreground mt-1 text-xs">{t("categoria.sinResultados.ayuda")}</p>
           <Button asChild variant="outline" className="mt-4">
             <Link href={`/categoria/${slug}`}>{t("categoria.verTodo")}</Link>
           </Button>
@@ -209,30 +210,30 @@ export default async function CategoryPage({
               `Button` que lo envuelve diga `disabled`, que es justo lo que
               pasaba acá antes de este PR. */}
           {result.page > 1 ? (
-            <Button asChild variant="outline" size="sm">
-              <Link href={buildPageHref(result.page - 1)}>{t("nav.anterior")}</Link>
+            <Button asChild variant="outline" size="sm" className="size-[34px] rounded-full border-border bg-white p-0">
+              <Link href={buildPageHref(result.page - 1)} aria-label={t("nav.anterior")}><ChevronLeft aria-hidden /></Link>
             </Button>
           ) : (
             <span
               aria-disabled="true"
-              className="border-input text-muted-foreground pointer-events-none rounded-md border px-3 py-1.5 text-sm opacity-50"
+              className="border-border bg-white text-muted-foreground pointer-events-none flex size-[34px] items-center justify-center rounded-full border opacity-50"
             >
-              {t("nav.anterior")}
+              <ChevronLeft aria-hidden /><span className="sr-only">{t("nav.anterior")}</span>
             </span>
           )}
-          <span className="text-muted-foreground text-sm">
-            {t("nav.pagina", { actual: result.page, total: result.totalPages })}
+          <span aria-current="page" aria-label={t("nav.pagina", { actual: result.page, total: result.totalPages })} className="flex size-[34px] items-center justify-center rounded-full bg-primary text-xs text-white">
+            {result.page}
           </span>
           {result.page < result.totalPages ? (
-            <Button asChild variant="outline" size="sm">
-              <Link href={buildPageHref(result.page + 1)}>{t("nav.siguiente")}</Link>
+            <Button asChild variant="outline" size="sm" className="size-[34px] rounded-full border-border bg-white p-0">
+              <Link href={buildPageHref(result.page + 1)} aria-label={t("nav.siguiente")}><ChevronRight aria-hidden /></Link>
             </Button>
           ) : (
             <span
               aria-disabled="true"
-              className="border-input text-muted-foreground pointer-events-none rounded-md border px-3 py-1.5 text-sm opacity-50"
+              className="border-border bg-white text-muted-foreground pointer-events-none flex size-[34px] items-center justify-center rounded-full border opacity-50"
             >
-              {t("nav.siguiente")}
+              <ChevronRight aria-hidden /><span className="sr-only">{t("nav.siguiente")}</span>
             </span>
           )}
         </nav>

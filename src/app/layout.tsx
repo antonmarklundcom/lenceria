@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import type React from "react";
-import { Jost, Playfair_Display } from "next/font/google";
+import { Karla, Cormorant_Garamond } from "next/font/google";
 
 import { TIENDA } from "@/config/tienda";
 import { Analytics } from "@/components/analytics";
@@ -13,14 +13,14 @@ import { idiomaActivo } from "@/i18n";
 import { siteOrigin } from "@/lib/site-url";
 import "./globals.css";
 
-const jost = Jost({
-  variable: "--font-jost",
-  weight: ["300", "400", "500", "600"],
+const karla = Karla({
+  variable: "--font-karla",
+  weight: ["400", "500", "600", "700"],
   subsets: ["latin"],
 });
 
-const playfair = Playfair_Display({
-  variable: "--font-playfair",
+const cormorant = Cormorant_Garamond({
+  variable: "--font-cormorant",
   weight: ["400", "500", "600"],
   subsets: ["latin"],
 });
@@ -54,9 +54,9 @@ export default function RootLayout({
   return (
     <html
       lang={idiomaActivo()}
-      className={`${jost.variable} ${playfair.variable} h-full antialiased`}
+      className={`${karla.variable} ${cormorant.variable} h-full antialiased`}
     >
-      <body className="flex min-h-full flex-col">
+      <body className="flex min-h-full flex-col font-sans">
         <SiteHeader />
         <div className="flex-1">{children}</div>
         <SiteFooter />

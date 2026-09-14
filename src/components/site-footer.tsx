@@ -16,10 +16,10 @@ export async function SiteFooter() {
   const phone = comercioWhatsApp();
 
   return (
-    <footer className="border-border mt-16 border-t bg-secondary">
-      <div className="text-muted-foreground mx-auto grid w-full max-w-6xl gap-10 px-4 py-12 text-sm sm:grid-cols-3 sm:px-6">
+    <footer className="border-border mt-16 border-t bg-secondary text-[#6B5450]">
+      <div className="mx-auto grid w-full max-w-6xl gap-10 px-4 py-12 text-sm sm:grid-cols-2 lg:grid-cols-4 sm:px-6">
         <div>
-          <p className="text-foreground font-serif text-xl">{TIENDA.nombre}</p>
+          <p className="font-serif text-[22px]">{TIENDA.nombre}</p>
           <p className="mt-3 max-w-xs leading-relaxed">{TIENDA.tagline}</p>
         </div>
 
@@ -40,25 +40,29 @@ export async function SiteFooter() {
 
         <div>
           <p className="text-foreground text-xs font-medium tracking-[0.16em] uppercase">
-            {t("footer.contacto")}
+            {t("footer.ayuda")}
           </p>
           <ul className="mt-3 space-y-2">
-            {phone ? (
-              <li className="border-border bg-background flex items-center gap-3 rounded-md border px-3 py-2.5">
-                <span className="border-primary text-accent-foreground flex size-6 shrink-0 items-center justify-center rounded-full border text-[10px] font-medium">
-                  W
-                </span>
-                {t("footer.whatsapp", { telefono: formatPhonePY(phone) })}
-              </li>
-            ) : null}
             <li>
               <Link href="/pedido/buscar" className="hover:text-primary">
                 {t("footer.seguirPedido")}
               </Link>
             </li>
+            <li>{t("footer.envios")}</li>
+            <li>{t("footer.cambios")}</li>
           </ul>
         </div>
+        {phone ? (
+          <div className="flex items-center gap-3 self-start rounded-2xl bg-white p-4">
+            <span aria-hidden className="flex size-10 shrink-0 items-center justify-center rounded-full bg-[#25D366] font-bold text-white">{t("footer.whatsappBadge")}</span>
+            <div>
+              <p>{t("footer.whatsapp", { telefono: formatPhonePY(phone) })}</p>
+              <p className="mt-1 text-xs">{t("footer.horarios")}</p>
+            </div>
+          </div>
+        ) : null}
       </div>
+      <p className="mx-auto max-w-6xl border-t border-border px-4 py-6 text-center text-xs sm:px-6">{t("footer.copyright", { nombre: TIENDA.nombre })}</p>
     </footer>
   );
 }
