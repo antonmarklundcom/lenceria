@@ -36,3 +36,12 @@ onlyBuiltDependencies:
 overrides:
   nanoid: "^3.3.18"
   uuid: "^11.1.1"
+
+# Hostinger empaqueta el build copiando node_modules a hbuilds/versions/<id>
+# y desreferencia los symlinks de pnpm: `node_modules/next` queda como copia
+# real, sin su vecino `.pnpm/next@…/node_modules/@swc/helpers`, y en runtime
+# explota con "Cannot find module '@swc/helpers/_/_interop_require_default'".
+# Con el linker hoisted, node_modules queda plano (estilo npm) y la copia
+# resuelve todo. No cambia el lockfile. (pnpm 11 ignora esta clave en .npmrc;
+# va acá.)
+nodeLinker: hoisted
