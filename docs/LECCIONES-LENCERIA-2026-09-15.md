@@ -189,3 +189,70 @@ rotación de secretos.
 
 - Datos bancarios (`/admin/banco`), tres cron jobs (DEPLOY.md §5), rotación
   de secretos, plantillas de WhatsApp Cloud (opcional), Pagopar (opcional).
+
+---
+
+## F. Ideas nuevas (2026-09-15, después del lanzamiento)
+
+Hoy el template **no manda ningún email**: no hay Resend, nodemailer ni SMTP
+en el código. Los avisos a la compradora y al dueño van por WhatsApp Cloud
+(plantillas por variable de entorno), que en lenceria tampoco está
+configurado. Tampoco hay recuperación de contraseña del panel: si el dueño la
+olvida, hay que crear otra con `pnpm create-owner` contra la base remota.
+
+### T-21. Email transaccional con Resend, configurado desde el panel
+- **Qué:** `/admin/email` (owner-only) con: API key de Resend, remitente
+  (`Lencería Íntima <pedidos@mail.lenceria.com.py>`), reply-to (la casilla
+  real de atención), y un switch por evento: pedido confirmado, comprobante
+  aprobado, pedido enviado, recordatorio de pago, aviso de pedido nuevo al
+  dueño. Mismo patrón que `bank_details`: la tabla manda, `RESEND_API_KEY` del
+  entorno queda como fallback, vacío = feature apagada.
+- **Por qué en el panel y no en el entorno:** cambiar una variable en Hostinger
+  obliga a Redeploy y a alguien técnico; desde el panel el dueño (o el cliente
+  al que se le vende la tienda) pega su propia key y listo. Es el mismo
+  argumento que ya ganó con los datos bancarios.
+- **Condición:** la key se guarda **cifrada** en la base (AES-GCM con una clave
+  derivada de `SESSION_SECRET` o una `SECRETS_KEY` propia), nunca en texto
+  plano; el panel muestra sólo los últimos 4 caracteres; sólo el rol owner la
+  ve o edita; el log nunca la imprime. Sin eso, la idea es mala: un dump de la
+  base se llevaría la key.
+- **Alcance de Resend:** sirve para mandar (transaccional). No es una casilla:
+  las respuestas de las clientas tienen que caer en un buzón real (Google
+  Workspace, Hostinger Email, o el WhatsApp del comercio) vía `reply-to`.
+  Resend tiene recepción entrante, pero no reemplaza un buzón de soporte.
+- **Entregabilidad:** buena si se verifica el dominio (SPF + DKIM + DMARC) y se
+  manda desde un subdominio (`mail.lenceria.com.py`), no desde la raíz. Plan
+  gratis: 3.000 emails/mes, 100/día, sobra para una tienda de este tamaño.
+  Alternativas si Resend no convence: Postmark (la mejor entregabilidad
+  transaccional, pago), Brevo (gratis 300/día), Amazon SES (el más barato,
+  más setup). Ninguna cambia el diseño: un adaptador `src/lib/email.ts` con
+  `enviar({para, asunto, html})` y el proveedor detrás.
+- **Prioridad frente a WhatsApp:** en Paraguay la compradora lee WhatsApp, no
+  email. Pero WhatsApp Cloud exige verificación de negocio en Meta y plantillas
+  aprobadas; Resend se configura en una tarde. Email primero como red de
+  seguridad, WhatsApp Cloud cuando el negocio esté verificado.
+
+### T-22. Recuperación de contraseña del panel
+- Link de un solo uso por email (necesita T-21) con vencimiento de 30 minutos,
+  rate-limit por IP y por email, y que invalide las sesiones abiertas al
+  cambiarla. Sin email, alternativa: OTP por WhatsApp Cloud (ya existe el
+  mecanismo para clientas en `login_tokens`). Hoy: `pnpm create-owner`.
+
+### T-23. Superadmin multi-tienda (idea, no ahora)
+- Un panel central donde Anton vea todas sus tiendas, cargue su propio Resend /
+  Cloudinary / WhatsApp una vez y las tiendas lo hereden salvo que el dueño
+  cargue el suyo. **Feedback:** es otra app (base central, auth cruzada,
+  distribución de secretos entre servidores) y choca con el modelo actual de
+  "una tienda = un repo = una base" que es lo que hace que vender una tienda a
+  un cliente sea entregarle un repo. Lo que sí vale ya: que cada integración
+  (banco, Cloudinary, Resend, WhatsApp) se cargue desde el panel de **cada**
+  tienda con el mismo patrón tabla-manda-entorno-fallback. Con eso, el
+  superadmin del futuro sólo tendría que escribir en esas tablas. Dejarlo en
+  `fable/plan-crecimiento.md` como fase, no construirlo.
+
+### Datos bancarios: qué cargar en `/admin/banco`
+Los cinco campos de `bank_details`: **banco** (ej. Banco Itaú), **titular**
+(nombre exacto de la cuenta), **RUC o CI** del titular, **número de cuenta**,
+**tipo de cuenta** (caja de ahorro / cuenta corriente), y opcional la **imagen
+del QR SPI** que da el banco. No hay campo alias. Para la demo sirve la cuenta
+de Anton; antes de vender, la de la dueña.
