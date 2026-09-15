@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-14T23:31:11.510Z",
+  "generated_at": "2026-09-15T00:02:10.681Z",
   "images": [
     {
       "filename_base": "hero-conjunto-nanduti",
@@ -697,6 +697,59 @@
         }
       ],
       "html_snippet": "<picture>\n  <source type=\"image/avif\" srcset=\"public/img/lenceria-coral-balcon-asuncion-envios-paraguay-640.avif 640w, public/img/lenceria-coral-balcon-asuncion-envios-paraguay-1280.avif 1280w, public/img/lenceria-coral-balcon-asuncion-envios-paraguay-1920.avif 1920w\">\n  <source type=\"image/webp\" srcset=\"public/img/lenceria-coral-balcon-asuncion-envios-paraguay-640.webp 640w, public/img/lenceria-coral-balcon-asuncion-envios-paraguay-1280.webp 1280w, public/img/lenceria-coral-balcon-asuncion-envios-paraguay-1920.webp 1920w\">\n  <img src=\"public/img/lenceria-coral-balcon-asuncion-envios-paraguay-1280.webp\" alt=\"Modelo riendo en un balcón de Asunción con conjunto de encaje coral y camisa de lino\" width=\"1280\" height=\"853\" loading=\"lazy\" decoding=\"async\">\n</picture>"
+    },
+    {
+      "filename_base": "bralette-crochet-terracota-detalle-tejido-a-mano",
+      "source": "https://d8j0ntlcm91z4.cloudfront.net/user_349VrHjTFIpx9q71lpfpAXcLXvR/hf_20260914_232307_4c7e840e-ed2a-4bc9-b9b7-800261211a8c.png",
+      "prompt": "story band 4:5",
+      "alt_text": "Detalle del bralette de crochet en algodón terracota con tiras para anudar, tejido a mano",
+      "naming_source": "fallback",
+      "aspect_ratio": "4:5",
+      "files": [
+        {
+          "file": "bralette-crochet-terracota-detalle-tejido-a-mano-640.avif",
+          "format": "avif",
+          "width": 640,
+          "height": 800,
+          "kb": 21.1
+        },
+        {
+          "file": "bralette-crochet-terracota-detalle-tejido-a-mano-640.webp",
+          "format": "webp",
+          "width": 640,
+          "height": 800,
+          "kb": 39.3
+        },
+        {
+          "file": "bralette-crochet-terracota-detalle-tejido-a-mano-1280.avif",
+          "format": "avif",
+          "width": 1280,
+          "height": 1600,
+          "kb": 78.8
+        },
+        {
+          "file": "bralette-crochet-terracota-detalle-tejido-a-mano-1280.webp",
+          "format": "webp",
+          "width": 1280,
+          "height": 1600,
+          "kb": 176
+        },
+        {
+          "file": "bralette-crochet-terracota-detalle-tejido-a-mano-1920.avif",
+          "format": "avif",
+          "width": 1920,
+          "height": 2400,
+          "kb": 167.3
+        },
+        {
+          "file": "bralette-crochet-terracota-detalle-tejido-a-mano-1920.webp",
+          "format": "webp",
+          "width": 1920,
+          "height": 2400,
+          "kb": 306.4
+        }
+      ],
+      "html_snippet": "<picture>\n  <source type=\"image/avif\" srcset=\"public/img/bralette-crochet-terracota-detalle-tejido-a-mano-640.avif 640w, public/img/bralette-crochet-terracota-detalle-tejido-a-mano-1280.avif 1280w, public/img/bralette-crochet-terracota-detalle-tejido-a-mano-1920.avif 1920w\">\n  <source type=\"image/webp\" srcset=\"public/img/bralette-crochet-terracota-detalle-tejido-a-mano-640.webp 640w, public/img/bralette-crochet-terracota-detalle-tejido-a-mano-1280.webp 1280w, public/img/bralette-crochet-terracota-detalle-tejido-a-mano-1920.webp 1920w\">\n  <img src=\"public/img/bralette-crochet-terracota-detalle-tejido-a-mano-1280.webp\" alt=\"Detalle del bralette de crochet en algodón terracota con tiras para anudar, tejido a mano\" width=\"1280\" height=\"1600\" loading=\"lazy\" decoding=\"async\">\n</picture>"
     }
   ]
 }
