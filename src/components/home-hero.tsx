@@ -1,3 +1,4 @@
+import type { CSSProperties } from "react";
 import Link from "next/link";
 import { HeroSlideshow } from "@/components/home-video-hero";
 import { TIENDA, type Hero } from "@/config/tienda";
@@ -20,16 +21,16 @@ export function HomeHero(props: { ctaHref: string | null; hero?: never } | { her
   }
   const { ctaHref } = props;
   const whatsapp = comercioWaLink(t("home.whatsapp.mensaje", { tienda: TIENDA.nombre }));
-  return <section className="grid bg-background px-4 pt-5 sm:px-6 lg:grid-cols-2 lg:px-0 lg:pt-0">
+  return <div data-hero-scroll><section data-hero-stage className="grid bg-background px-4 pt-5 sm:px-6 lg:grid-cols-2 lg:px-0 lg:pt-0">
     <div className="lg:order-2"><HeroSlideshow /></div>
     <div className="flex flex-col justify-center py-12 lg:order-1 lg:py-20 lg:pl-[max(1.5rem,calc((100vw-1152px)/2+24px))] lg:pr-12">
-      <p className="text-[10px] uppercase tracking-[0.28em] text-primary">{t("home.hero.eyebrow")}</p>
-      <h1 className="mt-5 max-w-lg font-serif text-[44px] leading-[1.05] font-medium lg:text-[72px]">{t("home.hero.titulo")}</h1>
-      <p className="mt-6 max-w-md text-[15px] leading-7 text-muted-foreground">{t("home.hero.texto")}</p>
-      <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-3">
+      <p data-reveal="load" data-hero-exit="0" style={{ "--i": 0 } as CSSProperties} className="text-[10px] uppercase tracking-[0.28em] text-primary">{t("home.hero.eyebrow")}</p>
+      <h1 data-reveal="load" data-hero-exit="1" style={{ "--i": 1 } as CSSProperties} className="mt-5 max-w-lg font-serif text-[44px] leading-[1.05] font-medium lg:text-[72px]">{t("home.hero.titulo")}</h1>
+      <p data-reveal="load" data-hero-exit="2" style={{ "--i": 2 } as CSSProperties} className="mt-6 max-w-md text-[15px] leading-7 text-muted-foreground">{t("home.hero.texto")}</p>
+      <div data-reveal="load" data-hero-exit="3" style={{ "--i": 3 } as CSSProperties} className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-3">
         {ctaHref ? <Link href={ctaHref} className="btn-primary inline-flex min-h-12 items-center px-7 py-4">{t("home.hero.coleccion")}</Link> : null}
         {whatsapp ? <a href={whatsapp} className="inline-flex min-h-12 items-center text-sm underline decoration-primary/50 underline-offset-8">{t("home.hero.whatsapp")}</a> : null}
       </div>
     </div>
-  </section>;
+  </section></div>;
 }

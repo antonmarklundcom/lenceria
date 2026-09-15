@@ -27,3 +27,21 @@
   h1, h2, h3, h4, h5, h6 { font-family: var(--font-cormorant), serif; }
 }
 .btn-primary { border-radius: 9999px; background: var(--primary); color: var(--primary-foreground); letter-spacing: .08em; text-transform: uppercase; font-size: 12px; }
+
+/* Home reveal contract: the unenhanced, rested layout is fully visible. */
+[data-reveal] { opacity: calc(var(--in, 1) * (1 - var(--out, 0))); translate: 0 calc((1 - var(--in, 1)) * var(--in-y, 12px) - var(--out, 0) * var(--out-y, 12px)); }
+[data-reveal].is-anim { filter: blur(calc((1 - var(--in, 1)) * var(--in-blur, 8px) + var(--out, 0) * var(--out-blur, 8px))); }
+[data-reveal].is-hidden { visibility: hidden; }
+.js [data-reveal] { --in: 0; }
+.js [data-reveal=card] { --in-y: 40px; --in-blur: 12px; }
+@media (prefers-reduced-motion: reduce) {
+  [data-reveal] { translate: none; }
+  [data-reveal].is-anim { filter: none; }
+}
+@media (min-width: 768px) {
+  .js [data-hero-scroll] { height: calc(100svh + 60svh); }
+  .js [data-hero-stage] { position: sticky; top: 0; min-height: 100svh; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .js [data-hero-stage] > :first-child { order: 2; min-width: 0; }
+  .js [data-hero-stage] > :last-child { order: 1; min-width: 0; }
+  .js [data-slideshow] { height: 100svh; aspect-ratio: auto; }
+}

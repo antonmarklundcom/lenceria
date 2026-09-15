@@ -1,3 +1,4 @@
+import { ScrollMotion } from "@/components/scroll-motion";
 import { HomeHero } from "@/components/home-hero";
 import { HomeStory } from "@/components/home-story";
 import { HomeHowToBuy } from "@/components/home-how-to-buy";
@@ -65,6 +66,7 @@ export default async function HomePage() {
           <HomeWhatsappBand />
         </>
       )}
+      <ScrollMotion />
     </main>
   );
 }
