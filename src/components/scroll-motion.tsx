@@ -34,7 +34,26 @@ export function ScrollMotion() {
       return { block, original, words };
     });
     const lineInfo = new Map<HTMLElement, { block: HTMLElement; line: number }>();
+    const section = main.querySelector<HTMLElement>("[data-story-collage]");
+    const collage = Array.from(main.querySelectorAll<HTMLElement>("[data-collage]")).map((element) => ({
+      element, from: element.dataset.from, speed: Number(element.dataset.speed),
+      tau: Number(element.dataset.tau), tilt: Number(element.dataset.tilt), k: Number(element.dataset.k),
+      q: -1, x: 0, y: 0,
+    }));
     const measure = () => {
+      for (const item of collage) {
+        const { element } = item;
+        // offset geometry ignores the animated individual transforms and mirroring.
+        const parent = element.offsetParent as HTMLElement | null;
+        if (!parent) continue;
+        const mobile = window.innerWidth < 1024;
+        const from = mobile ? (item.k % 2 ? "right" : "left") : item.from;
+        const clearance = Math.hypot(element.offsetWidth, element.offsetHeight) * 1.1 + 60;
+        item.x = from === "left" ? -element.offsetLeft - clearance
+          : from === "right" ? parent.clientWidth - element.offsetLeft + clearance : 0;
+        item.y = from === "top" ? -element.offsetTop - clearance
+          : from === "bottom" ? parent.clientHeight - element.offsetTop + clearance : 0;
+      }
       for (const { block, words } of splits) {
         let lastTop = -Infinity;
         let line = -1;
@@ -44,7 +63,7 @@ export function ScrollMotion() {
         }
       }
     };
-    const elements = Array.from(main.querySelectorAll<HTMLElement>("[data-reveal]"));
+    const elements = Array.from(main.querySelectorAll<HTMLElement>("[data-reveal]:not([data-collage])"));
     const records = elements.map((element) => ({
       element, index: Number(element.style.getPropertyValue("--i")) || 0,
       inValue: "", outValue: "", anim: false, hidden: false,
@@ -61,6 +80,8 @@ export function ScrollMotion() {
     let elapsed = 0;
     let previous = performance.now();
     let width = 0;
+    let height = 0;
+    let sectionHeight = 0;
     let raf = 0;
     let active = true;
     const show = (index: number) => {
@@ -95,10 +116,15 @@ export function ScrollMotion() {
     root.classList.add("js");
     const frame = (now: number) => {
       if (!active || document.visibilityState === "hidden") return;
+      const dt = Math.max(0, (now - previous) / 1000);
       elapsed += now - previous;
       previous = now;
-      if (width !== window.innerWidth) { width = window.innerWidth; measure(); }
+      if (width !== window.innerWidth || height !== window.innerHeight || sectionHeight !== (section?.offsetHeight ?? 0)) {
+        width = window.innerWidth; height = window.innerHeight; sectionHeight = section?.offsetHeight ?? 0; measure();
+      }
       const viewport = window.innerHeight;
+      const storyRect = section?.getBoundingClientRect();
+      const target = storyRect ? clamp((viewport - storyRect.top) / (viewport + storyRect.height)) : 0;
       const heroRect = hero?.getBoundingClientRect();
       progress = width >= 768 && heroRect ? clamp(-heroRect.top / Math.max(1, heroRect.height - viewport)) : 0;
       if (progress > 0) { show(progress < 0.33 ? 0 : progress < 0.66 ? 1 : 2); nextSlide = elapsed + 5000; }
@@ -131,6 +157,28 @@ export function ScrollMotion() {
         if (anim !== record.anim) { element.classList.toggle("is-anim", anim); record.anim = anim; }
         if (hidden !== record.hidden) { element.classList.toggle("is-hidden", hidden); record.hidden = hidden; }
       });
+      for (const item of collage) {
+        const { element, k } = item;
+        item.q = item.q < 0 || reduced.matches ? target : item.q + (target - item.q) * (1 - Math.exp(-dt * item.tau));
+        const entrance = expo(clamp((item.q - (0.18 + k * 0.05)) / 0.28));
+        const exit = clamp((item.q - (0.78 + k * 0.02)) / 0.14);
+        const phase = item.q - 0.5;
+        const travel = 1 - entrance;
+        const bow = Math.sin(entrance * Math.PI) * 45;
+        const mobile = width < 1024;
+        // Phone entrance paths stay horizontal, clear of the text below the band.
+        const x = item.x * travel + (item.y || mobile ? bow : 0);
+        const y = item.y * travel + (item.x && !mobile ? bow : 0)
+          - phase * item.speed * 320 - exit * 80;
+        element.style.translate = reduced.matches ? "none" : `${x.toFixed(2)}px ${y.toFixed(2)}px`;
+        element.style.rotate = reduced.matches ? "none" : `${(item.tilt + travel * (k % 2 ? -65 : 65) + phase * item.speed * 12).toFixed(2)}deg`;
+        element.style.scale = reduced.matches ? "1" : String(1 + travel * 0.1);
+        element.style.setProperty("--in", entrance.toFixed(3));
+        element.style.setProperty("--out", exit.toFixed(3));
+        const opacity = entrance * (1 - exit);
+        element.classList.toggle("is-anim", opacity > 0 && opacity < 1);
+        element.classList.toggle("is-hidden", opacity === 0);
+      }
       raf = requestAnimationFrame(frame);
     };
     const visibility = () => {
@@ -148,7 +196,10 @@ export function ScrollMotion() {
       document.removeEventListener("visibilitychange", visibility);
       slideshow?.removeEventListener("click", click);
       if (!hadJs) root.classList.remove("js");
-      for (const element of elements) {
+      for (const { element } of collage) {
+        element.style.removeProperty("translate"); element.style.removeProperty("rotate"); element.style.removeProperty("scale");
+      }
+      for (const element of [...elements, ...collage.map((item) => item.element)]) {
         element.style.removeProperty("--in"); element.style.removeProperty("--out");
         element.classList.remove("is-anim", "is-hidden");
       }
