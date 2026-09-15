@@ -146,7 +146,7 @@ export function SearchBox({ className }: { className?: string }) {
               highlighted >= 0 ? `${listId}-${highlighted}` : undefined
             }
             autoComplete="off"
-            className="pl-9"
+            className="rounded-full border border-border bg-white pl-9 dark:bg-white"
           />
 
           {visibles ? (

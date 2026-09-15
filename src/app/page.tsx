@@ -1,5 +1,10 @@
-import { HomeVideoHero } from "@/components/home-video-hero";
-import { HomeBestSellers } from "@/components/home-best-sellers";
+import { ScrollMotion } from "@/components/scroll-motion";
+import { HomeHero } from "@/components/home-hero";
+import { HomeStory } from "@/components/home-story";
+import { HomeHowToBuy } from "@/components/home-how-to-buy";
+import { HomeWhatsappBand } from "@/components/home-whatsapp-band";
+import { HomeTrustStrip } from "@/components/home-trust-strip";
+import { HomeBestSellers, HomeConjuntos } from "@/components/home-best-sellers";
 import { HomeCategoryShowcase } from "@/components/home-category-showcase";
 import { getCatalog, getCategories, type CatalogProduct } from "@/db/queries";
 import { t } from "@/i18n";
@@ -36,7 +41,8 @@ export default async function HomePage() {
 
   return (
     <main>
-      <HomeVideoHero ctaHref={ctaHref} />
+      <HomeHero ctaHref={ctaHref} />
+      <HomeTrustStrip />
 
       {error ? (
         <div className="border-l-primary bg-background mx-auto max-w-3xl border-l-2 p-6">
@@ -52,13 +58,15 @@ export default async function HomePage() {
         </div>
       ) : (
         <>
-          <HomeBestSellers destacados={destacados} conjuntos={conjuntos} />
-          {destacados.length === 0 ? (
-            <p className="text-muted-foreground px-4 py-10 text-center text-sm">{t("home.sinProductos")}</p>
-          ) : null}
-          <HomeCategoryShowcase categories={categories.slice(0, 3)} />
+          <HomeCategoryShowcase categories={categories} />
+          <HomeBestSellers destacados={destacados} ctaHref={ctaHref} />
+          <HomeStory />
+          <HomeHowToBuy />
+          <HomeConjuntos conjuntos={conjuntos} />
+          <HomeWhatsappBand />
         </>
       )}
+      <ScrollMotion />
     </main>
   );
 }

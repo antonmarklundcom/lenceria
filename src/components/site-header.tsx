@@ -42,9 +42,11 @@ export async function SiteHeader() {
     // Sin base todavía: el header se dibuja igual, sin el menú.
   }
 
+  const lastSpace = TIENDA.nombre.lastIndexOf(" ");
+
   return (
-    <header className="bg-background text-foreground sticky top-0 z-30">
-      <div className="border-border/60 bg-secondary border-b px-4 py-2.5 text-center text-xs sm:py-3">
+    <header className="sticky top-0 z-30 border-b border-border bg-[rgba(251,246,242,.94)] text-foreground backdrop-blur-md">
+      <div className="border-border bg-secondary border-b px-4 py-2.5 text-center text-xs sm:py-3">
         <Suspense fallback={TIENDA.tagline}>
           <AnnouncementText />
         </Suspense>
@@ -53,9 +55,11 @@ export async function SiteHeader() {
       <div className="mx-auto flex w-full max-w-6xl items-center gap-4 px-4 py-4 sm:px-6">
         <Link
           href="/"
-          className="font-serif text-lg tracking-[0.06em] sm:text-xl"
+          className="font-serif text-lg font-medium tracking-[0.06em] sm:text-xl"
         >
-          {TIENDA.nombre}
+          {lastSpace < 0 ? TIENDA.nombre : (
+            <>{TIENDA.nombre.slice(0, lastSpace)}{" "}<span className="text-primary">{TIENDA.nombre.slice(lastSpace + 1)}</span></>
+          )}
         </Link>
 
         <nav aria-label={t("header.categorias")} className="ml-8 hidden gap-7 md:flex">
@@ -65,7 +69,7 @@ export async function SiteHeader() {
               href={`/categoria/${category.slug}`}
               data-testid={TESTIDS.headerCategoryLink}
               data-slug={category.slug}
-              className="text-muted-foreground hover:text-foreground group relative text-sm tracking-wide transition-colors"
+              className="group relative font-sans text-sm font-medium tracking-[0.06em] text-[#5C4A46] transition-colors hover:text-primary"
             >
               {category.name}
               <span className="bg-primary absolute -bottom-1 left-0 h-px w-0 transition-all duration-300 group-hover:w-full" />
@@ -86,7 +90,14 @@ export async function SiteHeader() {
         </div>
       </div>
 
-      <div className="border-border/60 border-t px-4 py-2 sm:hidden">
+      <nav aria-label={t("header.categorias")} className="scrollbar-hide flex gap-6 overflow-x-auto border-t border-border px-4 py-3 md:hidden">
+        {categories.map((category) => (
+          <Link key={category.id} href={`/categoria/${category.slug}`} data-testid={TESTIDS.headerCategoryLink} data-slug={category.slug} className="shrink-0 font-sans text-xs font-medium tracking-[0.06em] text-[#5C4A46] hover:text-primary">
+            {category.name}
+          </Link>
+        ))}
+      </nav>
+      <div className="border-border border-t px-4 py-2 sm:hidden">
         <Suspense fallback={null}>
           <SearchBox />
         </Suspense>

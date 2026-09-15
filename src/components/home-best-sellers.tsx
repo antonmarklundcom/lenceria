@@ -1,115 +1,19 @@
-"use client";
-
-import { useEffect, useRef, useState } from "react";
-
+import type { CSSProperties } from "react";
+import Link from "next/link";
 import { ProductCard } from "@/components/product-card";
-import { useInView } from "@/hooks/use-in-view";
 import type { CatalogProduct } from "@/db/queries";
 import { t } from "@/i18n";
 
-/**
- * La grilla de destacados de la home, en carrusel horizontal. La pestaña
- * "conjuntos" sólo existe si esa categoría trajo productos — nada de mostrar
- * una pestaña que lleva a una lista vacía.
- */
-export function HomeBestSellers({
-  destacados,
-  conjuntos,
-}: {
-  destacados: CatalogProduct[];
-  conjuntos: CatalogProduct[];
-}) {
-  const { ref, isVisible } = useInView<HTMLElement>();
-  const [tab, setTab] = useState<"destacados" | "conjuntos">("destacados");
-  const scrollRef = useRef<HTMLDivElement>(null);
-  const [scrollProgress, setScrollProgress] = useState(0);
-
-  const hasConjuntos = conjuntos.length > 0;
-  const products = tab === "conjuntos" && hasConjuntos ? conjuntos : destacados;
-
-  useEffect(() => {
-    const node = scrollRef.current;
-    if (!node) return;
-
-    const onWheel = (event: WheelEvent) => {
-      if (Math.abs(event.deltaY) > Math.abs(event.deltaX)) {
-        event.preventDefault();
-        node.scrollLeft += event.deltaY;
-      }
-    };
-
-    const onScroll = () => {
-      const max = node.scrollWidth - node.clientWidth;
-      setScrollProgress(max > 0 ? node.scrollLeft / max : 0);
-    };
-
-    node.addEventListener("wheel", onWheel, { passive: false });
-    node.addEventListener("scroll", onScroll);
-    return () => {
-      node.removeEventListener("wheel", onWheel);
-      node.removeEventListener("scroll", onScroll);
-    };
-  }, [tab]);
-
-  if (products.length === 0) return null;
-
-  return (
-    <section
-      ref={ref}
-      className={`bg-background px-4 py-12 transition-all duration-800 sm:px-6 sm:py-16 lg:px-10 ${
-        isVisible ? "translate-y-0 opacity-100" : "translate-y-6 opacity-0"
-      }`}
-    >
-      <div className="mb-8 flex items-center gap-8 sm:mb-10 sm:gap-12">
-        <button
-          type="button"
-          onClick={() => setTab("destacados")}
-          className={`flex items-center gap-2 font-serif text-2xl transition-colors sm:text-4xl md:text-5xl ${
-            tab === "destacados" ? "text-foreground" : "text-muted-foreground/60 hover:text-muted-foreground"
-          }`}
-        >
-          {t("home.destacados").toLowerCase()}
-          {tab === "destacados" && (
-            <span key="dot-destacados" className="bg-primary animate-scale-in size-5 rounded-full sm:size-6" />
-          )}
-        </button>
-        {hasConjuntos ? (
-          <button
-            type="button"
-            onClick={() => setTab("conjuntos")}
-            className={`flex items-center gap-2 font-serif text-2xl transition-colors sm:text-4xl md:text-5xl ${
-              tab === "conjuntos" ? "text-foreground" : "text-muted-foreground/60 hover:text-muted-foreground"
-            }`}
-          >
-            conjuntos
-            {tab === "conjuntos" && (
-              <span key="dot-conjuntos" className="bg-primary animate-scale-in size-5 rounded-full sm:size-6" />
-            )}
-          </button>
-        ) : null}
-      </div>
-
-      <div ref={scrollRef} className="scrollbar-hide flex gap-4 overflow-x-auto pb-1">
-        {products.map((product, index) => (
-          <div
-            key={product.id}
-            className={`w-[220px] flex-shrink-0 transition-all duration-500 sm:w-[240px] md:w-[260px] ${
-              isVisible ? "translate-y-0 opacity-100" : "translate-y-2 opacity-0"
-            }`}
-            style={{ transitionDelay: `${200 + index * 80}ms` }}
-          >
-            <ProductCard product={product} priority={index < 4} />
-          </div>
-        ))}
-      </div>
-
-      <div className="border-border relative mx-auto mt-8 h-[2px] w-full max-w-[280px] rounded-full bg-transparent sm:mt-10">
-        <div className="bg-muted absolute inset-0 rounded-full" />
-        <div
-          className="bg-primary absolute top-0 left-0 h-[2px] rounded-full"
-          style={{ width: "30%", transform: `translateX(${scrollProgress * (100 / 0.3)}%)` }}
-        />
-      </div>
-    </section>
-  );
+export function HomeBestSellers({ destacados, ctaHref }: { destacados: CatalogProduct[]; ctaHref: string | null }) {
+  return <section className="mx-auto max-w-6xl px-4 pb-16 sm:px-6 lg:pb-24"><div>
+    <div className="mb-8 flex items-center justify-between gap-4"><h2 data-reveal="scroll" className="font-serif text-[30px] font-medium">{t("home.destacados")}</h2>{ctaHref ? <Link href={ctaHref} className="inline-flex min-h-12 items-center text-[11px] uppercase tracking-widest text-primary">{t("home.verTodo")}</Link> : null}</div>
+    {destacados.length ? <div className="grid grid-cols-2 gap-x-4 gap-y-8 lg:grid-cols-4 lg:gap-x-6">{destacados.slice(0, 8).map((product, index) => <div data-reveal="card" style={{ "--i": index % 4 } as CSSProperties} key={product.id} className="min-w-0"><ProductCard product={product} /></div>)}</div> : <p className="py-10 text-center text-sm text-muted-foreground">{t("home.sinProductos")}</p>}
+  </div></section>;
+}
+export function HomeConjuntos({ conjuntos }: { conjuntos: CatalogProduct[] }) {
+  if (!conjuntos.length) return null;
+  return <section className="mx-auto max-w-6xl px-4 pb-16 sm:px-6 lg:pb-24"><div>
+    <div className="mb-8 flex items-center justify-between gap-4"><h2 data-reveal="scroll" className="font-serif text-[30px] font-medium">{t("home.conjuntos")}</h2><Link href="/categoria/conjuntos" className="inline-flex min-h-12 items-center text-[11px] uppercase tracking-widest text-primary">{t("home.verTodos")}</Link></div>
+    <div className="flex snap-x snap-mandatory gap-6 overflow-x-auto pb-5">{conjuntos.map((product, index) => <div data-reveal="card" style={{ "--i": index % 4 } as CSSProperties} key={product.id} className="w-64 shrink-0 snap-start"><ProductCard product={product} /></div>)}</div>
+  </div></section>;
 }

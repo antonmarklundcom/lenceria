@@ -68,8 +68,8 @@ export function CatalogFilters({ brands }: { brands: BrandFacet[] }) {
             value={marca ?? ALL}
             onValueChange={(value) => update("marca", value)}
           >
-            <SelectTrigger className="w-[200px]" aria-label={t("filtros.marca.label")}>
-              <SelectValue placeholder="Marca" />
+            <SelectTrigger className={`w-[200px] rounded-full border border-border ${marca ? "bg-secondary text-accent-foreground" : "bg-white"}`} aria-label={t("filtros.marca.label")}>
+              <SelectValue placeholder={t("filtros.marca.label")} />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value={ALL}>{t("filtros.marca.todas")}</SelectItem>
@@ -87,8 +87,8 @@ export function CatalogFilters({ brands }: { brands: BrandFacet[] }) {
         ) : null}
 
         <Select value={precio ?? ALL} onValueChange={(value) => update("precio", value)}>
-          <SelectTrigger className="w-[200px]" aria-label={t("filtros.precio.label")}>
-            <SelectValue placeholder="Precio" />
+          <SelectTrigger className={`w-[200px] rounded-full border border-border ${precio ? "bg-secondary text-accent-foreground" : "bg-white"}`} aria-label={t("filtros.precio.label")}>
+            <SelectValue placeholder={t("filtros.precio.label")} />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value={ALL}>{t("filtros.precio.cualquiera")}</SelectItem>
@@ -104,8 +104,8 @@ export function CatalogFilters({ brands }: { brands: BrandFacet[] }) {
           value={params.get("orden") ?? "relevancia"}
           onValueChange={(value) => update("orden", value === "relevancia" ? null : value)}
         >
-          <SelectTrigger className="w-[200px]" aria-label={t("filtros.orden.label")}>
-            <SelectValue placeholder="Ordenar" />
+          <SelectTrigger className={`w-[200px] rounded-full border border-border ${params.get("orden") && params.get("orden") !== "relevancia" ? "bg-secondary text-accent-foreground" : "bg-white"}`} aria-label={t("filtros.orden.label")}>
+            <SelectValue placeholder={t("filtros.orden.label")} />
           </SelectTrigger>
           <SelectContent>
             {Object.entries(SORT_LABELS).map(([value, label]) => (
@@ -124,7 +124,7 @@ export function CatalogFilters({ brands }: { brands: BrandFacet[] }) {
               <button
                 type="button"
                 onClick={() => update(filtro.key, null)}
-                className="border-border hover:bg-muted flex items-center gap-1.5 rounded-full border px-3 py-1 text-sm"
+                className="border-border bg-secondary text-accent-foreground hover:bg-secondary/80 flex items-center gap-1.5 rounded-full border px-3 py-1 text-sm"
               >
                 {filtro.label}
                 <X className="size-3.5" aria-hidden />
