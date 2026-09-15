@@ -1,60 +1,19 @@
-"use client";
-
 import Image from "next/image";
 import Link from "next/link";
-
-import { useInView } from "@/hooks/use-in-view";
 import { categoryTileSrc, categoryTileAlt } from "@/lib/images";
+import { HomeFade } from "@/components/home-video-hero";
+import { t } from "@/i18n";
 
-// Fotografías en public/img, generadas por el pipeline webimg.
-
-function CategoryTile({ name, slug }: { name: string; slug: string }) {
-  return (
-    <div className="group relative min-h-[400px] overflow-hidden p-6 sm:min-h-[500px] sm:p-8 md:min-h-[750px] md:p-12">
-      <Image
-        src={categoryTileSrc(slug)}
-        alt={categoryTileAlt(slug)}
-        fill
-        sizes="(max-width: 768px) 100vw, 33vw"
-        className="object-cover transition-transform duration-700 group-hover:scale-105"
-      />
-      <div className="absolute inset-0 bg-black/30 transition-colors duration-500 group-hover:bg-black/40" />
-
-      <div className="relative flex h-full flex-col items-start justify-between">
-        <span
-          className="font-serif text-5xl font-medium text-white transition-transform duration-500 group-hover:-translate-y-0.5 sm:text-6xl md:text-7xl lg:text-8xl"
-          style={{ writingMode: "vertical-lr", transform: "rotate(180deg)" }}
-        >
-          {name}
-        </span>
-
-        <Link href={`/categoria/${slug}`} className="btn-primary rounded-full bg-white px-8 py-3 text-sm text-black">
-          comprar {name.toLowerCase()}
-        </Link>
-      </div>
+export function HomeCategoryShowcase({ categories }: { categories: readonly { id: number; slug: string; name: string }[] }) {
+  return <section className="mx-auto max-w-6xl px-4 py-16 sm:px-6 lg:py-20"><HomeFade>
+    <h2 className="font-serif text-[30px] font-medium">{t("home.categorias.titulo")}</h2>
+    <p className="mt-2 text-sm text-muted-foreground">{t("home.categorias.texto")}</p>
+    <div className="mt-8 grid grid-cols-2 gap-4 lg:grid-cols-4 lg:gap-6">
+      {categories.map((category) => <Link key={category.id} href={`/categoria/${category.slug}`} className="relative aspect-[4/5] overflow-hidden rounded-2xl bg-secondary">
+        <Image src={categoryTileSrc(category.slug)} alt={categoryTileAlt(category.slug)} fill sizes="(min-width: 1024px) 270px, 50vw" className="object-cover" />
+        <div aria-hidden className="absolute inset-0 bg-gradient-to-t from-black/65 via-transparent to-transparent" />
+        <span className="absolute inset-x-0 bottom-0 p-4 text-xs uppercase tracking-[0.06em] text-white sm:p-5">{category.name}</span>
+      </Link>)}
     </div>
-  );
-}
-
-export function HomeCategoryShowcase({
-  categories,
-}: {
-  categories: readonly { id: number; slug: string; name: string }[];
-}) {
-  const { ref, isVisible } = useInView<HTMLElement>();
-
-  if (categories.length === 0) return null;
-
-  return (
-    <section
-      ref={ref}
-      className={`grid grid-cols-1 bg-black text-white transition-all duration-1000 md:grid-cols-3 ${
-        isVisible ? "translate-y-0 opacity-100" : "translate-y-12 opacity-0"
-      }`}
-    >
-      {categories.map((category) => (
-        <CategoryTile key={category.id} name={category.name} slug={category.slug} />
-      ))}
-    </section>
-  );
+  </HomeFade></section>;
 }
