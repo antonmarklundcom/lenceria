@@ -1,18 +1,22 @@
 import Link from "next/link";
 
 import { PriceTag } from "@/components/price-tag";
+import { RatingStars, formatRating } from "@/components/rating-stars";
 import { ProductImage } from "@/components/product-image";
 import { StockBadge } from "@/components/stock-badge";
 import type { CatalogProduct } from "@/db/queries";
-import { t } from "@/i18n";
+import { t, tPlural } from "@/i18n";
 import { TESTIDS } from "@/lib/testids";
 
 export function ProductCard({
   product,
   priority = false,
+  showRating = false,
 }: {
   product: CatalogProduct;
   priority?: boolean;
+  /** Estrellas bajo el nombre (Ajustes → Vidriera); las páginas de listado lo pasan. */
+  showRating?: boolean;
 }) {
   // El precio "desde" es el de la variante más barata disponible; si no hay
   // ninguna con stock, igual mostramos el más barato para no dejar el card mudo.
@@ -43,6 +47,13 @@ export function ProductCard({
       <div className="mt-3 flex flex-1 flex-col gap-1 text-left">
         <p className="text-muted-foreground text-[9px] uppercase tracking-[0.14em]">{product.brand ?? product.categoryName}</p>
         <h3 className="line-clamp-2 font-sans text-sm">{product.name}</h3>
+        {showRating && product.rating && product.rating.count >= 1 ? (
+          <p className="text-muted-foreground flex items-center gap-1 text-xs">
+            <RatingStars value={product.rating.average} size={12} />
+            <span aria-hidden>{formatRating(product.rating.average)}</span>
+            <span>({tPlural("catalogo.resenas", product.rating.count)})</span>
+          </p>
+        ) : null}
 
         <div className="mt-auto flex flex-col items-start gap-1.5 pt-2">
           {shown ? <PriceTag pricePyg={shown.pricePyg} compareAtPyg={shown.compareAtPyg} size="sm" className="[&_.font-semibold]:font-bold [&_.text-emerald-400]:text-accent-foreground" /> : null}

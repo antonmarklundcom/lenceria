@@ -1,5 +1,7 @@
 import type { NextConfig } from "next";
 
+import { ACTION_BODY_MAX_BYTES } from "./src/lib/upload-limits";
+
 /**
  * Cabeceras de seguridad que no dependen del request (PLAN.md 4.9).
  *
@@ -70,6 +72,12 @@ const nextConfig: NextConfig = {
     // cuenta: un solo worker evita que un deploy tire la cuenta entera.
     // Mismo fix que vendercrm PR #84, propia.node PR #81, trabajo PR #82.
     cpus: 1,
+    // Los comprobantes, las fotos y la planilla suben por server actions, y
+    // Next corta ese body en 1 MB (y el proxy en 10 MB) si no se le dice otra
+    // cosa: una foto de comprobante de 2 MB terminaba en un 413 y en la
+    // pantalla de error. El techo sale de `src/lib/upload-limits.ts`.
+    serverActions: { bodySizeLimit: ACTION_BODY_MAX_BYTES },
+    proxyClientMaxBodySize: ACTION_BODY_MAX_BYTES,
   },
   // `X-Powered-By: Next.js` regala la versión exacta del framework.
   poweredByHeader: false,
