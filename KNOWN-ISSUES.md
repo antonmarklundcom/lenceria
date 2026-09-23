@@ -22,8 +22,10 @@ no lo va a ver. Al escribir una resta así, castear los operandos sin signo a
 `GREATEST(..., 0)` solo no evita el error porque la resta se evalúa antes.
 `consumeReservations` tuvo ese bug y se arregló en esta fase (C2 de la revisión
 2026-09-13), con un test de integración para una reserva mayor al stock físico.
-No confiar en que el verde local signifique algo. Arreglo de fondo, si alguna vez molesta lo
-suficiente: correr la suite contra MySQL 8 en local (Docker) en vez de MariaDB.
+`docker-compose.yml` ya levanta MySQL 8, así que la trampa sólo aplica cuando
+`TEST_DATABASE_URL` apunta a una MariaDB nativa. La suite lo avisa al arrancar
+(`tests/global-setup.ts` mira `SELECT VERSION()`): con ese aviso, el verde local
+no dice nada sobre estas restas.
 
 ## El backup se sube como un solo archivo — fase O8
 
@@ -74,3 +76,15 @@ todavía no se declara compatible, no un error para "adaptar".
 Arreglo: reintentar `typescript` 7 cuando `typescript-eslint` cierre el
 issue 10940 y publique una versión que declare soporte para TS >= 7.1 (o la
 serie que sea). Hasta entonces, `typescript` se queda en 5.9.x.
+
+## Presupuesto de JS: producto y checkout subieron el techo — 2026-09-23
+
+`tests/e2e/presupuesto.spec.ts` bloqueó el PR de reseñas y favoritos por
+0,2–0,3 KB: producto 229.2 KB > 229, checkout 223.3 KB > 223. Lo nuevo en el
+cliente es el link de favoritos del header (en todas las páginas, con su store
+de `zustand/persist`) y el corazón de la ficha y la tarjeta. Según la regla del
+spec, el techo pasó al valor medido + 10% (producto 252, checkout 246) en vez de
+achicar código desde el test. Si se quiere recuperar ese margen, el candidato es
+cargar `wishlist-header-link` con `next/dynamic` (no hace falta en el primer
+render) — fase aparte.
+

@@ -78,9 +78,8 @@ describe.skipIf(!hasTestDb)("createOrder → aviso 'confirmado' a la compradora"
     expect(body.template.name).toBe("cliente_confirmado");
     expect(body.template.components[0].parameters[0].text).toContain(order.orderNumber);
 
-    // El evento se graba recién DESPUÉS de que Meta responde (fire-and-forget
-    // desde createOrder), así que se espera igual que al fetch: leerlo apenas
-    // se llamó fetch pierde la carrera en un runner lento.
+    // El evento se escribe después de que `fetch` responde, en el mismo
+    // disparo sin await: esperarlo igual que al fetch, no leerlo una vez.
     await vi.waitFor(
       async () => {
         const rows = await getTestDb()
