@@ -1,0 +1,452 @@
+{
+  "_notes": {
+    "generated": "2026-09-23",
+    "model_rule": "Producto sin personas: gpt_image_2_5 variant sunburst, medium, 1k (0.5 créditos). Personas con lencería: soul_2 1.5k (0.12 créditos), porque Sunburst las bloquea como nsfw aunque la modelo esté tapada (probado 2026-09-23, dos intentos, reembolsados). Mismo estilo que las 30 fotos del 13-14/09 en scripts/fotos-catalogo.json.",
+    "cost_preflight": "sunburst medium 1k 4:5 = 0.5; soul_2 1.5k 3:4 = 0.12",
+    "actual_spend_credits": 9.16,
+    "ledger_checked": "2026-09-23: 8 × GPT Image 2.5 Sunburst 0.5 + 3 × Higgsfield Soul V2 0.12; 2 Sunburst nsfw reembolsados; segunda tanda: 10 × Higgsfield Soul V2 0.12; tercera tanda: 10 × Higgsfield Soul V2 0.12; cuarta tanda: 20 × Higgsfield Soul V2 0.12 (fotos de modelo de los 10 productos originales, estilo nuevo)",
+    "download_status": "No se descargan en la sesión (el CDN está bloqueado en el entorno). Las de catálogo van a Cloudinary con `pnpm fotos:catalogo` (Cloudinary las baja de la URL). Las de anuncio se bajan desde Higgsfield.",
+    "model_look": "Modelos: paraguaya de rasgos europeo-guaraníes, piel oliva clara, pelo castaño oscuro, maquillaje natural, figura delgada tipo reloj de arena con busto generoso (no con sobrepeso), sin tatuajes ni piercings. Ropa siempre opaca y con corpiño con relleno: nada que se transparente (pedido de Anton, 2026-09-23; una imagen borrada por eso). Cada escena se generó 2 veces: \"catalogo\" es la elegida, \"alternativa\" la otra."
+  },
+  "images": [
+    {
+      "id": "pack-diario-portada",
+      "uso": "catalogo",
+      "producto": "pack-diario-sin-costura",
+      "model": "gpt_image_2_5 sunburst medium 1k",
+      "ratio": "4:5",
+      "job_id": "8b017ba1-9cd7-4f99-b676-cd5b32a888f4",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_349VrHjTFIpx9q71lpfpAXcLXvR/hf_20260923_162358_8b017ba1-9cd7-4f99-b676-cd5b32a888f4.png"
+    },
+    {
+      "id": "pack-diario-modelo-ventana",
+      "uso": "reemplazada 2026-09-23 (modelo sin el look pedido); no usar",
+      "producto": "pack-diario-sin-costura",
+      "model": "soul_2 1.5k",
+      "ratio": "3:4",
+      "job_id": "603263c1-5111-49b7-9d94-60ec783d523b",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_349VrHjTFIpx9q71lpfpAXcLXvR/hf_20260923_162450_603263c1-5111-49b7-9d94-60ec783d523b.png"
+    },
+    {
+      "id": "pack-diario-modelo-patio",
+      "uso": "reemplazada 2026-09-23 (modelo sin el look pedido); no usar",
+      "producto": "pack-diario-sin-costura",
+      "model": "soul_2 1.5k",
+      "ratio": "3:4",
+      "job_id": "3c47d2bc-5b2b-4927-89ec-3c4283582c38",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_349VrHjTFIpx9q71lpfpAXcLXvR/hf_20260923_162530_3c47d2bc-5b2b-4927-89ec-3c4283582c38.png"
+    },
+    {
+      "id": "pack-diario-detalle",
+      "uso": "catalogo",
+      "producto": "pack-diario-sin-costura",
+      "model": "gpt_image_2_5 sunburst medium 1k",
+      "ratio": "4:5",
+      "job_id": "87e8a259-1d57-4cd7-9fc6-efc42c88757e",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_349VrHjTFIpx9q71lpfpAXcLXvR/hf_20260923_162531_87e8a259-1d57-4cd7-9fc6-efc42c88757e.png"
+    },
+    {
+      "id": "caja-regalo-abierta",
+      "uso": "catalogo",
+      "producto": "caja-regalo-nanduti",
+      "model": "gpt_image_2_5 sunburst medium 1k",
+      "ratio": "4:5",
+      "job_id": "78a9ddfd-5156-42a4-aca0-5e1792553a54",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_349VrHjTFIpx9q71lpfpAXcLXvR/hf_20260923_162359_78a9ddfd-5156-42a4-aca0-5e1792553a54.png"
+    },
+    {
+      "id": "caja-regalo-modelo",
+      "uso": "reemplazada 2026-09-23 (modelo sin el look pedido); no usar",
+      "producto": "caja-regalo-nanduti",
+      "model": "soul_2 1.5k",
+      "ratio": "3:4",
+      "job_id": "968839a3-3b96-4876-ac0e-217dd282ff44",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_349VrHjTFIpx9q71lpfpAXcLXvR/hf_20260923_162450_968839a3-3b96-4876-ac0e-217dd282ff44.png"
+    },
+    {
+      "id": "caja-regalo-cerrada",
+      "uso": "catalogo",
+      "producto": "caja-regalo-nanduti",
+      "model": "gpt_image_2_5 sunburst medium 1k",
+      "ratio": "4:5",
+      "job_id": "78fa28c4-491d-44c6-9ea3-3b3f1124eaa4",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_349VrHjTFIpx9q71lpfpAXcLXvR/hf_20260923_162529_78fa28c4-491d-44c6-9ea3-3b3f1124eaa4.png"
+    },
+    {
+      "id": "caja-regalo-kimono",
+      "uso": "reserva: futura Caja Regalo Mburucuyá o anuncio",
+      "producto": "-",
+      "model": "gpt_image_2_5 sunburst medium 1k",
+      "ratio": "4:5",
+      "job_id": "60a78191-e72b-45da-935b-67b6bff79546",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_349VrHjTFIpx9q71lpfpAXcLXvR/hf_20260923_162528_60a78191-e72b-45da-935b-67b6bff79546.png"
+    },
+    {
+      "id": "anuncio-conjunto-nanduti",
+      "uso": "anuncio Meta 4:5 (tercio superior libre para texto)",
+      "producto": "conjunto-nanduti",
+      "model": "gpt_image_2_5 sunburst medium 1k",
+      "ratio": "4:5",
+      "job_id": "b11da568-6ce0-4aac-b0e1-f07318ba30a7",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_349VrHjTFIpx9q71lpfpAXcLXvR/hf_20260923_162528_b11da568-6ce0-4aac-b0e1-f07318ba30a7.png"
+    },
+    {
+      "id": "anuncio-pack-diario",
+      "uso": "anuncio Meta 4:5 (tercio superior libre para texto)",
+      "producto": "pack-diario-sin-costura",
+      "model": "gpt_image_2_5 sunburst medium 1k",
+      "ratio": "4:5",
+      "job_id": "bc18b076-37a8-4978-8466-db3c623fffe8",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_349VrHjTFIpx9q71lpfpAXcLXvR/hf_20260923_162528_bc18b076-37a8-4978-8466-db3c623fffe8.png"
+    },
+    {
+      "id": "anuncio-liga-nupcial",
+      "uso": "anuncio Meta 4:5 (tercio superior libre para texto)",
+      "producto": "liga-nupcial-nanduti",
+      "model": "gpt_image_2_5 sunburst medium 1k",
+      "ratio": "4:5",
+      "job_id": "7f4d1272-ea05-4af8-80a0-f91fc3f9bfe8",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_349VrHjTFIpx9q71lpfpAXcLXvR/hf_20260923_162528_7f4d1272-ea05-4af8-80a0-f91fc3f9bfe8.png"
+    },
+    {
+      "id": "pack-diario-modelo-ventana-v2",
+      "uso": "reemplazada 2026-09-23 (figura muy curvilínea, tela no opaca); no usar",
+      "producto": "pack-diario-sin-costura",
+      "model": "soul_2 1.5k",
+      "ratio": "3:4",
+      "job_id": "d732d0ce-fc98-4593-aeac-aef6c2203ffc",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_349VrHjTFIpx9q71lpfpAXcLXvR/hf_20260923_162816_d732d0ce-fc98-4593-aeac-aef6c2203ffc.png"
+    },
+    {
+      "id": "pack-diario-modelo-ventana-v2-alt",
+      "uso": "reemplazada 2026-09-23 (figura muy curvilínea, tela no opaca); no usar",
+      "producto": "pack-diario-sin-costura",
+      "model": "soul_2 1.5k",
+      "ratio": "3:4",
+      "job_id": "6126a489-f932-4d41-9f07-6298756e939d",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_349VrHjTFIpx9q71lpfpAXcLXvR/hf_20260923_162817_6126a489-f932-4d41-9f07-6298756e939d.png"
+    },
+    {
+      "id": "pack-diario-modelo-patio-v2",
+      "uso": "reemplazada 2026-09-23 (figura muy curvilínea, tela no opaca); no usar",
+      "producto": "pack-diario-sin-costura",
+      "model": "soul_2 1.5k",
+      "ratio": "3:4",
+      "job_id": "def626ff-a915-4fd5-9414-02756f65fb48",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_349VrHjTFIpx9q71lpfpAXcLXvR/hf_20260923_162816_def626ff-a915-4fd5-9414-02756f65fb48.png"
+    },
+    {
+      "id": "pack-diario-modelo-patio-v2-alt",
+      "uso": "reemplazada 2026-09-23 (figura muy curvilínea, tela no opaca); no usar",
+      "producto": "pack-diario-sin-costura",
+      "model": "soul_2 1.5k",
+      "ratio": "3:4",
+      "job_id": "7dafe450-583c-42e4-b438-537f5cf9b982",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_349VrHjTFIpx9q71lpfpAXcLXvR/hf_20260923_162817_7dafe450-583c-42e4-b438-537f5cf9b982.png"
+    },
+    {
+      "id": "pack-diario-modelo-negro",
+      "uso": "reemplazada 2026-09-23 (figura muy curvilínea, tela no opaca); no usar",
+      "producto": "pack-diario-sin-costura",
+      "model": "soul_2 1.5k",
+      "ratio": "3:4",
+      "job_id": "ef29e0c9-3aa3-4e13-8bb0-dd488a4fae96",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_349VrHjTFIpx9q71lpfpAXcLXvR/hf_20260923_162816_ef29e0c9-3aa3-4e13-8bb0-dd488a4fae96.png"
+    },
+    {
+      "id": "pack-diario-modelo-negro-alt",
+      "uso": "reemplazada 2026-09-23 (figura muy curvilínea, tela no opaca); no usar",
+      "producto": "pack-diario-sin-costura",
+      "model": "soul_2 1.5k",
+      "ratio": "3:4",
+      "job_id": "e02d6cb8-cab2-409e-9928-eed3d239da50",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_349VrHjTFIpx9q71lpfpAXcLXvR/hf_20260923_162816_e02d6cb8-cab2-409e-9928-eed3d239da50.png"
+    },
+    {
+      "id": "caja-regalo-modelo-v2",
+      "uso": "BORRADA por Anton (se transparentaba): no usar",
+      "producto": "caja-regalo-nanduti",
+      "model": "soul_2 1.5k",
+      "ratio": "3:4",
+      "job_id": "90566498-3ce5-4524-b807-3d880a28a9c0",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_349VrHjTFIpx9q71lpfpAXcLXvR/hf_20260923_162817_90566498-3ce5-4524-b807-3d880a28a9c0.png"
+    },
+    {
+      "id": "caja-regalo-modelo-v2-alt",
+      "uso": "reemplazada 2026-09-23 (figura muy curvilínea, tela no opaca); no usar",
+      "producto": "caja-regalo-nanduti",
+      "model": "soul_2 1.5k",
+      "ratio": "3:4",
+      "job_id": "590ab848-9ac9-4529-9e45-17b5a2a63ada",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_349VrHjTFIpx9q71lpfpAXcLXvR/hf_20260923_162817_590ab848-9ac9-4529-9e45-17b5a2a63ada.png"
+    },
+    {
+      "id": "caja-regalo-modelo-abrazo",
+      "uso": "reemplazada 2026-09-23 (figura muy curvilínea, tela no opaca); no usar",
+      "producto": "caja-regalo-nanduti",
+      "model": "soul_2 1.5k",
+      "ratio": "3:4",
+      "job_id": "4dd5e0d7-b928-4d21-a4da-9c2eabaaa36d",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_349VrHjTFIpx9q71lpfpAXcLXvR/hf_20260923_162816_4dd5e0d7-b928-4d21-a4da-9c2eabaaa36d.png"
+    },
+    {
+      "id": "caja-regalo-modelo-abrazo-alt",
+      "uso": "reemplazada 2026-09-23 (figura muy curvilínea, tela no opaca); no usar",
+      "producto": "caja-regalo-nanduti",
+      "model": "soul_2 1.5k",
+      "ratio": "3:4",
+      "job_id": "237f8a08-0687-4e7b-a4fb-fab06b1f9418",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_349VrHjTFIpx9q71lpfpAXcLXvR/hf_20260923_162816_237f8a08-0687-4e7b-a4fb-fab06b1f9418.png"
+    },
+    {
+      "id": "pack-diario-modelo-ventana-v3",
+      "uso": "catalogo",
+      "producto": "pack-diario-sin-costura",
+      "model": "soul_2 1.5k",
+      "ratio": "3:4",
+      "job_id": "5ac41cbc-16d5-4a40-8785-c1ada2495e83",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_349VrHjTFIpx9q71lpfpAXcLXvR/hf_20260923_164047_5ac41cbc-16d5-4a40-8785-c1ada2495e83.png"
+    },
+    {
+      "id": "pack-diario-modelo-ventana-v3-alt",
+      "uso": "alternativa",
+      "producto": "pack-diario-sin-costura",
+      "model": "soul_2 1.5k",
+      "ratio": "3:4",
+      "job_id": "887a2b19-0e71-4894-8381-8240d1a3b798",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_349VrHjTFIpx9q71lpfpAXcLXvR/hf_20260923_164048_887a2b19-0e71-4894-8381-8240d1a3b798.png"
+    },
+    {
+      "id": "pack-diario-modelo-patio-v3",
+      "uso": "catalogo",
+      "producto": "pack-diario-sin-costura",
+      "model": "soul_2 1.5k",
+      "ratio": "3:4",
+      "job_id": "9516b458-dc12-4ec2-91b4-a8632382b270",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_349VrHjTFIpx9q71lpfpAXcLXvR/hf_20260923_164047_9516b458-dc12-4ec2-91b4-a8632382b270.png"
+    },
+    {
+      "id": "pack-diario-modelo-patio-v3-alt",
+      "uso": "alternativa",
+      "producto": "pack-diario-sin-costura",
+      "model": "soul_2 1.5k",
+      "ratio": "3:4",
+      "job_id": "bc64e7b8-9288-452f-af7c-bda89b26c6d1",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_349VrHjTFIpx9q71lpfpAXcLXvR/hf_20260923_164047_bc64e7b8-9288-452f-af7c-bda89b26c6d1.png"
+    },
+    {
+      "id": "pack-diario-modelo-negro-v3",
+      "uso": "catalogo",
+      "producto": "pack-diario-sin-costura",
+      "model": "soul_2 1.5k",
+      "ratio": "3:4",
+      "job_id": "6000dac8-8066-4049-b0cc-3a0c59720e04",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_349VrHjTFIpx9q71lpfpAXcLXvR/hf_20260923_164046_6000dac8-8066-4049-b0cc-3a0c59720e04.png"
+    },
+    {
+      "id": "pack-diario-modelo-negro-v3-alt",
+      "uso": "alternativa",
+      "producto": "pack-diario-sin-costura",
+      "model": "soul_2 1.5k",
+      "ratio": "3:4",
+      "job_id": "8d6a5c96-8a6f-4aa9-ac61-6a936caa6949",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_349VrHjTFIpx9q71lpfpAXcLXvR/hf_20260923_164047_8d6a5c96-8a6f-4aa9-ac61-6a936caa6949.png"
+    },
+    {
+      "id": "caja-regalo-modelo-v3",
+      "uso": "catalogo",
+      "producto": "caja-regalo-nanduti",
+      "model": "soul_2 1.5k",
+      "ratio": "3:4",
+      "job_id": "b1539e21-ddf8-4cc8-b011-1c4fa67cc8d1",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_349VrHjTFIpx9q71lpfpAXcLXvR/hf_20260923_164047_b1539e21-ddf8-4cc8-b011-1c4fa67cc8d1.png"
+    },
+    {
+      "id": "caja-regalo-modelo-v3-alt",
+      "uso": "alternativa",
+      "producto": "caja-regalo-nanduti",
+      "model": "soul_2 1.5k",
+      "ratio": "3:4",
+      "job_id": "d816a8eb-d51f-4402-abf6-5e242080a7b6",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_349VrHjTFIpx9q71lpfpAXcLXvR/hf_20260923_164047_d816a8eb-d51f-4402-abf6-5e242080a7b6.png"
+    },
+    {
+      "id": "caja-regalo-modelo-abrazo-v3",
+      "uso": "catalogo",
+      "producto": "caja-regalo-nanduti",
+      "model": "soul_2 1.5k",
+      "ratio": "3:4",
+      "job_id": "31d3d254-7e5f-42ee-bf6e-0b448e1c796a",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_349VrHjTFIpx9q71lpfpAXcLXvR/hf_20260923_164047_31d3d254-7e5f-42ee-bf6e-0b448e1c796a.png"
+    },
+    {
+      "id": "caja-regalo-modelo-abrazo-v3-alt",
+      "uso": "alternativa",
+      "producto": "caja-regalo-nanduti",
+      "model": "soul_2 1.5k",
+      "ratio": "3:4",
+      "job_id": "8c546cba-f8e1-4fcd-8e6c-8c7599c6e321",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_349VrHjTFIpx9q71lpfpAXcLXvR/hf_20260923_164046_8c546cba-f8e1-4fcd-8e6c-8c7599c6e321.png"
+    },
+    {
+      "id": "modelo-v3-d2902f3b",
+      "uso": "catalogo (reemplaza 91ae2cb4, foto del 14/09)",
+      "model": "soul_2 1.5k",
+      "ratio": "3:4",
+      "job_id": "d2902f3b-00a4-4050-bd64-c5c30e359f5e",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_349VrHjTFIpx9q71lpfpAXcLXvR/hf_20260923_165432_d2902f3b-00a4-4050-bd64-c5c30e359f5e.png"
+    },
+    {
+      "id": "modelo-v3-d932ad64",
+      "uso": "catalogo (reemplaza dc433af3, foto del 14/09)",
+      "model": "soul_2 1.5k",
+      "ratio": "3:4",
+      "job_id": "d932ad64-2a75-43d5-b6a1-38d0b9a0393d",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_349VrHjTFIpx9q71lpfpAXcLXvR/hf_20260923_165434_d932ad64-2a75-43d5-b6a1-38d0b9a0393d.png"
+    },
+    {
+      "id": "modelo-v3-209b70d6",
+      "uso": "catalogo (reemplaza 4b492be4, foto del 14/09)",
+      "model": "soul_2 1.5k",
+      "ratio": "3:4",
+      "job_id": "209b70d6-7fd7-4f88-bff3-780f1873ae52",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_349VrHjTFIpx9q71lpfpAXcLXvR/hf_20260923_165434_209b70d6-7fd7-4f88-bff3-780f1873ae52.png"
+    },
+    {
+      "id": "modelo-v3-467b2dc6",
+      "uso": "catalogo (reemplaza bd36b789, foto del 14/09)",
+      "model": "soul_2 1.5k",
+      "ratio": "3:4",
+      "job_id": "467b2dc6-ce12-463c-913d-0bd9653defbb",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_349VrHjTFIpx9q71lpfpAXcLXvR/hf_20260923_165433_467b2dc6-ce12-463c-913d-0bd9653defbb.png"
+    },
+    {
+      "id": "modelo-v3-31970ace",
+      "uso": "catalogo (reemplaza 0571a00a, foto del 14/09)",
+      "model": "soul_2 1.5k",
+      "ratio": "3:4",
+      "job_id": "31970ace-9d6a-416e-b96c-f5826a55b324",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_349VrHjTFIpx9q71lpfpAXcLXvR/hf_20260923_165433_31970ace-9d6a-416e-b96c-f5826a55b324.png"
+    },
+    {
+      "id": "modelo-v3-753da14a",
+      "uso": "catalogo (reemplaza 11bccfc3, foto del 14/09)",
+      "model": "soul_2 1.5k",
+      "ratio": "3:4",
+      "job_id": "753da14a-7fb1-48ad-8f52-10454ef9e4e6",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_349VrHjTFIpx9q71lpfpAXcLXvR/hf_20260923_165433_753da14a-7fb1-48ad-8f52-10454ef9e4e6.png"
+    },
+    {
+      "id": "modelo-v3-b86530ba",
+      "uso": "catalogo (reemplaza f77a4ec8, foto del 14/09)",
+      "model": "soul_2 1.5k",
+      "ratio": "3:4",
+      "job_id": "b86530ba-bf56-4591-96d8-a75735b08a94",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_349VrHjTFIpx9q71lpfpAXcLXvR/hf_20260923_165432_b86530ba-bf56-4591-96d8-a75735b08a94.png"
+    },
+    {
+      "id": "modelo-v3-1cb6e5c7",
+      "uso": "catalogo (reemplaza 4c7e840e, foto del 14/09)",
+      "model": "soul_2 1.5k",
+      "ratio": "3:4",
+      "job_id": "1cb6e5c7-118c-450b-8c4f-1647a6c646d0",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_349VrHjTFIpx9q71lpfpAXcLXvR/hf_20260923_165433_1cb6e5c7-118c-450b-8c4f-1647a6c646d0.png"
+    },
+    {
+      "id": "modelo-v3-45282eba",
+      "uso": "catalogo (reemplaza 3c27e5a2, foto del 14/09)",
+      "model": "soul_2 1.5k",
+      "ratio": "3:4",
+      "job_id": "45282eba-a637-4e20-b4b6-e95d2fcddeba",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_349VrHjTFIpx9q71lpfpAXcLXvR/hf_20260923_165434_45282eba-a637-4e20-b4b6-e95d2fcddeba.png"
+    },
+    {
+      "id": "modelo-v3-00eeba7e",
+      "uso": "catalogo (reemplaza b7a63ce3, foto del 14/09)",
+      "model": "soul_2 1.5k",
+      "ratio": "3:4",
+      "job_id": "00eeba7e-c695-4cfc-95d6-9a25a5cd9899",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_349VrHjTFIpx9q71lpfpAXcLXvR/hf_20260923_165433_00eeba7e-c695-4cfc-95d6-9a25a5cd9899.png"
+    },
+    {
+      "id": "modelo-v3-449a543b",
+      "uso": "catalogo (reemplaza c203e1c4, foto del 14/09)",
+      "model": "soul_2 1.5k",
+      "ratio": "3:4",
+      "job_id": "449a543b-60e9-4c65-85a0-43e03be1a317",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_349VrHjTFIpx9q71lpfpAXcLXvR/hf_20260923_165456_449a543b-60e9-4c65-85a0-43e03be1a317.png"
+    },
+    {
+      "id": "modelo-v3-d8d64d7c",
+      "uso": "catalogo (reemplaza 90c646c1, foto del 14/09)",
+      "model": "soul_2 1.5k",
+      "ratio": "3:4",
+      "job_id": "d8d64d7c-4b70-499a-bc7e-3a98577ec83a",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_349VrHjTFIpx9q71lpfpAXcLXvR/hf_20260923_165502_d8d64d7c-4b70-499a-bc7e-3a98577ec83a.png"
+    },
+    {
+      "id": "modelo-v3-76f1ec99",
+      "uso": "catalogo (reemplaza 8a9b373d, foto del 14/09)",
+      "model": "soul_2 1.5k",
+      "ratio": "3:4",
+      "job_id": "76f1ec99-9747-4f7a-b4ff-cf9deac3c95c",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_349VrHjTFIpx9q71lpfpAXcLXvR/hf_20260923_165505_76f1ec99-9747-4f7a-b4ff-cf9deac3c95c.png"
+    },
+    {
+      "id": "modelo-v3-5bf4e751",
+      "uso": "catalogo (reemplaza b8ca8274, foto del 14/09)",
+      "model": "soul_2 1.5k",
+      "ratio": "3:4",
+      "job_id": "5bf4e751-16bd-4305-a2d6-0d90966b0855",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_349VrHjTFIpx9q71lpfpAXcLXvR/hf_20260923_165456_5bf4e751-16bd-4305-a2d6-0d90966b0855.png"
+    },
+    {
+      "id": "modelo-v3-6c08b5a4",
+      "uso": "catalogo (reemplaza 56c66878, foto del 14/09)",
+      "model": "soul_2 1.5k",
+      "ratio": "3:4",
+      "job_id": "6c08b5a4-887b-45c4-a244-32481294fda4",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_349VrHjTFIpx9q71lpfpAXcLXvR/hf_20260923_165453_6c08b5a4-887b-45c4-a244-32481294fda4.png"
+    },
+    {
+      "id": "modelo-v3-5b628f1a",
+      "uso": "catalogo (reemplaza 8b28df6a, foto del 14/09)",
+      "model": "soul_2 1.5k",
+      "ratio": "3:4",
+      "job_id": "5b628f1a-2c59-4bee-8b86-7eb1e754bf21",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_349VrHjTFIpx9q71lpfpAXcLXvR/hf_20260923_165509_5b628f1a-2c59-4bee-8b86-7eb1e754bf21.png"
+    },
+    {
+      "id": "modelo-v3-36f6d092",
+      "uso": "catalogo (reemplaza d4a2669b, foto del 14/09)",
+      "model": "soul_2 1.5k",
+      "ratio": "3:4",
+      "job_id": "36f6d092-e405-41a7-a51e-95c98ee1e7e6",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_349VrHjTFIpx9q71lpfpAXcLXvR/hf_20260923_165505_36f6d092-e405-41a7-a51e-95c98ee1e7e6.png"
+    },
+    {
+      "id": "modelo-v3-51eb5576",
+      "uso": "catalogo (reemplaza 4410d551, foto del 14/09)",
+      "model": "soul_2 1.5k",
+      "ratio": "3:4",
+      "job_id": "51eb5576-b8d1-4258-ac96-a6dc5aec193c",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_349VrHjTFIpx9q71lpfpAXcLXvR/hf_20260923_165455_51eb5576-b8d1-4258-ac96-a6dc5aec193c.png"
+    },
+    {
+      "id": "modelo-v3-4e6f0b97",
+      "uso": "catalogo (reemplaza 484aebd7, foto del 14/09)",
+      "model": "soul_2 1.5k",
+      "ratio": "3:4",
+      "job_id": "4e6f0b97-cc8f-447d-b356-ffb193a8b443",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_349VrHjTFIpx9q71lpfpAXcLXvR/hf_20260923_165505_4e6f0b97-cc8f-447d-b356-ffb193a8b443.png"
+    },
+    {
+      "id": "modelo-v3-86f8d8ab",
+      "uso": "catalogo (reemplaza 82b92cbb, foto del 14/09)",
+      "model": "soul_2 1.5k",
+      "ratio": "3:4",
+      "job_id": "86f8d8ab-b8e5-494d-91c9-5a0bbc87cdd8",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_349VrHjTFIpx9q71lpfpAXcLXvR/hf_20260923_165458_86f8d8ab-b8e5-494d-91c9-5a0bbc87cdd8.png"
+    }
+  ]
+}

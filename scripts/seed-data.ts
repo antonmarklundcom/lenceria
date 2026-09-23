@@ -107,6 +107,22 @@ export const SEED_PRODUCTS: SeedProduct[] = [
     ],
   },
 
+  {
+    slug: 'pack-diario-sin-costura',
+    name: 'Pack Diario x3 sin costura',
+    description:
+      'Tres bombachas tiro alto sin costura, en nude, negro y rosa viejo. Bordes cortados a láser que no marcan bajo la ropa y tela suave que acompaña todo el día.',
+    categorySlug: 'bombachas',
+    brand: TIENDA.nombre,
+    ivaRate: 10,
+    variants: [
+      { sku: 'LI-PAK-S', label: 'Talle S', pricePyg: 89000, onHand: 5 },
+      { sku: 'LI-PAK-M', label: 'Talle M', pricePyg: 89000, onHand: 8 },
+      { sku: 'LI-PAK-L', label: 'Talle L', pricePyg: 89000, onHand: 8 },
+      { sku: 'LI-PAK-XL', label: 'Talle XL', pricePyg: 89000, onHand: 5 },
+    ],
+  },
+
   // --- Camisones y pijamas -------------------------------------------------
   {
     slug: 'camison-luna',
@@ -175,6 +191,20 @@ export const SEED_PRODUCTS: SeedProduct[] = [
     brand: TIENDA.nombre,
     ivaRate: 10,
     variants: [{ sku: 'LI-LIG-U', label: 'Talle único', pricePyg: 60000, onHand: 5 }],
+  },
+  {
+    slug: 'caja-regalo-nanduti',
+    name: 'Caja Regalo Ñandutí',
+    description:
+      'El Conjunto Ñandutí y la Liga Ñandutí en una caja de regalo con papel de seda, cinta de satén y tarjeta para tu dedicatoria. Para el Día de la Madre, un aniversario o una novia.',
+    categorySlug: 'accesorios',
+    brand: TIENDA.nombre,
+    ivaRate: 10,
+    variants: [
+      { sku: 'LI-CAJ-S', label: 'Conjunto talle S', pricePyg: 229000, compareAtPyg: 245000, onHand: 2 },
+      { sku: 'LI-CAJ-M', label: 'Conjunto talle M', pricePyg: 229000, compareAtPyg: 245000, onHand: 3 },
+      { sku: 'LI-CAJ-L', label: 'Conjunto talle L', pricePyg: 229000, compareAtPyg: 245000, onHand: 2 },
+    ],
   },
 ];
 
