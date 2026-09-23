@@ -1,0 +1,202 @@
+{
+  "_notes": {
+    "generated": "2026-09-23",
+    "model_rule": "Producto sin personas: gpt_image_2_5 variant sunburst, medium, 1k (0.5 créditos). Personas con lencería: soul_2 1.5k (0.12 créditos), porque Sunburst las bloquea como nsfw aunque la modelo esté tapada (probado 2026-09-23, dos intentos, reembolsados). Mismo estilo que las 30 fotos del 13-14/09 en scripts/fotos-catalogo.json.",
+    "cost_preflight": "sunburst medium 1k 4:5 = 0.5; soul_2 1.5k 3:4 = 0.12",
+    "actual_spend_credits": 5.56,
+    "ledger_checked": "2026-09-23: 8 × GPT Image 2.5 Sunburst 0.5 + 3 × Higgsfield Soul V2 0.12; 2 Sunburst nsfw reembolsados; segunda tanda: 10 × Higgsfield Soul V2 0.12",
+    "download_status": "No se descargan en la sesión (el CDN está bloqueado en el entorno). Las de catálogo van a Cloudinary con `pnpm fotos:catalogo` (Cloudinary las baja de la URL). Las de anuncio se bajan desde Higgsfield.",
+    "model_look": "Modelos: paraguaya de rasgos mestizos europeo-guaraní, piel oliva clara, pelo castaño oscuro, maquillaje natural, figura curvilínea, sin tatuajes ni piercings (pedido de Anton, 2026-09-23). Cada escena se generó 2 veces: \"catalogo\" es la elegida por defecto, \"alternativa\" la otra."
+  },
+  "images": [
+    {
+      "id": "pack-diario-portada",
+      "uso": "catalogo",
+      "producto": "pack-diario-sin-costura",
+      "model": "gpt_image_2_5 sunburst medium 1k",
+      "ratio": "4:5",
+      "job_id": "8b017ba1-9cd7-4f99-b676-cd5b32a888f4",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_349VrHjTFIpx9q71lpfpAXcLXvR/hf_20260923_162358_8b017ba1-9cd7-4f99-b676-cd5b32a888f4.png"
+    },
+    {
+      "id": "pack-diario-modelo-ventana",
+      "uso": "reemplazada 2026-09-23 (modelo sin el look pedido); no usar",
+      "producto": "pack-diario-sin-costura",
+      "model": "soul_2 1.5k",
+      "ratio": "3:4",
+      "job_id": "603263c1-5111-49b7-9d94-60ec783d523b",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_349VrHjTFIpx9q71lpfpAXcLXvR/hf_20260923_162450_603263c1-5111-49b7-9d94-60ec783d523b.png"
+    },
+    {
+      "id": "pack-diario-modelo-patio",
+      "uso": "reemplazada 2026-09-23 (modelo sin el look pedido); no usar",
+      "producto": "pack-diario-sin-costura",
+      "model": "soul_2 1.5k",
+      "ratio": "3:4",
+      "job_id": "3c47d2bc-5b2b-4927-89ec-3c4283582c38",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_349VrHjTFIpx9q71lpfpAXcLXvR/hf_20260923_162530_3c47d2bc-5b2b-4927-89ec-3c4283582c38.png"
+    },
+    {
+      "id": "pack-diario-detalle",
+      "uso": "catalogo",
+      "producto": "pack-diario-sin-costura",
+      "model": "gpt_image_2_5 sunburst medium 1k",
+      "ratio": "4:5",
+      "job_id": "87e8a259-1d57-4cd7-9fc6-efc42c88757e",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_349VrHjTFIpx9q71lpfpAXcLXvR/hf_20260923_162531_87e8a259-1d57-4cd7-9fc6-efc42c88757e.png"
+    },
+    {
+      "id": "caja-regalo-abierta",
+      "uso": "catalogo",
+      "producto": "caja-regalo-nanduti",
+      "model": "gpt_image_2_5 sunburst medium 1k",
+      "ratio": "4:5",
+      "job_id": "78a9ddfd-5156-42a4-aca0-5e1792553a54",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_349VrHjTFIpx9q71lpfpAXcLXvR/hf_20260923_162359_78a9ddfd-5156-42a4-aca0-5e1792553a54.png"
+    },
+    {
+      "id": "caja-regalo-modelo",
+      "uso": "reemplazada 2026-09-23 (modelo sin el look pedido); no usar",
+      "producto": "caja-regalo-nanduti",
+      "model": "soul_2 1.5k",
+      "ratio": "3:4",
+      "job_id": "968839a3-3b96-4876-ac0e-217dd282ff44",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_349VrHjTFIpx9q71lpfpAXcLXvR/hf_20260923_162450_968839a3-3b96-4876-ac0e-217dd282ff44.png"
+    },
+    {
+      "id": "caja-regalo-cerrada",
+      "uso": "catalogo",
+      "producto": "caja-regalo-nanduti",
+      "model": "gpt_image_2_5 sunburst medium 1k",
+      "ratio": "4:5",
+      "job_id": "78fa28c4-491d-44c6-9ea3-3b3f1124eaa4",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_349VrHjTFIpx9q71lpfpAXcLXvR/hf_20260923_162529_78fa28c4-491d-44c6-9ea3-3b3f1124eaa4.png"
+    },
+    {
+      "id": "caja-regalo-kimono",
+      "uso": "reserva: futura Caja Regalo Mburucuyá o anuncio",
+      "producto": "-",
+      "model": "gpt_image_2_5 sunburst medium 1k",
+      "ratio": "4:5",
+      "job_id": "60a78191-e72b-45da-935b-67b6bff79546",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_349VrHjTFIpx9q71lpfpAXcLXvR/hf_20260923_162528_60a78191-e72b-45da-935b-67b6bff79546.png"
+    },
+    {
+      "id": "anuncio-conjunto-nanduti",
+      "uso": "anuncio Meta 4:5 (tercio superior libre para texto)",
+      "producto": "conjunto-nanduti",
+      "model": "gpt_image_2_5 sunburst medium 1k",
+      "ratio": "4:5",
+      "job_id": "b11da568-6ce0-4aac-b0e1-f07318ba30a7",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_349VrHjTFIpx9q71lpfpAXcLXvR/hf_20260923_162528_b11da568-6ce0-4aac-b0e1-f07318ba30a7.png"
+    },
+    {
+      "id": "anuncio-pack-diario",
+      "uso": "anuncio Meta 4:5 (tercio superior libre para texto)",
+      "producto": "pack-diario-sin-costura",
+      "model": "gpt_image_2_5 sunburst medium 1k",
+      "ratio": "4:5",
+      "job_id": "bc18b076-37a8-4978-8466-db3c623fffe8",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_349VrHjTFIpx9q71lpfpAXcLXvR/hf_20260923_162528_bc18b076-37a8-4978-8466-db3c623fffe8.png"
+    },
+    {
+      "id": "anuncio-liga-nupcial",
+      "uso": "anuncio Meta 4:5 (tercio superior libre para texto)",
+      "producto": "liga-nupcial-nanduti",
+      "model": "gpt_image_2_5 sunburst medium 1k",
+      "ratio": "4:5",
+      "job_id": "7f4d1272-ea05-4af8-80a0-f91fc3f9bfe8",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_349VrHjTFIpx9q71lpfpAXcLXvR/hf_20260923_162528_7f4d1272-ea05-4af8-80a0-f91fc3f9bfe8.png"
+    },
+    {
+      "id": "pack-diario-modelo-ventana-v2",
+      "uso": "catalogo",
+      "producto": "pack-diario-sin-costura",
+      "model": "soul_2 1.5k",
+      "ratio": "3:4",
+      "job_id": "d732d0ce-fc98-4593-aeac-aef6c2203ffc",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_349VrHjTFIpx9q71lpfpAXcLXvR/hf_20260923_162816_d732d0ce-fc98-4593-aeac-aef6c2203ffc.png"
+    },
+    {
+      "id": "pack-diario-modelo-ventana-v2-alt",
+      "uso": "alternativa",
+      "producto": "pack-diario-sin-costura",
+      "model": "soul_2 1.5k",
+      "ratio": "3:4",
+      "job_id": "6126a489-f932-4d41-9f07-6298756e939d",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_349VrHjTFIpx9q71lpfpAXcLXvR/hf_20260923_162817_6126a489-f932-4d41-9f07-6298756e939d.png"
+    },
+    {
+      "id": "pack-diario-modelo-patio-v2",
+      "uso": "catalogo",
+      "producto": "pack-diario-sin-costura",
+      "model": "soul_2 1.5k",
+      "ratio": "3:4",
+      "job_id": "def626ff-a915-4fd5-9414-02756f65fb48",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_349VrHjTFIpx9q71lpfpAXcLXvR/hf_20260923_162816_def626ff-a915-4fd5-9414-02756f65fb48.png"
+    },
+    {
+      "id": "pack-diario-modelo-patio-v2-alt",
+      "uso": "alternativa",
+      "producto": "pack-diario-sin-costura",
+      "model": "soul_2 1.5k",
+      "ratio": "3:4",
+      "job_id": "7dafe450-583c-42e4-b438-537f5cf9b982",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_349VrHjTFIpx9q71lpfpAXcLXvR/hf_20260923_162817_7dafe450-583c-42e4-b438-537f5cf9b982.png"
+    },
+    {
+      "id": "pack-diario-modelo-negro",
+      "uso": "catalogo",
+      "producto": "pack-diario-sin-costura",
+      "model": "soul_2 1.5k",
+      "ratio": "3:4",
+      "job_id": "ef29e0c9-3aa3-4e13-8bb0-dd488a4fae96",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_349VrHjTFIpx9q71lpfpAXcLXvR/hf_20260923_162816_ef29e0c9-3aa3-4e13-8bb0-dd488a4fae96.png"
+    },
+    {
+      "id": "pack-diario-modelo-negro-alt",
+      "uso": "alternativa",
+      "producto": "pack-diario-sin-costura",
+      "model": "soul_2 1.5k",
+      "ratio": "3:4",
+      "job_id": "e02d6cb8-cab2-409e-9928-eed3d239da50",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_349VrHjTFIpx9q71lpfpAXcLXvR/hf_20260923_162816_e02d6cb8-cab2-409e-9928-eed3d239da50.png"
+    },
+    {
+      "id": "caja-regalo-modelo-v2",
+      "uso": "catalogo",
+      "producto": "caja-regalo-nanduti",
+      "model": "soul_2 1.5k",
+      "ratio": "3:4",
+      "job_id": "90566498-3ce5-4524-b807-3d880a28a9c0",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_349VrHjTFIpx9q71lpfpAXcLXvR/hf_20260923_162817_90566498-3ce5-4524-b807-3d880a28a9c0.png"
+    },
+    {
+      "id": "caja-regalo-modelo-v2-alt",
+      "uso": "alternativa",
+      "producto": "caja-regalo-nanduti",
+      "model": "soul_2 1.5k",
+      "ratio": "3:4",
+      "job_id": "590ab848-9ac9-4529-9e45-17b5a2a63ada",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_349VrHjTFIpx9q71lpfpAXcLXvR/hf_20260923_162817_590ab848-9ac9-4529-9e45-17b5a2a63ada.png"
+    },
+    {
+      "id": "caja-regalo-modelo-abrazo",
+      "uso": "catalogo",
+      "producto": "caja-regalo-nanduti",
+      "model": "soul_2 1.5k",
+      "ratio": "3:4",
+      "job_id": "4dd5e0d7-b928-4d21-a4da-9c2eabaaa36d",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_349VrHjTFIpx9q71lpfpAXcLXvR/hf_20260923_162816_4dd5e0d7-b928-4d21-a4da-9c2eabaaa36d.png"
+    },
+    {
+      "id": "caja-regalo-modelo-abrazo-alt",
+      "uso": "alternativa",
+      "producto": "caja-regalo-nanduti",
+      "model": "soul_2 1.5k",
+      "ratio": "3:4",
+      "job_id": "237f8a08-0687-4e7b-a4fb-fab06b1f9418",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_349VrHjTFIpx9q71lpfpAXcLXvR/hf_20260923_162816_237f8a08-0687-4e7b-a4fb-fab06b1f9418.png"
+    }
+  ]
+}
