@@ -6,8 +6,14 @@ import { HomeWhatsappBand } from "@/components/home-whatsapp-band";
 import { HomeTrustStrip } from "@/components/home-trust-strip";
 import { HomeBestSellers, HomeConjuntos } from "@/components/home-best-sellers";
 import { HomeCategoryShowcase } from "@/components/home-category-showcase";
+import { TIENDA } from "@/config/tienda";
 import { getCatalog, getCategories, type CatalogProduct } from "@/db/queries";
+import { getStoreSettings } from "@/domain/store-settings";
+import { linkSeguro } from "@/domain/store-settings-schema";
 import { t } from "@/i18n";
+import { contactoPublico } from "@/lib/comercio";
+import { jsonLdScript, organizationJsonLd } from "@/lib/seo";
+import { siteOrigin } from "@/lib/site-url";
 
 /**
  * Home. ISR: el catálogo cambia poco y las redes móviles paraguayas
@@ -39,9 +45,39 @@ export default async function HomePage() {
   // —una tienda recién clonada— sale sin botón antes que llevar a un 404.
   const ctaHref = categories[0] ? `/categoria/${categories[0].slug}` : null;
 
+  // Los ajustes del panel (`/admin/ajustes` → "Marca y portada") pisan sólo el
+  // texto y el CTA del collage de esta tienda; las fotos y el slideshow son
+  // piel propia y no se tocan. Sin nada cargado (o con la portada apagada),
+  // el hero sale igual que siempre.
+  const [ajustes, contacto] = await Promise.all([getStoreSettings(), contactoPublico()]);
+  const heroOverrides = ajustes.marca.heroActivo
+    ? {
+        titulo: ajustes.marca.heroTitulo ?? undefined,
+        texto: ajustes.marca.heroTexto ?? undefined,
+        ctaLabel: ajustes.marca.heroCtaLabel ?? undefined,
+        ctaHref: linkSeguro(ajustes.marca.heroCtaHref) ?? undefined,
+      }
+    : undefined;
+
+  // Quién es la tienda, para Google. Sin dominio configurado no sale (ver
+  // `organizationJsonLd`).
+  const organizacion = organizationJsonLd({
+    origin: siteOrigin(),
+    name: TIENDA.nombre,
+    telephone: contacto.whatsapp,
+    email: contacto.email,
+    sameAs: contacto.redes.map((red) => red.url),
+  });
+
   return (
     <main>
-      <HomeHero ctaHref={ctaHref} />
+      {organizacion ? (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: jsonLdScript(organizacion) }}
+        />
+      ) : null}
+      <HomeHero ctaHref={ctaHref} overrides={heroOverrides} />
       <HomeTrustStrip />
 
       {error ? (

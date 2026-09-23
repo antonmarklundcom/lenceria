@@ -7,6 +7,7 @@ import { CartButton } from "@/components/cart-button";
 import { CuentaHeaderEntry } from "@/components/cuenta/header-entry";
 import { MobileMenu } from "@/components/mobile-menu";
 import { SearchBox } from "@/components/search-box";
+import { WishlistHeaderLink } from "@/components/wishlist-header-link";
 import { getCategories } from "@/db/queries";
 import { freeShippingWithoutZone } from "@/domain/free-shipping";
 import { listShippingZones } from "@/domain/shipping";
@@ -85,6 +86,7 @@ export async function SiteHeader() {
             <CuentaHeaderEntry />
           </Suspense>
           <User size={18} className="text-muted-foreground hidden sm:block" aria-hidden />
+          <WishlistHeaderLink />
           <CartButton />
           <MobileMenu categories={categories} />
         </div>

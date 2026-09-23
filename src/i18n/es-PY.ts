@@ -73,13 +73,11 @@ export const esPY = {
   "header.menuCerrar": "Cerrar menú",
 
   "footer.categorias": "Categorías",
+  "footer.contacto": "Contacto",
+  "footer.redes": "Redes sociales",
   "footer.whatsapp": "WhatsApp {telefono}",
   "footer.seguirPedido": "Seguir mi pedido",
   "footer.ayuda": "Ayuda",
-  "footer.envios": "Envíos y zonas",
-  "footer.cambios": "Cambios y talles",
-  "footer.horarios": "9 a 19 h",
-  "footer.whatsappBadge": "W",
   "footer.copyright": "© 2026 {nombre} · Asunción, Paraguay · Precios en guaraníes, IVA incluido",
 
   "whatsapp.flotante.label": "Escribinos por WhatsApp",
