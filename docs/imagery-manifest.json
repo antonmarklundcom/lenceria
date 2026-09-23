@@ -3,8 +3,8 @@
     "generated": "2026-09-23",
     "model_rule": "Producto sin personas: gpt_image_2_5 variant sunburst, medium, 1k (0.5 créditos). Personas con lencería: soul_2 1.5k (0.12 créditos), porque Sunburst las bloquea como nsfw aunque la modelo esté tapada (probado 2026-09-23, dos intentos, reembolsados). Mismo estilo que las 30 fotos del 13-14/09 en scripts/fotos-catalogo.json.",
     "cost_preflight": "sunburst medium 1k 4:5 = 0.5; soul_2 1.5k 3:4 = 0.12",
-    "actual_spend_credits": 6.76,
-    "ledger_checked": "2026-09-23: 8 × GPT Image 2.5 Sunburst 0.5 + 3 × Higgsfield Soul V2 0.12; 2 Sunburst nsfw reembolsados; segunda tanda: 10 × Higgsfield Soul V2 0.12; tercera tanda: 10 × Higgsfield Soul V2 0.12",
+    "actual_spend_credits": 9.16,
+    "ledger_checked": "2026-09-23: 8 × GPT Image 2.5 Sunburst 0.5 + 3 × Higgsfield Soul V2 0.12; 2 Sunburst nsfw reembolsados; segunda tanda: 10 × Higgsfield Soul V2 0.12; tercera tanda: 10 × Higgsfield Soul V2 0.12; cuarta tanda: 20 × Higgsfield Soul V2 0.12 (fotos de modelo de los 10 productos originales, estilo nuevo)",
     "download_status": "No se descargan en la sesión (el CDN está bloqueado en el entorno). Las de catálogo van a Cloudinary con `pnpm fotos:catalogo` (Cloudinary las baja de la URL). Las de anuncio se bajan desde Higgsfield.",
     "model_look": "Modelos: paraguaya de rasgos europeo-guaraníes, piel oliva clara, pelo castaño oscuro, maquillaje natural, figura delgada tipo reloj de arena con busto generoso (no con sobrepeso), sin tatuajes ni piercings. Ropa siempre opaca y con corpiño con relleno: nada que se transparente (pedido de Anton, 2026-09-23; una imagen borrada por eso). Cada escena se generó 2 veces: \"catalogo\" es la elegida, \"alternativa\" la otra."
   },
@@ -287,6 +287,166 @@
       "ratio": "3:4",
       "job_id": "8c546cba-f8e1-4fcd-8e6c-8c7599c6e321",
       "url": "https://d8j0ntlcm91z4.cloudfront.net/user_349VrHjTFIpx9q71lpfpAXcLXvR/hf_20260923_164046_8c546cba-f8e1-4fcd-8e6c-8c7599c6e321.png"
+    },
+    {
+      "id": "modelo-v3-d2902f3b",
+      "uso": "catalogo (reemplaza 91ae2cb4, foto del 14/09)",
+      "model": "soul_2 1.5k",
+      "ratio": "3:4",
+      "job_id": "d2902f3b-00a4-4050-bd64-c5c30e359f5e",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_349VrHjTFIpx9q71lpfpAXcLXvR/hf_20260923_165432_d2902f3b-00a4-4050-bd64-c5c30e359f5e.png"
+    },
+    {
+      "id": "modelo-v3-d932ad64",
+      "uso": "catalogo (reemplaza dc433af3, foto del 14/09)",
+      "model": "soul_2 1.5k",
+      "ratio": "3:4",
+      "job_id": "d932ad64-2a75-43d5-b6a1-38d0b9a0393d",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_349VrHjTFIpx9q71lpfpAXcLXvR/hf_20260923_165434_d932ad64-2a75-43d5-b6a1-38d0b9a0393d.png"
+    },
+    {
+      "id": "modelo-v3-209b70d6",
+      "uso": "catalogo (reemplaza 4b492be4, foto del 14/09)",
+      "model": "soul_2 1.5k",
+      "ratio": "3:4",
+      "job_id": "209b70d6-7fd7-4f88-bff3-780f1873ae52",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_349VrHjTFIpx9q71lpfpAXcLXvR/hf_20260923_165434_209b70d6-7fd7-4f88-bff3-780f1873ae52.png"
+    },
+    {
+      "id": "modelo-v3-467b2dc6",
+      "uso": "catalogo (reemplaza bd36b789, foto del 14/09)",
+      "model": "soul_2 1.5k",
+      "ratio": "3:4",
+      "job_id": "467b2dc6-ce12-463c-913d-0bd9653defbb",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_349VrHjTFIpx9q71lpfpAXcLXvR/hf_20260923_165433_467b2dc6-ce12-463c-913d-0bd9653defbb.png"
+    },
+    {
+      "id": "modelo-v3-31970ace",
+      "uso": "catalogo (reemplaza 0571a00a, foto del 14/09)",
+      "model": "soul_2 1.5k",
+      "ratio": "3:4",
+      "job_id": "31970ace-9d6a-416e-b96c-f5826a55b324",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_349VrHjTFIpx9q71lpfpAXcLXvR/hf_20260923_165433_31970ace-9d6a-416e-b96c-f5826a55b324.png"
+    },
+    {
+      "id": "modelo-v3-753da14a",
+      "uso": "catalogo (reemplaza 11bccfc3, foto del 14/09)",
+      "model": "soul_2 1.5k",
+      "ratio": "3:4",
+      "job_id": "753da14a-7fb1-48ad-8f52-10454ef9e4e6",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_349VrHjTFIpx9q71lpfpAXcLXvR/hf_20260923_165433_753da14a-7fb1-48ad-8f52-10454ef9e4e6.png"
+    },
+    {
+      "id": "modelo-v3-b86530ba",
+      "uso": "catalogo (reemplaza f77a4ec8, foto del 14/09)",
+      "model": "soul_2 1.5k",
+      "ratio": "3:4",
+      "job_id": "b86530ba-bf56-4591-96d8-a75735b08a94",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_349VrHjTFIpx9q71lpfpAXcLXvR/hf_20260923_165432_b86530ba-bf56-4591-96d8-a75735b08a94.png"
+    },
+    {
+      "id": "modelo-v3-1cb6e5c7",
+      "uso": "catalogo (reemplaza 4c7e840e, foto del 14/09)",
+      "model": "soul_2 1.5k",
+      "ratio": "3:4",
+      "job_id": "1cb6e5c7-118c-450b-8c4f-1647a6c646d0",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_349VrHjTFIpx9q71lpfpAXcLXvR/hf_20260923_165433_1cb6e5c7-118c-450b-8c4f-1647a6c646d0.png"
+    },
+    {
+      "id": "modelo-v3-45282eba",
+      "uso": "catalogo (reemplaza 3c27e5a2, foto del 14/09)",
+      "model": "soul_2 1.5k",
+      "ratio": "3:4",
+      "job_id": "45282eba-a637-4e20-b4b6-e95d2fcddeba",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_349VrHjTFIpx9q71lpfpAXcLXvR/hf_20260923_165434_45282eba-a637-4e20-b4b6-e95d2fcddeba.png"
+    },
+    {
+      "id": "modelo-v3-00eeba7e",
+      "uso": "catalogo (reemplaza b7a63ce3, foto del 14/09)",
+      "model": "soul_2 1.5k",
+      "ratio": "3:4",
+      "job_id": "00eeba7e-c695-4cfc-95d6-9a25a5cd9899",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_349VrHjTFIpx9q71lpfpAXcLXvR/hf_20260923_165433_00eeba7e-c695-4cfc-95d6-9a25a5cd9899.png"
+    },
+    {
+      "id": "modelo-v3-449a543b",
+      "uso": "catalogo (reemplaza c203e1c4, foto del 14/09)",
+      "model": "soul_2 1.5k",
+      "ratio": "3:4",
+      "job_id": "449a543b-60e9-4c65-85a0-43e03be1a317",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_349VrHjTFIpx9q71lpfpAXcLXvR/hf_20260923_165456_449a543b-60e9-4c65-85a0-43e03be1a317.png"
+    },
+    {
+      "id": "modelo-v3-d8d64d7c",
+      "uso": "catalogo (reemplaza 90c646c1, foto del 14/09)",
+      "model": "soul_2 1.5k",
+      "ratio": "3:4",
+      "job_id": "d8d64d7c-4b70-499a-bc7e-3a98577ec83a",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_349VrHjTFIpx9q71lpfpAXcLXvR/hf_20260923_165502_d8d64d7c-4b70-499a-bc7e-3a98577ec83a.png"
+    },
+    {
+      "id": "modelo-v3-76f1ec99",
+      "uso": "catalogo (reemplaza 8a9b373d, foto del 14/09)",
+      "model": "soul_2 1.5k",
+      "ratio": "3:4",
+      "job_id": "76f1ec99-9747-4f7a-b4ff-cf9deac3c95c",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_349VrHjTFIpx9q71lpfpAXcLXvR/hf_20260923_165505_76f1ec99-9747-4f7a-b4ff-cf9deac3c95c.png"
+    },
+    {
+      "id": "modelo-v3-5bf4e751",
+      "uso": "catalogo (reemplaza b8ca8274, foto del 14/09)",
+      "model": "soul_2 1.5k",
+      "ratio": "3:4",
+      "job_id": "5bf4e751-16bd-4305-a2d6-0d90966b0855",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_349VrHjTFIpx9q71lpfpAXcLXvR/hf_20260923_165456_5bf4e751-16bd-4305-a2d6-0d90966b0855.png"
+    },
+    {
+      "id": "modelo-v3-6c08b5a4",
+      "uso": "catalogo (reemplaza 56c66878, foto del 14/09)",
+      "model": "soul_2 1.5k",
+      "ratio": "3:4",
+      "job_id": "6c08b5a4-887b-45c4-a244-32481294fda4",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_349VrHjTFIpx9q71lpfpAXcLXvR/hf_20260923_165453_6c08b5a4-887b-45c4-a244-32481294fda4.png"
+    },
+    {
+      "id": "modelo-v3-5b628f1a",
+      "uso": "catalogo (reemplaza 8b28df6a, foto del 14/09)",
+      "model": "soul_2 1.5k",
+      "ratio": "3:4",
+      "job_id": "5b628f1a-2c59-4bee-8b86-7eb1e754bf21",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_349VrHjTFIpx9q71lpfpAXcLXvR/hf_20260923_165509_5b628f1a-2c59-4bee-8b86-7eb1e754bf21.png"
+    },
+    {
+      "id": "modelo-v3-36f6d092",
+      "uso": "catalogo (reemplaza d4a2669b, foto del 14/09)",
+      "model": "soul_2 1.5k",
+      "ratio": "3:4",
+      "job_id": "36f6d092-e405-41a7-a51e-95c98ee1e7e6",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_349VrHjTFIpx9q71lpfpAXcLXvR/hf_20260923_165505_36f6d092-e405-41a7-a51e-95c98ee1e7e6.png"
+    },
+    {
+      "id": "modelo-v3-51eb5576",
+      "uso": "catalogo (reemplaza 4410d551, foto del 14/09)",
+      "model": "soul_2 1.5k",
+      "ratio": "3:4",
+      "job_id": "51eb5576-b8d1-4258-ac96-a6dc5aec193c",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_349VrHjTFIpx9q71lpfpAXcLXvR/hf_20260923_165455_51eb5576-b8d1-4258-ac96-a6dc5aec193c.png"
+    },
+    {
+      "id": "modelo-v3-4e6f0b97",
+      "uso": "catalogo (reemplaza 484aebd7, foto del 14/09)",
+      "model": "soul_2 1.5k",
+      "ratio": "3:4",
+      "job_id": "4e6f0b97-cc8f-447d-b356-ffb193a8b443",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_349VrHjTFIpx9q71lpfpAXcLXvR/hf_20260923_165505_4e6f0b97-cc8f-447d-b356-ffb193a8b443.png"
+    },
+    {
+      "id": "modelo-v3-86f8d8ab",
+      "uso": "catalogo (reemplaza 82b92cbb, foto del 14/09)",
+      "model": "soul_2 1.5k",
+      "ratio": "3:4",
+      "job_id": "86f8d8ab-b8e5-494d-91c9-5a0bbc87cdd8",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_349VrHjTFIpx9q71lpfpAXcLXvR/hf_20260923_165458_86f8d8ab-b8e5-494d-91c9-5a0bbc87cdd8.png"
     }
   ]
 }
