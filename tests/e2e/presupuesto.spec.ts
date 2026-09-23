@@ -33,7 +33,10 @@ import { TESTIDS } from "./testids";
  * Home no pasó su techo y queda igual. Anotado en `KNOWN-ISSUES.md`.
  */
 const BUDGET_KB = {
-  home: 224,
+  // Lencería Íntima: la home propia (collage con parallax) más el corazón de
+  // favoritos en header y tarjetas midió 231.4 KB en CI (2026-09-23) → +10%.
+  // Ver KNOWN-ISSUES.md.
+  home: 255,
   producto: 252,
   checkout: 246,
 } as const;

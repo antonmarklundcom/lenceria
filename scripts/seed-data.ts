@@ -55,9 +55,14 @@ export const SEED_PRODUCTS: SeedProduct[] = [
     brand: TIENDA.nombre,
     ivaRate: 10,
     variants: [
-      { sku: 'LI-AMA-S', label: 'Talle S', pricePyg: 175000, onHand: 3 },
-      { sku: 'LI-AMA-M', label: 'Talle M', pricePyg: 175000, onHand: 4 },
-      { sku: 'LI-AMA-L', label: 'Talle L', pricePyg: 175000, onHand: 3 },
+      // Stock holgado a propósito: es el primer producto de la primera
+      // categoría, el que compran los specs e2e (`completarCheckout` en
+      // tests/e2e/helpers.ts) desde dos workers a la vez. Con 3-4 unidades la
+      // reserva de uno dejaba al otro con "se quedó sin stock" y el pedido no
+      // se creaba (flaky en CI). En la tienda real el stock se carga en el panel.
+      { sku: 'LI-AMA-S', label: 'Talle S', pricePyg: 175000, onHand: 20 },
+      { sku: 'LI-AMA-M', label: 'Talle M', pricePyg: 175000, onHand: 20 },
+      { sku: 'LI-AMA-L', label: 'Talle L', pricePyg: 175000, onHand: 20 },
     ],
   },
 

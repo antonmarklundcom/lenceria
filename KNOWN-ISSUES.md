@@ -88,3 +88,12 @@ achicar código desde el test. Si se quiere recuperar ese margen, el candidato e
 cargar `wishlist-header-link` con `next/dynamic` (no hace falta en el primer
 render) — fase aparte.
 
+## Presupuesto de JS de la home propia — 2026-09-23 (tienda)
+
+La home de Lencería Íntima (collage con parallax y scroll-motion) más el corazón
+de favoritos en el header y las tarjetas midió 231.4 KB en CI, arriba del techo
+de 224 KB del template. Siguiendo la regla de `tests/e2e/presupuesto.spec.ts`,
+el techo de **home** de esta tienda pasó a 255 (medido + 10%). Ojo en el
+próximo `template:sync`: ese spec es de los que gana el template, así que hay
+que volver a poner el 255 si el sync lo pisa.
+
