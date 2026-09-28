@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import type React from "react";
-import { Karla, Cormorant_Garamond } from "next/font/google";
+import localFont from "next/font/local";
 
 import { TIENDA } from "@/config/tienda";
 import { AnnouncementBar } from "@/components/announcement-bar";
@@ -16,16 +16,20 @@ import { idiomaActivo } from "@/i18n";
 import { siteOrigin } from "@/lib/site-url";
 import "./globals.css";
 
-const karla = Karla({
+// Fuentes servidas desde el repo (subset latin, variables): con next/font/google
+// el build de Hostinger baja la CSS de Google en el momento y falla.
+const karla = localFont({
+  src: "./fonts/karla-latin.woff2",
   variable: "--font-karla",
-  weight: ["400", "500", "600", "700"],
-  subsets: ["latin"],
+  weight: "400 700",
+  display: "swap",
 });
 
-const cormorant = Cormorant_Garamond({
+const cormorant = localFont({
+  src: "./fonts/cormorant-garamond-latin.woff2",
   variable: "--font-cormorant",
-  weight: ["400", "500", "600"],
-  subsets: ["latin"],
+  weight: "400 600",
+  display: "swap",
 });
 
 /**
