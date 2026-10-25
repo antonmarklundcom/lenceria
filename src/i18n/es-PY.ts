@@ -357,12 +357,16 @@ export const esPY = {
   "buscarPedido.meta": "Buscar mi pedido",
   "buscarPedido.titulo": "Buscá tu pedido",
   "buscarPedido.bajada":
-    "Si perdiste el link que te mandamos por WhatsApp, entrá con el número de pedido y el teléfono que usaste al comprar.",
+    "Si perdiste el link que te mandamos por WhatsApp, ingresá el número de pedido y el teléfono que usaste al comprar y te lo mandamos de nuevo.",
   "buscarPedido.numero": "Número de pedido",
   "buscarPedido.numero.placeholder": "PY-000123",
   "buscarPedido.telefono": "WhatsApp usado en la compra",
   "buscarPedido.boton": "Buscar mi pedido",
   "buscarPedido.buscando": "Buscando…",
+  // La misma respuesta exista o no el pedido: el link va al WhatsApp del
+  // pedido, nunca a la pantalla de quien lo busca (ver order-lookup.ts).
+  "buscarPedido.recuperacion":
+    "Si los datos coinciden con un pedido, te mandamos el link por WhatsApp. Si no te llega, escribile a la tienda.",
 
   // -------------------------------------------------------------------------
   // La página del pedido (la que le llega por WhatsApp)
